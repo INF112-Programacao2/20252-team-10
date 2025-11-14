@@ -2,7 +2,7 @@
 #define CLASSE_ESTUDANTE
 #include "../Usuario/usuario.h"
 #include <string>
-#include <mysql-cppconn-8/mysqlx/xdevapi.h>
+#include <mysql-cppconn/mysqlx/xdevapi.h>
 
 class Estudante : public Usuario{
     private:    

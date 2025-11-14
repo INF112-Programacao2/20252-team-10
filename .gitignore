@@ -1,0 +1,123 @@
+# =========================
+# Compilação / Build
+# =========================
+# Diretórios de compilação
+/build/
+/bin/
+/obj/
+/out/
+/dist/
+/debug/
+/release/
+/cmake-build*/
+
+# Arquivos compilados
+*.exe
+*.dll
+*.so
+*.dylib
+*.o
+*.a
+*.lib
+*.obj
+*.pdb
+*.ilk
+
+# Arquivos intermediários de compilação
+*.mod
+*.pch
+*.pdb
+*.idb
+*.res
+*.exp
+*.manifest
+*.map
+*.rc
+*.sbr
+*.rsp
+*.tlog
+*.log
+
+# Make / CMake
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+Makefile
+Makefile.in
+install_manifest.txt
+compile_commands.json
+
+# =========================
+# IDEs / Editores
+# =========================
+
+# Visual Studio Code
+.vscode/
+*.code-workspace
+
+# CLion / JetBrains
+.idea/
+
+# Visual Studio
+.vs/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# Code::Blocks
+*.depend
+*.layout
+
+# Dev-C++
+*.layout
+
+# =========================
+# Sistema / Temporários
+# =========================
+*.tmp
+*.temp
+*.bak
+*.swp
+*.swo
+*~
+*.DS_Store
+Thumbs.db
+
+# =========================
+# Logs e Dumps
+# =========================
+*.log
+*.dmp
+*.stackdump
+
+# =========================
+# Configurações / Ambiente
+# =========================
+.env
+*.cnf
+*.ini
+*.cfg
+*.conf
+
+# =========================
+# Banco de Dados
+# =========================
+*.sql
+*.sql.bak
+*.dump
+*.db
+
+# =========================
+# Testes
+# =========================
+/tests/*
+!tests/*.cpp
+!tests/*.h
+
+# =========================
+# Outros
+# =========================
+/temp/
+/cache/
+/__pycache__/

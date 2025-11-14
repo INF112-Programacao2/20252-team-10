@@ -1,7 +1,7 @@
 #ifndef CLASSE_DATABASECONNECTION
 #define CLASSE_DATABASECONNECTION
 
-#include <mysql-cppconn-8/mysqlx/xdevapi.h>
+#include <mysql-cppconn/mysqlx/xdevapi.h>
 // Precisa instalar o conector C++ da MySQL com suporte ao X DevAPI
 // [COMANDO] sudo apt install libmysqlcppconn-dev - conector C++ com MySQL
 #include <iostream>

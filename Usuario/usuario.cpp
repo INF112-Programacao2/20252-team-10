@@ -1,5 +1,6 @@
 #include "../Usuario/usuario.h"
 #include <iostream>
+#include <iomanip>
 using namespace mysqlx;
 
 // Construtor
@@ -64,10 +65,18 @@ void Usuario::setSenha(const std::string s) {
 
 // Demais métodos
 void Usuario::detalharPerfil() {
-    std::cout << "Nome: " << nome << std::endl;
-    std::cout << "Email: " << email << std::endl;
-    std::cout << "ID: " << id << std::endl;
-    std::cout << "Nível de Acesso: " << nivelAcesso << std::endl;
+    std::cout << "================================================\n";
+    std::cout << "|                 Detalhes do Usuário          |\n";
+    std::cout << "================================================\n";
+    std::cout << std::left << std::setw(25) << "| Nome"            << "| " << nome         << "\n";
+    std::cout << std::left << std::setw(25) << "| Email"           << "| " << email        << "\n";
+    std::cout << std::left << std::setw(25) << "| ID"              << "| " << id           << "\n";
+    std::cout << std::left << std::setw(25) << "| Nível de Acesso" << "| " << "(" << nivelAcesso << ")" 
+                                                                                << (nivelAcesso==1 ? "Gestor"
+                                                                                : nivelAcesso==2 ? "Pos Graduacao"
+                                                                                : nivelAcesso == 3 ? "Graduacao" 
+                                                                                : "Desconhecido")  << "\n";
+    std::cout << "=========================================\n";
 }
 
 bool Usuario::fazerLogin(mysqlx::Schema* db, const std::string& email, const std::string& senha, Usuario* usuarioLogado) {
@@ -141,15 +150,3 @@ bool Usuario::validarSenha(const std::string senha) {
         return true;
 }
 
-bool Usuario::verificarSenha(std::string senha) {
-    return this->senha == senha;
-}
-
-void Usuario::alterarSenha(std::string senhaAntiga, std::string senhaNova) {
-    if (verificarSenha(senhaAntiga)) {
-        this->senha = senhaNova;
-        std::cout << "Senha alterada com sucesso!" << std::endl;
-    } else {
-        std::cout << "Senha antiga incorreta!" << std::endl;
-    }
-}

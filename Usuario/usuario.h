@@ -2,7 +2,7 @@
 #define USUARIO_H
 
 #include <string>
-#include <mysql-cppconn-8/mysqlx/xdevapi.h>
+#include <mysql-cppconn/mysqlx/xdevapi.h>
 using namespace mysqlx;
 
 class Usuario{
@@ -14,7 +14,7 @@ class Usuario{
         std::string email; // E-amil do Usuario
         int id; // ID do Usuario, por normalização, o ID inicial será -1, significa que não foi 
         // cadastrado ou encontrado, assim que algumas dessas sentenças for verdadeiras, o BD retorna seu ID
-        int nivelAcesso; // Corresponde ao Tipo de Usuário, devido que a depender possui influência no acesso dos Reagentes   
+        int nivelAcesso; // Corresponde ao Tipo de Usuário, devido que a depender possui influência no acesso dos Reagentes
     public:
         //Construtor
         Usuario(std::string nome, std::string email, std::string senha, int nivelAcesso, Schema* db); // Com os parametros
@@ -52,10 +52,10 @@ class Usuario{
         // Esta funcão tenta autenticar um usuário no banco de dados, utilizando e-mail e senha
         //Tal funcao pertence a classe, assim poderá ser chamada diretamente sem ser instanciada por um objeto
         static bool fazerLogin(mysqlx::Schema* db, const std::string& email, const std::string& senha, Usuario* usuarioLogado);
+        //Verifica se o e-mail está dentro do conforme, com @ e "."
         bool validarEmail(const std::string email);
+        // Verifica se a senha possui no mínimo 6 caracteres
         bool validarSenha(const std::string senha);
-        bool verificarSenha(const std::string senha);
-        void alterarSenha(const std::string senhaAntiga, const std::string senhaNova);
 
 };
 

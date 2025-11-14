@@ -3,7 +3,7 @@
 
 #include "../Usuario/usuario.h"
 #include <string>
-#include <mysql-cppconn-8/mysqlx/xdevapi.h>
+#include <mysql-cppconn/mysqlx/xdevapi.h>
 using namespace mysqlx;
 
 class Gestor : public Usuario{
