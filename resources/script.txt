@@ -123,7 +123,7 @@ INSERT INTO Usuario (id, nome, email, senha, nivelAcesso) VALUES
 -- ----------------------------
 -- 2. Tabela Laboratorio
 -- ----------------------------
-INSERT INTO Laboratorio (nome, departamento) VALUES
+INSERT INTO Laboratorio (id, nome, departamento) VALUES
 (1, 'Laboratório de Química Geral', 'Química'),
 (2, 'Laboratório de Biologia Celular', 'Biologia'),
 (3, 'Laboratório de Mecânica dos Sólidos', 'Engenharia Civil'),
