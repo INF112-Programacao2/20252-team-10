@@ -1,3 +1,4 @@
+DROP DATABASE LabUFV;
 CREATE DATABASE IF NOT EXISTS LabUFV;
 USE LabUFV;
 
@@ -160,9 +161,9 @@ INSERT INTO PosGraduacao (id) VALUES
 (6);
 
 -- Laboratórios
-INSERT INTO Laboratorio (nome, departamento, gestor_id) VALUES
-('Lab de Química Orgânica', 'Química', 1),
-('Lab de Biotecnologia', 'Biotecnologia', 2);
+INSERT INTO Laboratorio (nome, departamento) VALUES
+('Lab de Química Orgânica', 'Química'),
+('Lab de Biotecnologia', 'Biotecnologia');
 
 -- Reagentes
 INSERT INTO Reagente (nome, validade, quantidade, quantidadeCritica, localArmazenamento, nivelAcesso, unidadeMedida, laboratorio_id, cadastrado_por, marca, referencia) VALUES

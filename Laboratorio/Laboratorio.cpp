@@ -19,7 +19,7 @@ Laboratorio::Laboratorio(int id, const std::string &nome, const std::string &dep
 {
     //Se tem conexão com BD, carrega os reagentes
     if (this->db) {
-        std::cout << "Laboratorio conectado ao DB. Reagentes sendo carregados" << std::endl;
+        // std::cout << "Laboratorio conectado ao DB. Reagentes sendo carregados" << std::endl;
         carregarReagentesDoDB();  //busca reagentes no banco
     }
 }
@@ -97,7 +97,7 @@ void Laboratorio::carregarReagentesDoDB() {
                     }
 
                 }
-                std::cout << this->reagentes.size() << " reagentes carregados do DB para a memoria." << std::endl;
+                // std::cout << this->reagentes.size() << " reagentes carregados do DB para a memoria." << std::endl;
             } catch (const mysqlx::Error &err) {
                 std::cerr << "Erro ao carregar reagentes do DB: " << err.what() << std::endl;
             }}
