@@ -1,7 +1,7 @@
 #include "../Usuario/usuario.h"
 #include "../Gestor/gestor.h"
 #include "../Estudante/estudante.h"
-#include "../PosGraduacao/posGraduacao.h"
+#include "../PosGraduacao/posgraduacao.h"
 #include "../Laboratorio/Laboratorio.h"
 #include <string>
 #include <iomanip>
@@ -29,7 +29,7 @@ int Gestor::capacidadePos = 10;
 Gestor::Gestor(std::string nome, std::string email, std::string senha, int nivelAcesso, Schema* db) :
     Usuario(nome, email, senha, nivelAcesso, db) {
 
-    //Inicializa o ponteiro como nulo 
+    //Inicializa o ponteiro como nulo
     this->laboratorio = nullptr;
     };
 
@@ -208,7 +208,7 @@ void Gestor::carregarUsuarios() {
 //lista os usuários do laboratório gerenciado por este gestor
 void Gestor::listarUsuarios() {
     //verifica se o gestor está vinculado a um laboratorio
-    if(_meuLaboratorio == nullptr) {
+    if(laboratorio == nullptr) {
         std::cout << "Este Gestor não está vinculado a um laboratorio." << std::endl;
         return;
     }
@@ -223,7 +223,7 @@ void Gestor::listarUsuarios() {
               << "\n";
     std::cout << std::string(65, '-') << "\n";
     //laco que percorre o vetor de usuarios do laboratorio
-    for (Usuario* u : _meuLaboratorio->getVetorUsuarios()) {
+    for (Usuario* u : laboratorio->getVetorUsuarios()) {
         std::string tipo;
         if (u->getNivelAcesso() == 1) tipo = "Gestor";
         else if (u->getNivelAcesso() == 2) tipo = "Graduacao";
@@ -297,20 +297,20 @@ void Gestor::deletarUsuario() {
     }
 }
 
-void Gestor::listarUsuarios() {
-    std::cout << "\n=== LISTANDO USUÁRIOS (via Gestor) ===" << std::endl;
-    std::cout << "Nome do Gestor: " << getNome() << std::endl;
-    std::cout << "Email do Gestor: " << getEmail() << std::endl;
-    std::cout << "Nível de Acesso: " << getNivelAcesso() << std::endl;
-    std::cout << "========================================\n" << std::endl;
-}
+// void Gestor::listarUsuarios() {
+//     std::cout << "\n=== LISTANDO USUÁRIOS (via Gestor) ===" << std::endl;
+//     std::cout << "Nome do Gestor: " << getNome() << std::endl;
+//     std::cout << "Email do Gestor: " << getEmail() << std::endl;
+//     std::cout << "Nível de Acesso: " << getNivelAcesso() << std::endl;
+//     std::cout << "========================================\n" << std::endl;
+// }
 
 // Associa gestor ao laboratorio
 void Gestor::associarLaboratorio(){
     // Verifica se o gestor já está associado a um laboratório
     if (this->laboratorio != nullptr) {
         std::cout << "O gestor já está associado em laboratório: "
-                    << this->laboratorio->getNome() << std::endl; // E informa qual 
+                    << this->laboratorio->getNome() << std::endl; // E informa qual
         return;
     }
 
@@ -335,9 +335,9 @@ void Gestor::associarLaboratorio(){
             }
         }
         // Imprime informação sobre a associação existente
-        std::cout << "O gestor já está associado a um laboratório no banco de dados (ID: " 
+        std::cout << "O gestor já está associado a um laboratório no banco de dados (ID: "
                     << idLaboratorioBD << "- "<< this->laboratorio->getNome()  << ").\n";
-        return;   // Sai do método, não associa novamente  
+        return;   // Sai do método, não associa novamente
     }
 
 
@@ -373,7 +373,7 @@ void Gestor::associarLaboratorio(){
     //Adiciona o gestor dentro do laboratorio (armazena no vetor de gestores)
     escolhido->adicionarGestor(this);
 
-    // Atualiza no DB 
+    // Atualiza no DB
     table = this->db->getTable("Gestor"); // Obtém a tabela novamente
     table.update()
          .set("laboratorio_id", id)       // Define o novo ID do laboratório
@@ -407,7 +407,7 @@ void Gestor::associarEstudanteAoLaboratorio(Estudante* estudante, int idLaborato
                                         .bind("l_id", idLaboratorio)
                                         .execute();
     if (!result.fetchOne().isNull()) {
-        std::cout << "Estudante ID " << estudante->getId() 
+        std::cout << "Estudante ID " << estudante->getId()
                     << " já está associado a este laboratório.\n";
         return;
     }
@@ -416,6 +416,7 @@ void Gestor::associarEstudanteAoLaboratorio(Estudante* estudante, int idLaborato
                     .execute();
 
     estudante->adicionarLaboratorio(escolhido);
+}
 // Metodo para cadastrar reagente
 void Gestor::cadastrarReagente() {
     // Variaveis para guardar os dados da tabela base Reagente
@@ -502,8 +503,8 @@ void Gestor::cadastrarReagente() {
     if (laboratorio) { //
         // Delega a tarefa de cadastrar regaente para o laboratorio
         laboratorio->cadastrarNovoReagente(
-            nome, dataValidade, quantidade, quantidadeCritica, local, 
-            nivelAcesso, unidade, marca, codRef, tipo, 
+            nome, dataValidade, quantidade, quantidadeCritica, local,
+            nivelAcesso, unidade, marca, codRef, tipo,
             densidade, volume, massa, estadoFisico
         );
     } else {
@@ -512,7 +513,7 @@ void Gestor::cadastrarReagente() {
             // Imprime a confirmacao para o usuario
             std::cout << "Reagente Liquido '" << nome << "' cadastrado com sucesso!\n";
 
-        } else if (tipo == 2) {
+        }   if(tipo == 2) {
             // Se for solido, insere na tabela 'ReagenteSolido'
             db->getTable("ReagenteSolido")
                 .insert("id", "massa", "estadoFisico")
@@ -523,17 +524,17 @@ void Gestor::cadastrarReagente() {
             std::cout << "Reagente Solido '" << nome << "' cadastrado com sucesso!\n";
         }
 
-    } catch (const mysqlx::Error &err) {
+    }} catch (const mysqlx::Error &err) {
         // Se qualquer operacao do 'try' falhar, captura o erro
         // (Ex: se o banco estiver offline ou a tabela nao existir)
         std::cerr << "Erro ao cadastrar reagente: " << err.what() << std::endl;
-    }
+    }}
 
-}
+
 
     // Metodo para vincular o gestor a um laboratorio
     void Gestor::setLaboratorio(Laboratorio* lab) {
-        this-laboratorio = lab;
+        this->laboratorio = lab;
     }
 
     // Implementação da função virtual. O Gestor ignora a checagem de nível.

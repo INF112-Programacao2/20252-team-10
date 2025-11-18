@@ -17,7 +17,7 @@ CREATE TABLE Laboratorio (
 
 CREATE TABLE Gestor (
     id INT PRIMARY KEY,
-    cadastrado_por_gestor_id INT, 
+    cadastrado_por_gestor_id INT,
     laboratorio_id INT,
 	FOREIGN KEY (laboratorio_id) REFERENCES Laboratorio(id),
     FOREIGN KEY (id) REFERENCES Usuario(id),
@@ -110,7 +110,7 @@ CREATE TABLE Associado (
 -- 1. Tabela Usuario
 -- Nível de Acesso: 1=Gestor, 2=Estudante Graduação, 3=Estudante Pós-Graduação
 -- ----------------------------
-INSERT INTO Usuario (nome, email, senha, nivelAcesso) VALUES
+INSERT INTO Usuario (id, nome, email, senha, nivelAcesso) VALUES
 (1, 'Ana Souza', 'ana.souza@ufv.br', 'ana123', 1),        -- Gestor 1
 (2, 'Bruno Lima', 'bruno.lima@ufv.br', 'bruno456', 1),      -- Gestor 2
 (3, 'Carla Mendes', 'carla.mendes@ufv.br', 'carla789', 2),   -- Estudante Graduação

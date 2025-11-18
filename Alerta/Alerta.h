@@ -35,8 +35,8 @@ public:
     void setSituacao(std::string situacao);
 
     // Outros métodos
-    void adicionarAlertaBD();
-    void fecharAlertaBD();
+    // void adicionarAlertaBD();
+    // void fecharAlertaBD();
     void situacaoPorTipo();
     void notificar();
 };
