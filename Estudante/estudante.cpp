@@ -120,9 +120,11 @@ void Estudante::associarLaboratorio(Laboratorio* laboratorio, const std::string&
     // Verifica se o ponteiro do laboratorio e db são inválidos
     if (!laboratorio || !db) {
         std::cerr << "[Erro] Paramêtros do laboratorio são nulos." << std::endl;
-        //Acessa a tabela associado para associar estudante ao laboratorio 
+        return;
+    }   //Acessa a tabela associado para associar estudante ao laboratorio 
         //Tal tabela representa as possibilidades de um estudante esta associado a varios laboratorios
         //E o laboratório poder ter varios estudantes
+    try{
         Table associadoTable = db->getTable("Associado");
         // Verifica se o associacao ja existe o usuaroio com o mesmo papel 
         RowResult associadoResult = associadoTable
