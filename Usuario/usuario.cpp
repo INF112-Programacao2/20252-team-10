@@ -70,7 +70,7 @@ void Usuario::detalharPerfil() {
     std::cout << "Nível de Acesso: " << nivelAcesso << std::endl;
 }
 
-bool Usuario::fazerLogin(mysqlx::Schema* db, const std::string& email, const std::string& senha, Usuario* usuarioLogado) {
+bool Usuario::fazerLogin(Schema* db, const std::string& email, const std::string& senha, Usuario* usuarioLogado) {
     if (db == nullptr) {
         throw std::invalid_argument("Conexão com o banco de dados não estabelecida.");
     }
@@ -96,24 +96,6 @@ bool Usuario::fazerLogin(mysqlx::Schema* db, const std::string& email, const std
         usuarioLogado->setEmail(row[2].get<std::string>());
         usuarioLogado->setSenha(row[3].get<std::string>());
         usuarioLogado->setNivelAcesso(row[4].get<int>());
-
-        int nivelAcesso = usuarioLogado->getNivelAcesso();
-
-        if(nivelAcesso == 1){
-            // Gestor
-            Table gestorTable = db->getTable("Gestor");
-            RowResult resultadoGestor = gestorTable
-                .select("id", "cadastrado_por_gestor_id")
-                .where("id = :id")
-                .bind("id", usuarioLogado->getId())
-                .execute();
-
-            if(resultadoGestor.count() == 0){
-                std::cerr << "[AVISO] Gestor não encontrado na tabela Gestor.\n";
-            } else {
-                std::cout << "Dados do Gestor carregados com sucesso.\n";
-            }
-        }
         return true;
 
     } catch (const mysqlx::Error &err) {
@@ -124,7 +106,7 @@ bool Usuario::fazerLogin(mysqlx::Schema* db, const std::string& email, const std
     return false; // Falha no login
 }
 
-bool Usuario::validarEmail(const std::string email) {
+bool Usuario::validarEmail(const std::string& email) {
         if(email.empty()){ // Verifica se o email esta vazio
             throw std::invalid_argument("O email não pode estar vazio.");
         }
@@ -134,7 +116,7 @@ bool Usuario::validarEmail(const std::string email) {
         return true;
 }
 
-bool Usuario::validarSenha(const std::string senha) {
+bool Usuario::validarSenha(const std::string& senha) {
         if(senha.length() < 6){ // Verifica se a senha tem pelo menos 6 caracteres
             throw std::invalid_argument("A senha deve ter pelo menos 6 caracteres.");
         }

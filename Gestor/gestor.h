@@ -52,6 +52,7 @@ class Gestor : public Usuario {
         void cadastrarReagente();
         //O Gestor tem acesso total
         void acessarReagenteRestrito(int idReagente) override;
+        bool estaAssociado() const;
 };
 
 #endif
