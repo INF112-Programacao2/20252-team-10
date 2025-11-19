@@ -7,6 +7,7 @@
 #include <iomanip>
 #include <iostream>
 
+using namespace mysqlx;
 
 Usuario** Gestor::usuariosCarregados = new Usuario*[10];
 int Gestor::quantidadeUsuarios = 0;
@@ -24,6 +25,13 @@ PosGraduacao** Gestor::posGraduandos = new PosGraduacao*[10];
 int Gestor::quantidadePos = 0;
 int Gestor::capacidadePos = 10;
 
+// Funcao auxiliar para confrimacao
+bool confirmacao(){
+    std::cout << "Tem certeza em realizar esta ação? Digite S para Sim e N para Não: ";
+    char resposta;
+    std::cin >> resposta;
+    return (resposta == 'S' || resposta == 's');
+}
 
 // Construtor
 Gestor::Gestor(std::string nome, std::string email, std::string senha, int nivelAcesso, Schema* db) :
@@ -321,9 +329,8 @@ void Gestor::associarLaboratorio(){
                             .bind("id", this->getId()) // Substitui o parâmetro ":id"
                             .execute();              // Executa a consulta
     Row row = result.fetchOne(); // Busca a primeira linha do resultado
-
-    if (!row.isNull()) {  // existe laboratório no banco
-        int idLaboratorioBD = row[0];
+    if (row && !row[0].isNull()) {  // existe laboratório no banco
+        int idLaboratorioBD = row[0].get<int>();
         // Caso memória não esteja sincronizada, for divergente do bd e do objeto
         if (this->laboratorio == nullptr || this->laboratorio->getId() != idLaboratorioBD) {
              // Percorre todos os laboratórios carregados em memória
@@ -368,13 +375,19 @@ void Gestor::associarLaboratorio(){
         std::cout << "Laboratório não encontrado.\n";
         return;
     }
+
+    // Confirmação antes de associar
+    if (!confirmacao()) {
+        std::cout << "Associação cancelada pelo usuário.\n";
+        return;
+    }
+
     // Associa ao gestor, armazena no objeto
     this->laboratorio = escolhido;
     //Adiciona o gestor dentro do laboratorio (armazena no vetor de gestores)
     escolhido->adicionarGestor(this);
 
     // Atualiza no DB
-    table = this->db->getTable("Gestor"); // Obtém a tabela novamente
     table.update()
          .set("laboratorio_id", id)       // Define o novo ID do laboratório
          .where("id = :id")               // Aplica a atualização ao gestor correto
@@ -530,17 +543,14 @@ void Gestor::cadastrarReagente() {
         std::cerr << "Erro ao cadastrar reagente: " << err.what() << std::endl;
     }}
 
+// Metodo para vincular o gestor a um laboratorio
+void Gestor::setLaboratorio(Laboratorio* lab) {
+    this->laboratorio = lab;
+}
 
-
-    // Metodo para vincular o gestor a um laboratorio
-    void Gestor::setLaboratorio(Laboratorio* lab) {
-        this->laboratorio = lab;
-    }
-
-    // Implementação da função virtual. O Gestor ignora a checagem de nível.
-    void Gestor::acessarReagenteRestrito(int idReagente) {
-
-        std::cout << "\n(Gestor) Acessando Reagente ID: " << idReagente << "\n";
+// Implementação da função virtual. O Gestor ignora a checagem de nível.
+void Gestor::acessarReagenteRestrito(int idReagente) {
+    std::cout << "\n(Gestor) Acessando Reagente ID: " << idReagente << "\n";
         if (db == nullptr) {
             std::cerr << "ERRO: Gestor não está conectado ao banco." << std::endl;
             return;
@@ -576,3 +586,7 @@ void Gestor::cadastrarReagente() {
             std::cerr << "Erro ao acessar reagente: " << err.what() << std::endl;
         }
     }
+
+bool Gestor::estaAssociado() const {
+    return laboratorio != nullptr;
+}
