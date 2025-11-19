@@ -6,10 +6,13 @@
 #include "../Usuario/usuario.h"
 #include "../Reagente/reagente.h"
 #include "../Retirada/Retirada.h"
+#include "../Reagente/reagenteLiquido.h"
+#include "../Reagente/reagenteSolido.h"
+
 
 //Declaração das classes
 class Usuario; class Retirada;
-class Gestor; 
+class Gestor;
 class Estudante;
 class PosGraduacao;
 
@@ -21,7 +24,7 @@ private:
     int id;      //D único do laboratório
     std::string nome;  //Nome do laboratório
     std::string departamento;  //Departamento ao qual pertence
-    
+
     //Vetores para armazenar os objetos em memória
     std::vector<Reagente *> reagentes;  //Lista de reagentes do lab
     std::vector<Usuario *> usuarios;    //Lista de usuários do lab
@@ -32,15 +35,15 @@ private:
 
     //Método para verificar se usuário tem retiradas pendentes
     bool verificarRetiradasPendentes(Usuario *usuario);
-    
+
     //Método para carregar reagentes do banco para a memória
     void carregarReagentesDoDB();
 
 public:
     //Construtor
     Laboratorio(int id, const std::string &nome, const std::string &departamento, Schema* db);
-    
-    //Destrutor 
+
+    //Destrutor
     ~Laboratorio();
 
     //Cadastra novo reagente no sistema (banco e memória)
@@ -54,25 +57,25 @@ public:
 
     //Busca reagente pelo nome
     Reagente *buscarReagente(const std::string &nome);
-    
+
     //Lista reagentes, com filtro por nome
     std::vector<Reagente *> listarReagentes(const std::string &filtroNome = "");
-    
+
     //Lista reagentes por local de armazenamento
     std::vector<Reagente *> listarReagentesPorLocal(const std::string &local);
-    
+
     //Registra uma nova retirada de reagente
     std::string registrarRetirada(Usuario *usuario, const std::string &nomeReagente, float quantidade);
-    
+
     //Lista todas as retiradas de um usuário específico
     std::vector<Retirada *> listarRetiradasUsuario(Usuario *usuario);
-    
+
     //Pega as 10 retiradas mais recentes
     std::vector<Retirada *> getHistoricoRecente();
-    
+
     //Adiciona usuário ao laboratório
     std::string adicionarUsuario(Usuario *usuario);
-    
+
     //Remove usuário do laboratório (se não tiver retiradas pendentes)
     std::string removerUsuario(Usuario *usuario);
 
@@ -100,7 +103,7 @@ public:
 
     //lista de todos os laboratórios carregados
     static std::vector<Laboratorio *> laboratorios;
-    
+
     //Métodos para gerenciar os laboratórios
     static std::vector<Laboratorio*> listarLaboratorios(Schema* db);  // Carrega do BD
     static void imprimirLaboratorios();  // Mostra lista formatada

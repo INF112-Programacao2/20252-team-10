@@ -104,23 +104,23 @@ void Alerta::notificar()
     }
 }
 
-void Alerta::adicionarAlertaBD(){
-    DatabaseConnection conexaoDB;
-    Session* session = nullptr;
-    Schema *db = nullptr;
-    try{
-        //Estabelece a conexão com o banco de dados
-        session = conexaoDB.getSession(); // Obtém a sessão de conexão
-        db = conexaoDB.getSchema(); // Obtém o esquema do banco de dados
+// void Alerta::adicionarAlertaBD(){
+//     DatabaseConnection conexaoDB;
+//     Session* session = nullptr;
+//     Schema *db = nullptr;
+//     try{
+//         //Estabelece a conexão com o banco de dados
+//         session = conexaoDB.getSession(); // Obtém a sessão de conexão
+//         db = conexaoDB.getSchema(); // Obtém o esquema do banco de dados
 
-        // Verifica se a conexão e o esquema foram inicializados corretamente
-        if (!session || !db) {
-            throw std::runtime_error("Falha ao inicializar a conexão com o banco de dados.");
-        }} catch(std::runtime_error &e){
-            e.what();
-        }
+//         // Verifica se a conexão e o esquema foram inicializados corretamente
+//         if (!session || !db) {
+//             throw std::runtime_error("Falha ao inicializar a conexão com o banco de dados.");
+//         }} catch(std::runtime_error &e){
+//             e.what();
+//         }
 
-        Table tabelaAlerta = db->getTable("Alerta");
-        Result i = tabelaAlerta.insert("gestor_id", "reagente_id", "dataHoraEmissao", "tipo", "situacao")
-        .values(1, this->_reagenteEmAlerta->getId(), "Tipo teste", "situacao teste").execute();
-}
+//         Table tabelaAlerta = db->getTable("Alerta");
+//         Result i = tabelaAlerta.insert("gestor_id", "reagente_id", "dataHoraEmissao", "tipo", "situacao")
+//         .values(1, this->_reagenteEmAlerta->getId(), "Tipo teste", "situacao teste").execute();
+// }

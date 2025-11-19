@@ -1,3 +1,4 @@
+DROP DATABASE LabUFV;
 CREATE DATABASE IF NOT EXISTS LabUFV;
 USE LabUFV;
 
@@ -17,7 +18,7 @@ CREATE TABLE Laboratorio (
 
 CREATE TABLE Gestor (
     id INT PRIMARY KEY,
-    cadastrado_por_gestor_id INT, 
+    cadastrado_por_gestor_id INT,
     laboratorio_id INT,
 	FOREIGN KEY (laboratorio_id) REFERENCES Laboratorio(id),
     FOREIGN KEY (id) REFERENCES Usuario(id),
@@ -110,7 +111,7 @@ CREATE TABLE Associado (
 -- 1. Tabela Usuario
 -- Nível de Acesso: 1=Gestor, 2=Estudante Graduação, 3=Estudante Pós-Graduação
 -- ----------------------------
-INSERT INTO Usuario (nome, email, senha, nivelAcesso) VALUES
+INSERT INTO Usuario (id, nome, email, senha, nivelAcesso) VALUES
 (1, 'Ana Souza', 'ana.souza@ufv.br', 'ana123', 1),        -- Gestor 1
 (2, 'Bruno Lima', 'bruno.lima@ufv.br', 'bruno456', 1),      -- Gestor 2
 (3, 'Carla Mendes', 'carla.mendes@ufv.br', 'carla789', 2),   -- Estudante Graduação
@@ -123,7 +124,7 @@ INSERT INTO Usuario (nome, email, senha, nivelAcesso) VALUES
 -- ----------------------------
 -- 2. Tabela Laboratorio
 -- ----------------------------
-INSERT INTO Laboratorio (nome, departamento) VALUES
+INSERT INTO Laboratorio (id, nome, departamento) VALUES
 (1, 'Laboratório de Química Geral', 'Química'),
 (2, 'Laboratório de Biologia Celular', 'Biologia'),
 (3, 'Laboratório de Mecânica dos Sólidos', 'Engenharia Civil'),
@@ -160,9 +161,9 @@ INSERT INTO PosGraduacao (id) VALUES
 (6);
 
 -- Laboratórios
-INSERT INTO Laboratorio (nome, departamento, gestor_id) VALUES
-('Lab de Química Orgânica', 'Química', 1),
-('Lab de Biotecnologia', 'Biotecnologia', 2);
+INSERT INTO Laboratorio (nome, departamento) VALUES
+('Lab de Química Orgânica', 'Química'),
+('Lab de Biotecnologia', 'Biotecnologia');
 
 -- Reagentes
 INSERT INTO Reagente (nome, validade, quantidade, quantidadeCritica, localArmazenamento, nivelAcesso, unidadeMedida, laboratorio_id, cadastrado_por, marca, referencia) VALUES

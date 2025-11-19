@@ -35,7 +35,7 @@ void Estudante::setNivel(std::string nivel){
 }
 
 //Outros métodos
-//Adicionar laboratorio a estudante 
+//Adicionar laboratorio a estudante
 void Estudante::adicionarLaboratorio(Laboratorio * laboratorio){
     // Verifica se o laboratorio já esta associado no objeto
     for (int i = 0; i > this->laboratorios.size(); i++) {
@@ -54,13 +54,13 @@ void Estudante::removerLaboratorioObjeto(Laboratorio* laboratorio) {
     std::vector<Laboratorio*> novoLaboratorios;  // vetor auxiliar para receber os laboratorios associados
     bool removido = false; // flag para informar que foi removido
     for (int i = 0; i < laboratorios.size(); i++) {
-        if (laboratorios[i]->getId() != laboratorio->getId()) { // se o id dos laboratorios forem diferentes , copia no novo vetor 
-            novoLaboratorios.push_back(laboratorios[i]); 
+        if (laboratorios[i]->getId() != laboratorio->getId()) { // se o id dos laboratorios forem diferentes , copia no novo vetor
+            novoLaboratorios.push_back(laboratorios[i]);
         } else { // se for igual, atualiza o flag que foi removido
             removido = true;
         }
         if (removido) {
-        // Substitui o vetor antigo pelo novo 
+        // Substitui o vetor antigo pelo novo
         this->laboratorios.swap(novoLaboratorios);
         std::cout << getNome() << " desassociado do " << laboratorio->getNome() << std::endl;
         } else {
@@ -68,7 +68,7 @@ void Estudante::removerLaboratorioObjeto(Laboratorio* laboratorio) {
         }
     }
 }
-// Remover laboratorio do estduante 
+// Remover laboratorio do estduante
 void Estudante::removerLaboratorio(Laboratorio* laboratorio, Schema* db) {
     // Verifica se o ponteiro do laboratorio e db são inválidos
     if (!laboratorio || !db) {
@@ -99,7 +99,7 @@ void Estudante::removerLaboratorio(Laboratorio* laboratorio, Schema* db) {
             .bind("estudanteId", this->getId())
             .bind("laboratorioId", laboratorio->getId())
             .execute()
-            .getAffectedItemsCount(); // Coleta o número dede linhas afetadas com o delete 
+            .getAffectedItemsCount(); // Coleta o número dede linhas afetadas com o delete
 
         if (dadosAfetados > 0) {
             std::cout << "Associação(ões) removida(s) com sucesso! (" << dadosAfetados << " registro(s))" << std::endl;
@@ -126,20 +126,20 @@ void Estudante::associarLaboratorio(Laboratorio* laboratorio, const std::string&
         //E o laboratório poder ter varios estudantes
     try{
         Table associadoTable = db->getTable("Associado");
-        // Verifica se o associacao ja existe o usuaroio com o mesmo papel 
+        // Verifica se o associacao ja existe o usuaroio com o mesmo papel
         RowResult associadoResult = associadoTable
-                                    .select("papel") //  seleciona o papel 
+                                    .select("papel") //  seleciona o papel
                                     .where("estudante_id = :estudanteId AND laboratorio_id = :laboratorioId AND papel = :papel") // mostrar quando o dado sao os dado pelo metodo
                                     .bind("estudanteId", this->getId()) // pega o id do estudante
                                     .bind("laboratorioId", laboratorio->getId()) // pega o id do laboratorio
-                                    .bind("papel", papel) // pega o paapel do estdunate 
+                                    .bind("papel", papel) // pega o paapel do estdunate
                                     .execute(); // faz a consulta
 
             if (associadoResult.count() > 0) { // se a consulta resultar for maior que 0
                 // Recebe o papel existente  com a consulta e faz um casting para o tipo de dado do c++
                 std::string papelExistente = associadoResult.fetchOne()[0].get<std::string>();
                 if (papelExistente == papel) { // Se o papael for igual, já diz que o usuario já possui o papel com base no bd
-                    std::cout << "Aviso: O estudante " << this->getNome() << " já está associado ao laboratório " 
+                    std::cout << "Aviso: O estudante " << this->getNome() << " já está associado ao laboratório "
                             << laboratorio->getNome() << " com o papel '" << papel << "'. Nenhuma alteração necessária." << std::endl;
                     return;
                 }
@@ -151,7 +151,7 @@ void Estudante::associarLaboratorio(Laboratorio* laboratorio, const std::string&
                                 .bind("laboratorioId", laboratorio->getId())
                                 .execute();
                 // Informa que o papel foi atualizado
-                std::cout << "Associação atualizada! O estudante " << this->getNome() << " agora tem o papel '" 
+                std::cout << "Associação atualizada! O estudante " << this->getNome() << " agora tem o papel '"
                         << papel << "' no laboratório " << laboratorio->getNome() << "." << std::endl;
                 // Para fins de segurança, associamos o laboratorio no estudnate
                 this->adicionarLaboratorio(laboratorio);
@@ -163,14 +163,15 @@ void Estudante::associarLaboratorio(Laboratorio* laboratorio, const std::string&
             .execute();
             // informa a associação
             std::cout << "Associação registrada! \n" << std::endl;
-            // Aloca o laboratorio no objeto estudante 
+            // Aloca o laboratorio no objeto estudante
             this->adicionarLaboratorio(laboratorio);
-        } catch (mysqlx::Error &err) {
-        std::cerr << "Erro MySQL ao associar laboratório: " << err.what() << std::endl;
-        } catch (std::exception &ex) {
-        std::cerr << "Erro geral ao associar laboratório: " << ex.what() << std::endl;
-        }
-}
+        // } catch (mysqlx::Error &err) {
+        // std::cerr << "Erro MySQL ao associar laboratório: " << err.what() << std::endl;
+        // } catch (std::exception &ex) {
+        // std::cerr << "Erro geral ao associar laboratório: " << ex.what() << std::endl;
+        // }
+}}
+
 // Esta função checa o nivel de acesso antes de exibir.
 void Estudante::acessarReagenteRestrito(int idReagente) {
 
