@@ -1,26 +1,21 @@
 #include "../Alerta/Alerta.h"
-#include <mysql-cppconn/mysqlx/xdevapi.h>
-#include "../DatabaseConnection/databaseConnection.h"
-#include <iostream>
-#include <stdexcept>
+
 
 // Construtor
 
-Alerta::Alerta(unsigned int tipo, Reagente *reagenteEmAlerta)
-{
-    this->_tipo = tipo;
-    this->_reagenteEmAlerta = reagenteEmAlerta;
-    try
-    {
-        this->situacaoPorTipo(); // preenche a situacao baseado no tipo de alerta
-    }
-    catch (std::runtime_error &e)
-    {
-        throw;
+Alerta::Alerta(Reagente *reagenteEmAlerta,  bool situacao)
+    : _reagenteEmAlerta(reagenteEmAlerta), _situacao(situacao) {
+        time_t *agora;
+        time(agora);
+        _dataEmissao = ctime(agora);
     }
 
-    this->setDataEmissao();
-}
+
+
+Alerta::Alerta(int id, Reagente *reagenteEmAlerta, std::string dataEmissao, bool situacao)
+    : _id(id), _reagenteEmAlerta(reagenteEmAlerta), _dataEmissao(dataEmissao), _situacao(situacao) {}
+
+
 
 // Destrutor
 
@@ -28,7 +23,7 @@ Alerta::~Alerta() {}
 
 // Gets
 
-unsigned int Alerta::getId()
+int Alerta::getId()
 {
     return this->_id;
 }
@@ -38,12 +33,7 @@ std::string Alerta::getDataEmissao()
     return this->_dataEmissao;
 }
 
-unsigned int Alerta::getTipo()
-{
-    return this->_tipo;
-}
-
-std::string Alerta::getSituacao()
+bool Alerta::getSituacao()
 {
     return this->_situacao;
 }
@@ -62,65 +52,32 @@ void Alerta::setDataEmissao()
     this->_dataEmissao = std::asctime(_tempoInfo);
 }
 
-void Alerta::setTipo(int tipo)
-{
-    this->_tipo = tipo;
-}
-
-void Alerta::setSituacao(std::string situacao)
+void Alerta::setSituacao(bool situacao)
 {
     this->_situacao = situacao;
 }
 
-// Outros métodos
+void Alerta::fecharAlertaBD(){
+    DatabaseConnection conexaoDB;
+    Session* session = nullptr;
+    Schema *db = nullptr;
+    try{
+        //Estabelece a conexão com o banco de dados
+        session = conexaoDB.getSession(); // Obtém a sessão de conexão
+        db = conexaoDB.getSchema(); // Obtém o esquema do banco de dados
 
-void Alerta::situacaoPorTipo()
-{
-    std::string situacao;
-    switch (_tipo)
-    {
-        case 1: // tipo 1 = reagente em quantidade critica
-        situacao = "[ALERTA]: O reagente " + _reagenteEmAlerta->getNome() + " atingiu quantidade crítica!\n";
-        break;
-        case 2:
-        situacao = "[ALERTA]: o reagente " + _reagenteEmAlerta->getNome() + " está próximo do vencimento!\n";
-        break;
-        default:
-        throw std::runtime_error("Alerta criado com tipo inválido\n");
-        break;
-    }
-    this->_situacao = situacao;
+        // Verifica se a conexão e o esquema foram inicializados corretamente
+        if (!session || !db) {
+            throw std::runtime_error("Falha ao inicializar a conexão com o banco de dados.");
+        }} catch(std::runtime_error &e){
+            e.what();
+        }
+
+        Table tabelaAlerta = db->getTable("Alerta");
+            tabelaAlerta.update()
+                .set("situacao", 0)
+                .where("id = :id")
+                .bind("id", _id)
+                .execute();
+
 }
-
-void Alerta::notificar()
-{
-    if (!(this->_situacao.empty()))
-    {
-        std::cout << this->_dataEmissao << " : " << this->_situacao;
-    }
-    else
-    {
-        throw std::runtime_error("Alerta com string situação vazia\n");
-    }
-}
-
-// void Alerta::adicionarAlertaBD(){
-//     DatabaseConnection conexaoDB;
-//     Session* session = nullptr;
-//     Schema *db = nullptr;
-//     try{
-//         //Estabelece a conexão com o banco de dados
-//         session = conexaoDB.getSession(); // Obtém a sessão de conexão
-//         db = conexaoDB.getSchema(); // Obtém o esquema do banco de dados
-
-//         // Verifica se a conexão e o esquema foram inicializados corretamente
-//         if (!session || !db) {
-//             throw std::runtime_error("Falha ao inicializar a conexão com o banco de dados.");
-//         }} catch(std::runtime_error &e){
-//             e.what();
-//         }
-
-//         Table tabelaAlerta = db->getTable("Alerta");
-//         Result i = tabelaAlerta.insert("gestor_id", "reagente_id", "dataHoraEmissao", "tipo", "situacao")
-//         .values(1, this->_reagenteEmAlerta->getId(), "Tipo teste", "situacao teste").execute();
-// }

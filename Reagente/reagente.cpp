@@ -90,8 +90,7 @@ Reagente::Reagente(int id, std::string nome, std::string dataValidade, int quant
             }
 
             void Reagente::acionarAlerta(unsigned int tipo){
-                Alerta a(tipo, this);
-                a.notificar();
+                return;
             }
 
             bool Reagente::estaVencido(){

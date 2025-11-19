@@ -165,12 +165,12 @@ void Estudante::associarLaboratorio(Laboratorio* laboratorio, const std::string&
             std::cout << "Associação registrada! \n" << std::endl;
             // Aloca o laboratorio no objeto estudante
             this->adicionarLaboratorio(laboratorio);
-        // } catch (mysqlx::Error &err) {
-        // std::cerr << "Erro MySQL ao associar laboratório: " << err.what() << std::endl;
-        // } catch (std::exception &ex) {
-        // std::cerr << "Erro geral ao associar laboratório: " << ex.what() << std::endl;
-        // }
-}}
+        } catch (mysqlx::Error &err) {
+        std::cerr << "Erro MySQL ao associar laboratório: " << err.what() << std::endl;
+        } catch (std::exception &ex) {
+        std::cerr << "Erro geral ao associar laboratório: " << ex.what() << std::endl;
+        }
+}
 
 // Esta função checa o nivel de acesso antes de exibir.
 void Estudante::acessarReagenteRestrito(int idReagente) {

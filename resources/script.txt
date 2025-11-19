@@ -85,12 +85,10 @@ CREATE TABLE Retirada (
 
 CREATE TABLE Alerta (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    gestor_id INT NOT NULL,
     reagente_id INT NOT NULL,
     dataHoraEmissao DATETIME NOT NULL,
-    tipo VARCHAR(50),
-    situacao VARCHAR(50),
-    FOREIGN KEY (gestor_id) REFERENCES Gestor(id),
+    tipo INT NOT NULL,
+    situacao BOOLEAN,
     FOREIGN KEY (reagente_id) REFERENCES Reagente(id)
 );
 
@@ -288,9 +286,9 @@ INSERT INTO Retirada (usuario_id, reagente_id, dataHoraRetirada, quantidadeRetir
 -- 10. Tabela Alerta
 -- Alerta de nível baixo para Ácido Sulfúrico (ID 1)
 -- ----------------------------
-INSERT INTO Alerta (gestor_id, reagente_id, dataHoraEmissao, tipo, situacao) VALUES
-(1, 1, NOW() - INTERVAL 1 DAY, 'Baixo Estoque', 'Aberto'),
-(2, 4, NOW(), 'Vencimento Próximo', 'Aberto');
+INSERT INTO Alerta (reagente_id, dataHoraEmissao, tipo, situacao) VALUES
+(1, NOW() - INTERVAL 1 DAY, 1, 1),
+(4, NOW(), 2, 1);
 
 -- ----------------------------
 -- 11. Tabela Associado (N:M Estudante x Laboratorio)

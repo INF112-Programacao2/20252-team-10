@@ -3,42 +3,41 @@
 #include <ctime>
 #include <string>
 #include "../Reagente/reagente.h"
+#include "../DatabaseConnection/databaseConnection.h"
+#include <mysql-cppconn/mysqlx/xdevapi.h>
 
 class Alerta
 {
-private:
-    unsigned int _id;
-    time_t _tempoBruto;       // tempo em unix time stamp
-    struct tm *_tempoInfo;    // struct que guarda informacoes do tempo atual
-    std::string _dataEmissao; // tempo formatado para leitura
-    unsigned int _tipo;
-    std::string _situacao; // conteúdo do alerta
+protected:
+    int _id;
+    time_t _tempoBruto;             // tempo em unix time stamp
+    struct tm *_tempoInfo;          // struct que guarda informacoes do tempo atual
+    std::string _dataEmissao;       // tempo formatado para leitura
+    bool _situacao;                 // aberto ou fechado
     Reagente * _reagenteEmAlerta;
 
 public:
     // Construtor
-    Alerta(unsigned int tipo, Reagente *reagenteEmAlerta);
+    Alerta(int id, Reagente *reagenteEmAlerta, std::string dataEmissao, bool situacao);
+    Alerta(Reagente *reagenteEmAlerta, bool situacao);
 
     // Destrutor
     ~Alerta();
 
     // Gets
-    unsigned int getId();
+    int getId();
     std::string getDataEmissao();
-    unsigned int getTipo();
-    std::string getSituacao();
+    bool getSituacao();
 
     // Sets
     void setId(int id);
     void setDataEmissao();
-    void setTipo(int tipo);
-    void setSituacao(std::string situacao);
+    void setSituacao(bool situacao);
 
     // Outros métodos
-    // void adicionarAlertaBD();
-    // void fecharAlertaBD();
-    void situacaoPorTipo();
-    void notificar();
+    virtual void adicionarAlertaBD() = 0;
+    void fecharAlertaBD();
+    virtual void notificar() = 0;
 };
 
 #endif

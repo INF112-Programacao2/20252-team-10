@@ -8,6 +8,7 @@
 #include <iomanip>
 #include <iostream>
 
+using namespace mysqlx;
 
 Usuario** Gestor::usuariosCarregados = new Usuario*[10];
 int Gestor::quantidadeUsuarios = 0;
@@ -25,6 +26,13 @@ PosGraduacao** Gestor::posGraduandos = new PosGraduacao*[10];
 int Gestor::quantidadePos = 0;
 int Gestor::capacidadePos = 10;
 
+// Funcao auxiliar para confrimacao
+bool confirmacao(){
+    std::cout << "Tem certeza em realizar esta ação? Digite S para Sim e N para Não: ";
+    char resposta;
+    std::cin >> resposta;
+    return (resposta == 'S' || resposta == 's');
+}
 
 // Construtor
 Gestor::Gestor(std::string nome, std::string email, std::string senha, int nivelAcesso, Schema* db) :
@@ -322,9 +330,8 @@ void Gestor::associarLaboratorio(){
                             .bind("id", this->getId()) // Substitui o parâmetro ":id"
                             .execute();              // Executa a consulta
     Row row = result.fetchOne(); // Busca a primeira linha do resultado
-
-    if (!row.isNull()) {  // existe laboratório no banco
-        int idLaboratorioBD = row[0];
+    if (row && !row[0].isNull()) {  // existe laboratório no banco
+        int idLaboratorioBD = row[0].get<int>();
         // Caso memória não esteja sincronizada, for divergente do bd e do objeto
         if (this->laboratorio == nullptr || this->laboratorio->getId() != idLaboratorioBD) {
              // Percorre todos os laboratórios carregados em memória
@@ -369,13 +376,19 @@ void Gestor::associarLaboratorio(){
         std::cout << "Laboratório não encontrado.\n";
         return;
     }
+
+    // Confirmação antes de associar
+    if (!confirmacao()) {
+        std::cout << "Associação cancelada pelo usuário.\n";
+        return;
+    }
+
     // Associa ao gestor, armazena no objeto
     this->laboratorio = escolhido;
     //Adiciona o gestor dentro do laboratorio (armazena no vetor de gestores)
     escolhido->adicionarGestor(this);
 
     // Atualiza no DB
-    table = this->db->getTable("Gestor"); // Obtém a tabela novamente
     table.update()
          .set("laboratorio_id", id)       // Define o novo ID do laboratório
          .where("id = :id")               // Aplica a atualização ao gestor correto
@@ -563,15 +576,22 @@ if(this->db == nullptr){
     }
 }
 
-    // Metodo para vincular o gestor a um laboratorio
-    void Gestor::setLaboratorio(Laboratorio* lab) {
-        this->laboratorio = lab;
+void Gestor::acessarReagentesAlerta(){
+    if(confirmacao())
+    laboratorio->getAlertasGestor();
+    else {
+        std::cout << "Solicitação cancelada\n";
     }
+}
 
-    // Implementação da função virtual. O Gestor ignora a checagem de nível.
-    void Gestor::acessarReagenteRestrito(int idReagente) {
+// Metodo para vincular o gestor a um laboratorio
+void Gestor::setLaboratorio(Laboratorio* lab) {
+    this->laboratorio = lab;
+}
 
-        std::cout << "\n(Gestor) Acessando Reagente ID: " << idReagente << "\n";
+// Implementação da função virtual. O Gestor ignora a checagem de nível.
+void Gestor::acessarReagenteRestrito(int idReagente) {
+    std::cout << "\n(Gestor) Acessando Reagente ID: " << idReagente << "\n";
         if (db == nullptr) {
             std::cerr << "ERRO: Gestor não está conectado ao banco." << std::endl;
             return;
@@ -607,3 +627,73 @@ if(this->db == nullptr){
             std::cerr << "Erro ao acessar reagente: " << err.what() << std::endl;
         }
     }
+
+void Gestor::listarReagentesRestritos(){
+        if (db == nullptr) {
+            std::cerr << "ERRO: Gestor não está conectado ao banco." << std::endl;
+            return;
+        }
+
+        try {
+            Table reagenteTable = db->getTable("Reagente");
+
+            // Busca o reagente pelo ID
+            RowResult res = reagenteTable.select(
+                "id", "nome", "quantidade", "unidadeMedida",
+                "localArmazenamento", "dataValidade", "nivelAcesso"
+            ).where("nivelAcesso =: nivel").bind("nivelAcesso", 1).execute();
+
+            if (res.count() == 0) {
+                std::cout << "Reagentes restritos não encontrados\n" << std::endl;
+                return;
+            }
+            for(int i = 0; i < res.count(); i++){
+            // Pega os detalhes
+            Row row = res.fetchOne();
+
+            // O Gestor imprime tudo (não há checagem de nível)
+            std::cout << "Id:      " << row[0].get<int>() << "\n";
+            std::cout << "Nome:    " << row[1].get<std::string>() << "\n";
+            std::cout << "Qtde:    " << row[2].get<int>() << " " << row[3].get<std::string>() << "\n";
+            std::cout << "Local:   " << row[4].get<std::string>() << "\n";
+            std::cout << "Validade: " << row[5].get<std::string>() << "\n";
+            std::cout << "-------------------------------------\n";
+            }
+
+        } catch (const mysqlx::Error &err) {
+            std::cerr << "Erro ao acessar reagente: " << err.what() << std::endl;
+        }
+}
+
+void Gestor::menuReagentesRestritos(){
+        int opcao = 0;
+    do {
+
+                std::cout << "===== Menu Reagentes Restritos =====\n";
+                std::cout << "1. Listar reagentes restritos\n";
+                std::cout << "2. Retirar reagente restrito\n";
+                std::cout << "3. Registrar reagente restrito\n";
+                std::cout << "0. Sair do sistema\n";
+                std::cout << "Escolha uma opção: ";
+                std::cin >> opcao;
+                switch(opcao) {
+                case 1:
+                    this->listarReagentesRestritos();
+                    break;
+                case 2:
+                    std::cout << "implementacao em brebve\n";
+                case 3:
+                    std::cout << "implementacao em brebve\n";
+                case 0:
+                    std::cout << "Saindo...\n";
+                    break;
+                default:
+                    std::cout << "Opção inválida! Tente novamente.\n";
+            }
+
+    } while(opcao != 0);
+}
+
+bool Gestor::estaAssociado() const {
+    return laboratorio != nullptr;
+}
