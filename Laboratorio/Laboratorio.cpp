@@ -21,6 +21,7 @@ Laboratorio::Laboratorio(int id, const std::string &nome, const std::string &dep
     if (this->db) {
         // std::cout << "Laboratorio conectado ao DB. Reagentes sendo carregados" << std::endl;
         carregarReagentesDoDB();  //busca reagentes no banco
+        carregarAlertasDB();
     }
 }
 
@@ -72,7 +73,6 @@ void Laboratorio::carregarReagentesDoDB() {
                 } else {
                     std::string validade = "Desconhecida";
                 }
-
                 // Verifica se e Liquido (checa se a coluna do JOIN nao e nula)
                 if (!row[12].isNull()) {
                     double densidade = row[13].get<double>();
@@ -204,10 +204,28 @@ std::vector<Reagente *> Laboratorio::getReagentesCriticos()
         if (reagentes[i]->verificarNivelCritico())
         {
             criticos.push_back(reagentes[i]);
+            AlertaQuantidade(reagentes[i], 1);
         }
     }
     return criticos;
 }
+
+std::vector<Reagente *> Laboratorio::getReagentesVencidos() {
+    Table tableAlerta = db->getTable("Alerta");
+    std::vector<Reagente *> vencidos;
+    for (size_t i = 0; i < reagentes.size(); i++)
+    {
+        //Usa método do reagente para verificar se está crítico
+        if (reagentes[i]->estaVencido())
+        {
+            vencidos.push_back(reagentes[i]);
+            AlertaValidade(reagentes[i], 1);
+        }
+    }
+    return vencidos;
+}
+
+
 
 //Carrega todos os laboratórios do banco para a memória
 std::vector<Laboratorio*> Laboratorio::listarLaboratorios(Schema* db)
@@ -249,6 +267,71 @@ void Laboratorio::imprimirLaboratorios()
     }
     std::cout << "-----------------------------------------------\n";
 }
+
+
+// FUNCOES ALERTA
+
+void Laboratorio::carregarAlertasDB(){
+    try{
+    Alerta *novoAlerta = nullptr;
+    SqlResult res = db->getSession().sql("SELECT *, DATE_FORMAT(dataHoraEmissao, '%Y-%m-%d %H:%i:%s') as data_formatada FROM LabUFV.Alerta").execute();
+        int achados = res.count();
+        for(int i = 0; i < achados; i++){
+            Row row = res.fetchOne();
+            int id = row[0].get<int>();
+            int reagente_id = row[1].get<int>();
+            // pula data nao formatada
+            int tipo = row[3].get<int>();
+            bool situacao = row[4].get<bool>();
+            std::string dataHoraEmissao = row[5].get<std::string>();
+
+            Reagente *reagenteEmAlerta = nullptr;
+
+            for(int j = 0; j < reagentes.size(); j++){
+                if(reagentes.at(j)->getId() == id)
+                    reagenteEmAlerta = reagentes.at(j);
+            }
+
+            if(tipo == 1) { // se o tipo for validade
+                novoAlerta = new AlertaValidade(id, reagenteEmAlerta, dataHoraEmissao, situacao);
+            } else if (tipo == 2){ // se o tipo for quantidade critica
+                novoAlerta = new AlertaQuantidade(id, reagenteEmAlerta, dataHoraEmissao, situacao);
+            }
+
+            if(novoAlerta){
+                alertas.push_back(novoAlerta);
+            }
+      }} catch(mysqlx::Error &e){
+        std::cout << "Erro ao carregar Alertas" << std::endl;
+      }
+
+}
+
+
+
+void Laboratorio::getAlertasGestor() {
+    bool nenhumAlertaAtivo = true;
+    for(Alerta *a : alertas){
+        if(a->getSituacao() == true){
+            a->notificar();
+            nenhumAlertaAtivo = false;
+        }}
+    if(nenhumAlertaAtivo){
+        std::cout << "Nenhum alerta ativo!\n";
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
 
 // FUNÇÕES NÃO IMPLEMENTADAS
 
@@ -302,16 +385,8 @@ std::string Laboratorio::removerUsuario(Usuario *usuario) {
 */
 
 /*
-std::vector<Reagente *> Laboratorio::getReagentesVencidos() {
-    //Implementar obtenção de reagentes vencidos
-}
-*/
 
-/*
-std::string Laboratorio::getAlertasGestor() {
-    //Implementar relatório consolidado para gestores
-}
-*/
+
 
 /*
 std::string Laboratorio::getEstatisticas() {

@@ -8,6 +8,9 @@
 #include "../Retirada/Retirada.h"
 #include "../Reagente/reagenteLiquido.h"
 #include "../Reagente/reagenteSolido.h"
+#include "../Alerta/Alerta.h"
+#include "../Alerta/AlertaQuantidade.h"
+#include "../Alerta/AlertaValidade.h"
 
 
 //Declaração das classes
@@ -32,6 +35,7 @@ private:
     std::vector<PosGraduacao *> estudantesPosGraduacao;  //Estudantes de pós
     std::vector<Retirada *> retiradas;  //Histórico de retiradas
     std::vector<Gestor *> gestores;     //Gestores do laboratório
+    std::vector<Alerta *> alertas;      //Alertas do laboratorio
 
     //Método para verificar se usuário tem retiradas pendentes
     bool verificarRetiradasPendentes(Usuario *usuario);
@@ -80,9 +84,10 @@ public:
     std::string removerUsuario(Usuario *usuario);
 
     //Métodos de alerta
+    void carregarAlertasDB();
     std::vector<Reagente *> getReagentesCriticos();  // Estoque baixo
     std::vector<Reagente *> getReagentesVencidos();  // Data de validade passada
-    std::string getAlertasGestor();  // Relatório consolidado para gestores
+    void getAlertasGestor();  // Relatório consolidado para gestores
     std::string getEstatisticas();   // Estatísticas do laboratório
 
     //Getters

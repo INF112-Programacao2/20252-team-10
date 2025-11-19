@@ -11,6 +11,7 @@ void menuGestor(Gestor* gestor) {
     int opcao = 0;
     do {
             std::cout << "\n===== Menu Gestor =====\n";
+            std::cout << "2. Listar Alertas ativos\n";
             std::cout << "1. Associar Laboratório\n";
             std::cout << "0. Sair\n";
             std::cout << "Escolha uma opção: ";
@@ -165,7 +166,7 @@ int main() {
             }
     }
         if(usuarioLogado) {
-            if(usuarioLogado->getNivelAcesso() == 1){ 
+            if(usuarioLogado->getNivelAcesso() == 1){
             //Converte o ponteiro inteligente do tipo Usuario para do tipo Gestor
             // Isso é para acessar os metodos da classe Gestor
             Gestor *gestor = dynamic_cast<Gestor *>(usuarioLogado.get()); //Retorna o ponteiro do tipo Uusario e converte como gestor
@@ -181,6 +182,6 @@ int main() {
     // Limpa todos os laboratórios alocados dinamicamente
     Laboratorio::limparLaboratorios();
 
-   
+
     return 0;
 }
