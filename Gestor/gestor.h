@@ -51,6 +51,9 @@ class Gestor : public Usuario {
         //cadastra um novo reagente no laboratorio gerenciado por este gestor
         void cadastrarReagente();
         //O Gestor tem acesso total
+        void acessarReagentesAlerta();
+        void listarReagentesRestritos();
+        void menuReagentesRestritos();
         void acessarReagenteRestrito(int idReagente) override;
         bool estaAssociado() const;
 };

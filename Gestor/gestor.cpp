@@ -543,6 +543,14 @@ void Gestor::cadastrarReagente() {
         std::cerr << "Erro ao cadastrar reagente: " << err.what() << std::endl;
     }}
 
+void Gestor::acessarReagentesAlerta(){
+    if(confirmacao())
+    laboratorio->getAlertasGestor();
+    else {
+        std::cout << "Solicitação cancelada\n";
+    }
+}
+
 // Metodo para vincular o gestor a um laboratorio
 void Gestor::setLaboratorio(Laboratorio* lab) {
     this->laboratorio = lab;
@@ -586,6 +594,72 @@ void Gestor::acessarReagenteRestrito(int idReagente) {
             std::cerr << "Erro ao acessar reagente: " << err.what() << std::endl;
         }
     }
+
+void Gestor::listarReagentesRestritos(){
+        if (db == nullptr) {
+            std::cerr << "ERRO: Gestor não está conectado ao banco." << std::endl;
+            return;
+        }
+
+        try {
+            Table reagenteTable = db->getTable("Reagente");
+
+            // Busca o reagente pelo ID
+            RowResult res = reagenteTable.select(
+                "id", "nome", "quantidade", "unidadeMedida",
+                "localArmazenamento", "dataValidade", "nivelAcesso"
+            ).where("nivelAcesso =: nivel").bind("nivelAcesso", 1).execute();
+
+            if (res.count() == 0) {
+                std::cout << "Reagentes restritos não encontrados\n" << std::endl;
+                return;
+            }
+            for(int i = 0; i < res.count(); i++){
+            // Pega os detalhes
+            Row row = res.fetchOne();
+
+            // O Gestor imprime tudo (não há checagem de nível)
+            std::cout << "Id:      " << row[0].get<int>() << "\n";
+            std::cout << "Nome:    " << row[1].get<std::string>() << "\n";
+            std::cout << "Qtde:    " << row[2].get<int>() << " " << row[3].get<std::string>() << "\n";
+            std::cout << "Local:   " << row[4].get<std::string>() << "\n";
+            std::cout << "Validade: " << row[5].get<std::string>() << "\n";
+            std::cout << "-------------------------------------\n";
+            }
+
+        } catch (const mysqlx::Error &err) {
+            std::cerr << "Erro ao acessar reagente: " << err.what() << std::endl;
+        }
+}
+
+void Gestor::menuReagentesRestritos(){
+        int opcao = 0;
+    do {
+
+                std::cout << "===== Menu Reagentes Restritos =====\n";
+                std::cout << "1. Listar reagentes restritos\n";
+                std::cout << "2. Retirar reagente restrito\n";
+                std::cout << "3. Registrar reagente restrito\n";
+                std::cout << "0. Sair do sistema\n";
+                std::cout << "Escolha uma opção: ";
+                std::cin >> opcao;
+                switch(opcao) {
+                case 1:
+                    this->listarReagentesRestritos();
+                    break;
+                case 2:
+                    std::cout << "implementacao em brebve\n";
+                case 3:
+                    std::cout << "implementacao em brebve\n";
+                case 0:
+                    std::cout << "Saindo...\n";
+                    break;
+                default:
+                    std::cout << "Opção inválida! Tente novamente.\n";
+            }
+
+    } while(opcao != 0);
+}
 
 bool Gestor::estaAssociado() const {
     return laboratorio != nullptr;
