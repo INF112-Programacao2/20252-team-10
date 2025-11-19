@@ -48,7 +48,7 @@ public:
 
     //Cadastra novo reagente no sistema (banco e memória)
     void cadastrarNovoReagente(
-        std::string nome, std::string dataValidade, int quantidade,
+        int id, std::string nome, std::string dataValidade, int quantidade,
         int quantidadeCritica, std::string local, int nivelAcesso,
         std::string unidade, std::string marca, std::string codRef,
         int tipo, double densidade, double volume,

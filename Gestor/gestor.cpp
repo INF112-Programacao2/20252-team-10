@@ -4,6 +4,7 @@
 #include "../PosGraduacao/posgraduacao.h"
 #include "../Laboratorio/Laboratorio.h"
 #include <string>
+#include <limits>
 #include <iomanip>
 #include <iostream>
 
@@ -31,7 +32,7 @@ Gestor::Gestor(std::string nome, std::string email, std::string senha, int nivel
 
     //Inicializa o ponteiro como nulo
     this->laboratorio = nullptr;
-    };
+    }
 
 // Destrutor
 Gestor::~Gestor() {
@@ -419,6 +420,18 @@ void Gestor::associarEstudanteAoLaboratorio(Estudante* estudante, int idLaborato
 }
 // Metodo para cadastrar reagente
 void Gestor::cadastrarReagente() {
+    //Verifica se o gestor esta vinculado a um laboratorio
+    if(this->laboratorio == nullptr) {
+        std::cerr << "ERRO: O Gestor nao esta vinculado a um laboratorio." << std::endl;
+        return;
+    }
+
+//Verifica se tem conexao com o banco
+if(this->db == nullptr){
+    std::cerr << "ERRO: Gestor nao esta conectado ao banco de dados." << std::endl;
+    return;
+}
+
     // Variaveis para guardar os dados da tabela base Reagente
     std::string nome, dataValidade, local, unidade, marca, codRef;
     int quantidade, quantidadeCritica, nivelAcesso;
@@ -446,10 +459,33 @@ void Gestor::cadastrarReagente() {
     std::cout << "Codigo de Referencia: ";
     std::cin >> codRef;
 
-    std::cout << "Tipo de Reagente:\n";
-    std::cout << "Digite 1 se for Liquido \n Digite 2 se for Solido \n";
     int tipo;
-    std::cin >> tipo;
+    //verificação de entrada valida
+    while (true) {
+        try {
+            std::cout << "Digite o tipo (1 = Liquido, 2 = Solido): ";
+
+            if (!(std::cin >> tipo)) {
+            // cin falhou → jogamos uma exceção manualmente
+                throw std::invalid_argument("Entrada invalida");
+            }
+
+            if (tipo != 1 && tipo != 2) {
+                throw std::out_of_range("Tipo deve ser 1 ou 2");
+            }
+
+            break; // entrada correta → sai do while
+        }
+        catch (const std::exception& e) {
+            std::cerr << e.what() << "\n";
+
+        // limpa erro do cin
+            std::cin.clear();
+
+        // descarta o lixo do buffer
+            std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+        }
+    }
 
     // Declara as variaveis de tipo
     //densidade e volume so serao usadas se tipo == 1
@@ -474,13 +510,13 @@ void Gestor::cadastrarReagente() {
         std::cin.ignore(); // Ignora o 'Enter' da leitura da massa
         std::getline(std::cin, estadoFisico);
     }
-    // 3. Salva no Banco de Dados
+    // Salva no Banco de Dados
     try {
         // Insere na tabela base "Reagente"
         // O 'db' e herdado de Usuario e esta disponivel aqui
         Table reagenteTable = db->getTable("Reagente");
 
-        // Monta a query de insercao com os dados basicos
+        // Insere dados comuns
         Result res = reagenteTable.insert(
             "nome", "dataValidade", "quantidade", "quantidadeCritica",
             "localArmazenamento", "nivelAcesso", "unidadeMedida", "marca", "codigoReferencia"
@@ -488,7 +524,7 @@ void Gestor::cadastrarReagente() {
                  local, nivelAcesso, unidade, marca, codRef)
          .execute(); // Executa a insercao no DB
 
-        // Recupera o ID do reagente que acabou de ser criado
+        // Pega o ID do reagente que acabou de ser criado
         // (Precisamos desse ID para ligar com a tabela Liquido/Solido)
         int reagenteId = res.getAutoIncrementValue();
 
@@ -499,38 +535,33 @@ void Gestor::cadastrarReagente() {
                 .insert("id", "densidade", "volume")
                 .values(reagenteId, densidade, volume)
                 .execute();
-
-    if (laboratorio) { //
-        // Delega a tarefa de cadastrar regaente para o laboratorio
-        laboratorio->cadastrarNovoReagente(
-            nome, dataValidade, quantidade, quantidadeCritica, local,
-            nivelAcesso, unidade, marca, codRef, tipo,
-            densidade, volume, massa, estadoFisico
-        );
-    } else {
-        // Mensagem de erro se o gestor nao gerencia um laboratorio
-        std::cerr << "ERRO: Gestor nao esta alocado a um laboratorio." << std::endl;
             // Imprime a confirmacao para o usuario
             std::cout << "Reagente Liquido '" << nome << "' cadastrado com sucesso!\n";
-
-        }   if(tipo == 2) {
+        }
+        else if(tipo == 2) {
             // Se for solido, insere na tabela 'ReagenteSolido'
             db->getTable("ReagenteSolido")
                 .insert("id", "massa", "estadoFisico")
                 .values(reagenteId, massa, estadoFisico)
                 .execute();
-
             // Imprime a confirmacao para o usuario
             std::cout << "Reagente Solido '" << nome << "' cadastrado com sucesso!\n";
         }
 
-    }} catch (const mysqlx::Error &err) {
+        // Atualiza memoria do laboratorio
+        // Delega a tarefa de cadastrar regaente para o laboratorio
+        laboratorio->cadastrarNovoReagente(
+            reagenteId,nome, dataValidade, quantidade, quantidadeCritica,
+            local, nivelAcesso, unidade, marca, codRef, tipo,
+            densidade, volume, massa, estadoFisico
+        );
+     
+    } catch (const mysqlx::Error &err) {
         // Se qualquer operacao do 'try' falhar, captura o erro
         // (Ex: se o banco estiver offline ou a tabela nao existir)
         std::cerr << "Erro ao cadastrar reagente: " << err.what() << std::endl;
-    }}
-
-
+    }
+}
 
     // Metodo para vincular o gestor a um laboratorio
     void Gestor::setLaboratorio(Laboratorio* lab) {

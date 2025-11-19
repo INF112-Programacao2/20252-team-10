@@ -68,9 +68,9 @@ void Laboratorio::carregarReagentesDoDB() {
                 std::string unidade = row[9].get<std::string>();
                 // a validade formatada vem na ultima linha
                 if(!(row[row.colCount() - 1].isNull())){
-                    std::string validade = row[row.colCount() - 1].get<std::string>();
+                    validade = row[row.colCount() - 1].get<std::string>();
                 } else {
-                    std::string validade = "Desconhecida";
+                    validade = "Desconhecida";
                 }
 
                 // Verifica se e Liquido (checa se a coluna do JOIN nao e nula)
@@ -260,14 +260,43 @@ bool Laboratorio::verificarRetiradasPendentes(Usuario *usuario) {
 
 
 void Laboratorio::cadastrarNovoReagente(
-    std::string nome, std::string dataValidade, int quantidade,
+    int id, std::string nome, std::string dataValidade, int quantidade,
     int quantidadeCritica, std::string local, int nivelAcesso,
     std::string unidade, std::string marca, std::string codRef,
     int tipo, double densidade, double volume,
     double massa, std::string estadoFisico
 ) {
-    //Implementar cadastro de novo reagente no sistema
-    return;
+    //Cadastro de novo reagente no sistema
+    Reagente* novoReagente = nullptr;
+
+    try{
+    //Verificar o tipo para instanciar a classe correta
+        if(tipo == 1){ //Liquido
+            novoReagente = new ReagenteLiquido(
+                id, nome, dataValidade, quantidade, quantidadeCritica,
+                local, nivelAcesso, unidade, marca, codRef,
+                densidade, volume
+            );
+        }
+        else if (tipo == 2) { //solido
+           novoReagente = new ReagenteSolido (
+                id, nome, dataValidade, quantidade, quantidadeCritica,
+                local, nivelAcesso, unidade, marca, codRef,
+                massa, estadoFisico
+            ); 
+        }
+        else {
+            std::cerr << "Erro: Tipo de reagente inválido ao atualizar memória." << std::endl;
+            return;
+        }
+        //adiciona ao vetor de reagentes do laboratorio
+        this->reagentes.push_back(novoReagente);
+
+        std::cout << "Memória do laboratório atualizada com sucesso." << std::endl; 
+    }
+    catch (const std::exception& e){
+        std::cerr << "Erro ao criar objeto na memória: " << e.what() << std::endl;
+    }
 }
 
 

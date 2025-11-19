@@ -6,7 +6,6 @@
 #include <string>
 #include <mysql-cppconn/mysqlx/xdevapi.h>
 #include "../Reagente/reagente.h"
-#include "../Laboratorio/Laboratorio.h"
 #include "../PosGraduacao/posgraduacao.h"
 
 
