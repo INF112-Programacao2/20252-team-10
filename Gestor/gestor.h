@@ -17,6 +17,8 @@ class Gestor : public Usuario {
     public:
         //Construtor
         Gestor(std::string nome, std::string email, std::string senha, int nivelAcesso, Schema* db);
+        // Destrutor
+        ~Gestor();
 
         static Usuario** usuariosCarregados;
         static int quantidadeUsuarios;
@@ -33,10 +35,9 @@ class Gestor : public Usuario {
         static PosGraduacao** posGraduandos;
         static int quantidadePos;
         static int capacidadePos;
-
-        // Destrutor
-        ~Gestor();
-
+        //Getters
+        //Retorna o laboratório que o gestor está alocado
+        Laboratorio* getLaboratorio();
         //Demais funções
         void cadastrarUsuario();
         void deletarUsuario();
@@ -55,6 +56,11 @@ class Gestor : public Usuario {
         void menuReagentesRestritos();
         void acessarReagenteRestrito(int idReagente) override;
         bool estaAssociado() const;
+        // Método no qual o gestor pode geranciar seu laboratório como:
+        // Cadastrar, listar, editar, filtrar e retirar reagente
+        // Além de litar, associar e desassociar estudante
+        // Acessar reagentes em alerta e restrito
+        void gerenciarLaboratório();
 };
 
 #endif

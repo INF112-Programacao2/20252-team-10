@@ -11,7 +11,26 @@ void menuGestor(Gestor* gestor) {
     int opcao = 0;
     do {
             std::cout << "\n===== Menu Gestor =====\n";
+            // Imprime os dados dos gestor em uso 
+            std::cout << "Seja bem-vindo " << gestor->getNome() << " novamente!\n";
+            std::cout << "Dados do usuário: ("
+                        // Imprime o ID do usuario
+                        << gestor->getId(); << ") " 
+                        // Imprime o nome do usuario
+                        << gestor->getNome() << " - " 
+                        // Imprime o email do usuario
+                        << gestor->getEmail()  << " - "
+                        // Imprime o nome do laboratorio
+                        << gestor->getLaboratorio()->getNome(); << " - "
+                        // Imprime o nivel de acesso do usuario, em forma de texto, que representa o que é no sistema 
+                        << ((gestor->getNivelAcesso() == 1) ? "Gestor"
+                            : (gestor->getNivelAcesso() == 2) ? "Pós-graduação"
+                            : (gestor->getNivelAcesso() == 3) ? "Graduação"
+                            : "Desconhecido"); 
+            // Atributo que recebe true se estiver associado a um laboratorio e false, caso contrário                   
             bool associado = gestor->estaAssociado();
+
+            // Se for associado, imprime um menu especifico para este acso
             if(associado){
                 std::cout << "===== Menu Gestor =====\n";
                 std::cout << "1. Gerenciar laboratório\n";                     // Acessa o submenu de gestão do laboratório: dados, estatísticas, reagentes (cadastrar, editar, excluir)
@@ -27,7 +46,7 @@ void menuGestor(Gestor* gestor) {
                 std::cout << "11. Cadastrar gestor\n";                           // Adiciona novo gestor ao sistema (sem laboratório associado)
                 std::cout << "12. Listar usuários do sistema\n";                 // Lista todos os usuários cadastrados (gestores e estudantes)
                 std::cout << "13. Sair do laboratório\n";                        // Sai da gestão do laboratório (não desassocia automaticamente)
-            }else{
+            }else{ // Se nao estiver associado, imprime um menu para quem não é associaod a nada
                 // Menu quando o gestor não está associado a nenhum laboratório
                 std::cout << "1. Associar laboratório\n";   // Associa o gestor a um laboratório disponível (pede confirmação)
                 std::cout << "2. Cadastrar usuario\n";      // Cria um novo usuario no sistema (sem associação inicial)

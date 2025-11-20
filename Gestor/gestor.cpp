@@ -10,6 +10,14 @@
 
 using namespace mysqlx;
 
+// Funcao auxiliar para confrimacao
+bool confirmacao(){
+    std::cout << "Tem certeza em realizar esta ação? Digite S para Sim e N para Não: ";
+    char resposta;
+    std::cin >> resposta;
+    return (resposta == 'S' || resposta == 's');
+}
+
 Usuario** Gestor::usuariosCarregados = new Usuario*[10];
 int Gestor::quantidadeUsuarios = 0;
 int Gestor::capacidadeUsuarios = 10;
@@ -26,22 +34,14 @@ PosGraduacao** Gestor::posGraduandos = new PosGraduacao*[10];
 int Gestor::quantidadePos = 0;
 int Gestor::capacidadePos = 10;
 
-// Funcao auxiliar para confrimacao
-bool confirmacao(){
-    std::cout << "Tem certeza em realizar esta ação? Digite S para Sim e N para Não: ";
-    char resposta;
-    std::cin >> resposta;
-    return (resposta == 'S' || resposta == 's');
-}
+
 
 // Construtor
 Gestor::Gestor(std::string nome, std::string email, std::string senha, int nivelAcesso, Schema* db) :
     Usuario(nome, email, senha, nivelAcesso, db) {
-
-    //Inicializa o ponteiro como nulo
-    this->laboratorio = nullptr;
+        //Inicializa o ponteiro como nulo
+        this->laboratorio = nullptr;
     }
-
 // Destrutor
 Gestor::~Gestor() {
     for (int i = 0; i < quantidadeUsuarios; i++) {
@@ -62,6 +62,13 @@ Gestor::~Gestor() {
     posGraduandos = nullptr;
 
 }
+
+//Getters
+
+//Retorna o laboratório que o gestor está alocado
+Laboratorio* Laboratorio::getLaboratorio(){
+    return this->laboratorio;
+};
 
 // Demais funções
 void Gestor::cadastrarUsuario() {
@@ -696,4 +703,76 @@ void Gestor::menuReagentesRestritos(){
 
 bool Gestor::estaAssociado() const {
     return laboratorio != nullptr;
+}
+
+void Gestor::gerenciarLaboratorio() {
+    // Só para fins de confirmação, verifica se o gestor esta associado a um laboratorio
+    if (this->laboratorio == nullptr) {
+        std::cout << "Voce nao esta associado a nenhum laboratorio.\n";
+        return; // se for null, retorna 
+    }
+
+    int opcao; // Varivel que armazena a opcao do gestor dentro do gerenciar laboratorio
+
+    do {
+        std::cout << "\n===== Gerenciamento do Laboratorio =====\n";
+        std::cout << "Laboratorio: " << laboratorio->getNome() << "\n";
+        std::cout << "Departamento: " << laboratorio->getDepartamento() << "\n";
+        std::cout << "Quantidade de gestores: " << laboratorio->getTotalGestores() << "\n";
+        std::cout << "Quantidade de estudantes de Graduação: " << laboratorio->getTotalEstudantes() << "\n";
+        std::cout << "Quantidade de estudantes de Pós Graduação: " << laboratorio->getTotalEstudantes() << "\n";
+        std::cout << "Quantidade de estudantes: " << laboratorio->getTotalEstudantes() << "\n";
+        std::cout << "Quantidade de usuários alocados no Laboratorio: " << laboratorio->getTotalUsuarios() << "\n";
+
+        std::cout << "\nOpcoes:\n";
+        std::cout << "1. Cadastrar reagente\n";
+        std::cout << "2. Listar reagentes\n";
+        std::cout << "3. Retirar reagente\n";
+        std::cout << "4. Listar estudantes\n";
+        std::cout << "5. Reagentes em alerta\n";
+        std::cout << "6. Reagentes restritos\n";
+        std::cout << "7. Associar estudante\n";
+        std::cout << "0. Voltar\n";
+        std::cout << "Escolha: ";
+        std::cin >> opcao;
+
+        switch (opcao) {
+
+            case 1:
+                this->cadastrarReagente();
+                break;
+
+            case 2:
+                this->listarReagentes();
+                break;
+
+            case 3:
+                this->retirarReagente();
+                break;
+
+            case 4:
+                this->listarEstudantes();
+                break;
+
+            case 5:
+                this->reagentesEmAlerta();
+                break;
+
+            case 6:
+                this->reagentesRestritos();
+                break;
+
+            case 7:
+                this->associarEstudante();
+                break;
+
+            case 0:
+                std::cout << "Voltando ao menu anterior...\n";
+                break;
+
+            default:
+                std::cout << "Opcao invalida!\n";
+        }
+
+    } while (opcao != 0);
 }

@@ -30,7 +30,6 @@ private:
 
     //Vetores para armazenar os objetos em memória
     std::vector<Reagente *> reagentes;  //Lista de reagentes do lab
-    std::vector<Usuario *> usuarios;    //Lista de usuários do lab
     std::vector<Estudante *> estudantesGraduacao;  //Estudantes de graduação
     std::vector<PosGraduacao *> estudantesPosGraduacao;  //Estudantes de pós
     std::vector<Retirada *> retiradas;  //Histórico de retiradas
@@ -100,7 +99,7 @@ public:
     int getTotalEstudanteGraduacao() const { return estudantesGraduacao.size(); }
     int getTotalEstudantesPosGraducao() const { return estudantesPosGraduacao.size(); }
     int getTotalEstudantes() const { return (estudantesPosGraduacao.size() + estudantesGraduacao.size()); }
-    int getTotalUsuarios() const { return usuarios.size(); }
+    int getTotalUsuarios() const { return usuarios.size() + getTotalEstudantes(); }
     int getTotalRetiradas() const { return retiradas.size(); }
 
     //Representação em string do laboratório
