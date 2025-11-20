@@ -457,6 +457,277 @@ void Laboratorio::adicionarGestor(Gestor* gestor) {
     return;
 }
 
+// Retorna um vetor de ponterio com todos ussuarios fazendo um upcasting
+std::vector<Usuario *> Laboratorio::getUsuarios(){
+    std::vector<Usuario*> todosUsuarios;
+    // Adiciona gestores
+    for (Gestor* g : gestores)
+        todosUsuarios.push_back(static_cast<Usuario*>(g));
+
+    // Adiciona estudantes de graduação
+    for (Estudante* e : estudantesGraduacao)
+        todosUsuarios.push_back(static_cast<Usuario*>(e));
+
+    // Adiciona estudantes de pós
+    for (PosGraduacao* p : estudantesPosGraduacao)
+        todosUsuarios.push_back(static_cast<Usuario*>(p));
+
+    return todosUsuarios;
+};
+
+std::vector<Estudante*> Laboratorio::getEstudantes(){
+    std::vector<Estudante*> todosEstudantes;
+    // Adiciona estudantes de graduação
+    for (Estudante* e : estudantesGraduacao)
+        todosEstudantes.push_back(e);
+    // Adiciona estudantes de pós
+    for (PosGraduacao* p : estudantesPosGraduacao)
+        todosEstudantes.push_back(static_cast<Estudante*>(p));
+
+        return todosEstudantes;
+};
+
+void Laboratorio::imprimirEstudantes(const std::vector<Estudante*>& estudantes) {
+    std::cout << "\n-------------------------------------------------------------------------------\n";
+    std::cout << "| ID  | Matricula     | Nome                     | Email                  | Nivel          |\n";
+    std::cout << "-------------------------------------------------------------------------------\n";
+
+    for (Estudante* e : estudantes) {
+        std::string tipo;
+
+        if (e->getNivelAcesso() == 2) tipo = "Graduacao";
+        else if (e->getNivelAcesso() == 3) tipo = "Pos";
+        else tipo = "Desconhecido";
+
+        std::cout << "| "
+                    << std::setw(3)  << e->getId() << " | "
+                    << std::setw(12) << e->getMatricula() << " | "
+                    << std::setw(23) << e->getNome() << " | "
+                    << std::setw(20) << e->getEmail() << " | "
+                    << std::setw(13) << tipo << " |\n";
+    }
+
+    std::cout << "-------------------------------------------------------------------------------\n";
+}
+
+void Laboratorio::listarEstudantes() {
+    imprimirEstudantes(getEstudantes());
+
+    int opcao;
+    std::cout << "\nO que deseja fazer?\n";
+    std::cout << "1. Associar estudante\n";
+    std::cout << "2. Desassociar estudante\n";
+    std::cout << "0. Voltar\n";
+    std::cout << "Escolha: ";
+    std::cin >> opcao;
+
+    switch (opcao) {
+        case 1:
+            menuAssociarEstudante();
+            break;
+        case 2:
+            menuAssociarEstudante();
+            break;
+        case 0:
+            return;
+        default:
+            std::cout << "Opcao invalida!\n";
+            break;
+    }
+}
+
+std::string Laboratorio::associarEstudante(Estudante* estudante) {
+    if (!estudante) 
+        return "Erro: Estudante inválido.";
+
+    int idEstudante = estudante->getId();
+
+    // Verifica se já está associado
+    try {
+        Table associado = db->getTable("Associado");
+        RowResult r = associado.select("estudante_id")
+            .where("estudante_id = :id AND laboratorio_id = :lab")
+            .bind("id", idEstudante)
+            .bind("lab", this->id)
+            .execute();
+
+        if (r.count() > 0) return "Estudante já está associado ao laboratório.";
+    }
+    catch (const std::exception &e) {
+        return std::string("Erro no BD: ") + e.what();
+    }
+
+    // Inserir associação no BD
+    std::string papel;
+    std::cout << "\nDigite o papel do estudante no laboratório: ";
+    std::getline(std::cin >> std::ws, papel);   // lê linha inteira e limpa buffer
+
+    if (papel.empty()) 
+        papel = "Estudante";  // padrão
+
+    // Inserir associação no BD
+    try {
+        db->getTable("Associado")
+            .insert("estudante_id", "laboratorio_id", "papel")
+            .values(idEstudante, this->id, papel)
+            .execute();
+    }
+    catch (const std::exception& e) {
+        return std::string("Erro ao inserir no BD: ") + e.what();
+    }
+
+    // Inserir no vetor correto (graduação ou pós)
+    if (estudante->getNivel() == "Graduação") {
+        estudantesGraduacao.push_back(estudante);
+    } 
+    else {
+        PosGraduacao* pg = dynamic_cast<PosGraduacao*>(estudante);
+
+        if (pg) estudantesPosGraduacao.push_back(pg);
+        else estudantesGraduacao.push_back(estudante); // fallback
+    }
+
+    return "Estudante associado com sucesso!";
+}
+
+std::string Laboratorio::desassociarEstudante(Estudante* estudante) {
+    if (!estudante)
+        return "Erro: Estudante inválido.";
+
+    int idEstudante = estudante->getId();
+
+    // Verificar se ele realmente está associado
+    try {
+        Table associado = db->getTable("Associado");
+        RowResult r = associado.select("estudante_id")
+            .where("estudante_id = :id AND laboratorio_id = :lab")
+            .bind("id", idEstudante)
+            .bind("lab", this->id)
+            .execute();
+
+        if (r.count() == 0)
+            return "O estudante não está associado a este laboratório.";
+    }
+    catch (const std::exception &e) {
+        return std::string("Erro ao consultar BD: ") + e.what();
+    }
+
+    // 2. Remover do BD
+    try {
+        db->getTable("Associado")
+            .remove()
+            .where("estudante_id = :id AND laboratorio_id = :lab")
+            .bind("id", idEstudante)
+            .bind("lab", this->id)
+            .execute();
+    }
+    catch (const std::exception &e) {
+        return std::string("Erro ao remover do BD: ") + e.what();
+    }
+
+    // 3. Remover da memória
+    bool removido = false;
+
+    // Graduação
+    for (auto it = estudantesGraduacao.begin(); it != estudantesGraduacao.end(); ++it) {
+        if ((*it)->getId() == idEstudante) {
+            estudantesGraduacao.erase(it);
+            removido = true;
+            break;
+        }
+    }
+
+    // Pós
+    if (!removido) {
+        for (auto it = estudantesPosGraduacao.begin(); it != estudantesPosGraduacao.end(); ++it) {
+            if ((*it)->getId() == idEstudante) {
+                estudantesPosGraduacao.erase(it);
+                break;
+            }
+        }
+    }
+
+    return "Estudante desassociado com sucesso!";
+}
+void Laboratorio::menuDesassociarEstudante() {
+    std::cout << "\n=== Estudantes associados ===\n";
+
+    auto associados = getEstudantes();
+
+    if (associados.empty()) {
+        std::cout << "Nenhum estudante associado.\n";
+        return;
+    }
+
+    for (auto e : associados) {
+        std::cout << "ID: " << e->getId()
+                  << " | Nome: " << e->getNome() << "\n";
+    }
+
+    int id;
+    std::cout << "\nID para desassociar: ";
+    std::cin >> id;
+
+    Estudante* escolhido = nullptr;
+    for (auto e : associados) {
+        if (e->getId() == id) {
+            escolhido = e;
+            break;
+        }
+    }
+
+    if (!escolhido) {
+        std::cout << "Estudante não encontrado.\n";
+        return;
+    }
+
+    std::cout << desassociarEstudante(escolhido) << "\n";
+}
+
+void Laboratorio::menuAssociarEstudante() {
+    std::cout << "\n=== Estudantes disponíveis ===\n";
+
+    // todos alunos do sistema
+    std::vector<Usuario*> usuarios = Usuario::listarUsuarios();
+    std::vector<Estudante*> todos;
+
+    // filtra só estudantes
+    for (auto u : usuarios) {
+        if (auto e = dynamic_cast<Estudante*>(u))
+            todos.push_back(e);
+    }
+
+    if (todos.empty()) {
+        std::cout << "Nenhum estudante cadastrado.\n";
+        return;
+    }
+
+    for (auto e : todos) {
+        std::cout << "ID: " << e->getId()
+                  << " | Nome: " << e->getNome() << "\n";
+    }
+
+    int id;
+    std::cout << "\nID para associar: ";
+    std::cin >> id;
+
+    Estudante* escolhido = nullptr;
+    for (auto e : todos) {
+        if (e->getId() == id) {
+            escolhido = e;
+            break;
+        }
+    }
+
+    if (!escolhido) {
+        std::cout << "Estudante não encontrado.\n";
+        return;
+    }
+
+    std::cout << associarEstudante(escolhido) << "\n";
+}
+
+
 
 /*
 void Laboratorio::adicionarEstudante(Estudante* estudante) {

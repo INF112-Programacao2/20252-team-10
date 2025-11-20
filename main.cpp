@@ -43,17 +43,15 @@ void menuGestor(Gestor* gestor) {
                 std::cout << "===== Menu Gestor =====\n";
                 std::cout << "1. Gerenciar laboratório\n";                     // Acessa o submenu de gestão do laboratório: dados, estatísticas, reagentes (cadastrar, editar, excluir)
                 std::cout << "2. Listar estudantes do laboratório\n";           // Mostra todos os estudantes atualmente associados ao laboratório
-                std::cout << "3. Associar estudante\n";                         // Permite associar novos estudantes ao laboratório (pede confirmação)
-                std::cout << "4. Desassociar estudante\n";                      // Remove estudantes do laboratório (pede confirmação)
-                std::cout << "5. Acessar reagentes em alerta\n";               // Mostra reagentes próximos da validade ou com quantidade crítica
-                std::cout << "6. Acessar reagentes restritos\n";               // Acessa reagentes restritos que exigem autorização especial
-                std::cout << "7. Retirar reagente\n";                           // Retirar reagentes do laboratório (pede confirmação e registra retirada)
-                std::cout << "8. Deletar estudante\n";                          // Remove estudante do sistema completamente (pede confirmação)
-                std::cout << "9. Histórico de retiradas (últimos 7 dias)\n";    // Mostra o histórico de retiradas recentes do laboratório
-                std::cout << "10. Cadastrar estudante\n";                        // Adiciona novo estudante e associa automaticamente ao laboratório
-                std::cout << "11. Cadastrar gestor\n";                           // Adiciona novo gestor ao sistema (sem laboratório associado)
-                std::cout << "12. Listar usuários do sistema\n";                 // Lista todos os usuários cadastrados (gestores e estudantes)
-                std::cout << "13. Sair do laboratório\n";                        // Sai da gestão do laboratório (não desassocia automaticamente)
+                // std::cout << "3. Acessar reagentes em alerta\n";               // Mostra reagentes próximos da validade ou com quantidade crítica
+                // std::cout << "4. Acessar reagentes restritos\n";               // Acessa reagentes restritos que exigem autorização especial
+                // std::cout << "5. Retirar reagente\n";                           // Retirar reagentes do laboratório (pede confirmação e registra retirada)
+                // std::cout << "8. Deletar estudante\n";                          // Remove estudante do sistema completamente (pede confirmação)
+                // std::cout << "9. Histórico de retiradas (últimos 7 dias)\n";    // Mostra o histórico de retiradas recentes do laboratório
+                // std::cout << "10. Cadastrar estudante\n";                        // Adiciona novo estudante e associa automaticamente ao laboratório
+                // std::cout << "11. Cadastrar gestor\n";                           // Adiciona novo gestor ao sistema (sem laboratório associado)
+                // std::cout << "12. Listar usuários do sistema\n";                 // Lista todos os usuários cadastrados (gestores e estudantes)
+                // std::cout << "13. Sair do laboratório\n";                        // Sai da gestão do laboratório (não desassocia automaticamente)
             }else{ // Se nao estiver associado, imprime um menu para quem não é associaod a nada
                 // Menu quando o gestor não está associado a nenhum laboratório
                 std::cout << "1. Associar laboratório\n";   // Associa o gestor a um laboratório disponível (pede confirmação)
@@ -71,28 +69,28 @@ void menuGestor(Gestor* gestor) {
                 else gestor->associarLaboratorio();
                 break;
             case 2:
-                if(associado) gestor->listarEstudantes();
+                if(associado) gestor->getLaboratorio()->listarEstudantes();
                 else gestor->cadastrarUsuario();
                 break;
-            case 3:
-                if(associado) gestor->associarEstudantes();
-                else gestor->listarUsuarios();
-                break;
-            case 4:
-                if(associado) gestor->desassociarEstudantes();
-                break;
-            case 5:
-                if(associado) gestor->menuReagentesRestritos();
-                else gestor->deletarGestor();
-                break;
-            case 6: if(associado) gestor->menuReagentesRestritos(); break;
-            case 7: if(associado) gestor->retirarReagente(); break;
-            case 8: if(associado) gestor->deletarEstudante(); break;
-            case 9: if(associado) gestor->historicoRetiradas(); break;
-            case 10: if(associado) gestor->cadastrarEstudante(); break;
-            case 11: if(associado) gestor->cadastrarGestor(); break;
-            case 12: if(associado) gestor->listarUsuarios(); break;
-            case 13: if(associado) gestor->sairLaboratorio(); break;
+            // case 3:
+            //     if(associado) gestor->associarEstudantes();
+            //     else gestor->listarUsuarios();
+            //     break;
+            // case 4:
+            //     if(associado) gestor->desassociarEstudantes();
+            //     break;
+            // case 5:
+            //     if(associado) gestor->menuReagentesRestritos();
+            //     else gestor->deletarGestor();
+            //     break;
+            // case 6: if(associado) gestor->menuReagentesRestritos(); break;
+            // case 7: if(associado) gestor->retirarReagente(); break;
+            // case 8: if(associado) gestor->deletarEstudante(); break;
+            // case 9: if(associado) gestor->historicoRetiradas(); break;
+            // case 10: if(associado) gestor->cadastrarEstudante(); break;
+            // case 11: if(associado) gestor->cadastrarGestor(); break;
+            // case 12: if(associado) gestor->listarUsuarios(); break;
+            // case 13: if(associado) gestor->sairLaboratorio(); break;
             case 0:
                 std::cout << "Saindo...\n";
                 break;

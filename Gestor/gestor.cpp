@@ -65,7 +65,7 @@ Gestor::~Gestor() {
 //Getters
 
 //Retorna o laboratório que o gestor está alocado
-Laboratorio* Laboratorio::getLaboratorio(){
+Laboratorio* Gestor::getLaboratorio(){
     return this->laboratorio;
 };
 
@@ -238,7 +238,7 @@ void Gestor::listarUsuarios() {
               << "\n";
     std::cout << std::string(65, '-') << "\n";
     //laco que percorre o vetor de usuarios do laboratorio
-    for (Usuario* u : laboratorio->getVetorUsuarios()) {
+    for (Usuario* u : laboratorio->getUsuarios()) {
         std::string tipo;
         if (u->getNivelAcesso() == 1) tipo = "Gestor";
         else if (u->getNivelAcesso() == 2) tipo = "Graduacao";
@@ -254,7 +254,6 @@ void Gestor::listarUsuarios() {
     }
     std::cout << std::string(65, '-') << "\n";
 }
-
 
 void Gestor::deletarUsuario() {
     std::cout << "Digite o email do usuário a ser deletado: ";
