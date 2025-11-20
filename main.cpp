@@ -7,6 +7,14 @@
 #include <iostream>
 using namespace mysqlx;
 
+// Função auxiliar para confirmação 
+bool confirmacao() {
+    std::cout << "Tem certeza em realizar esta ação? Digite S para Sim e N para Não: ";
+    char resposta;
+    std::cin >> resposta;
+    return (resposta == 'S' || resposta == 's');
+}
+
 void menuGestor(Gestor* gestor) {
     int opcao = 0;
     do {
@@ -53,11 +61,12 @@ void menuGestor(Gestor* gestor) {
                 break;
             case 4:
                 if(associado) gestor->desassociarEstudantes();
+                break;
             case 5:
                 if(associado) gestor->menuReagentesRestritos();
                 else gestor->deletarGestor();
                 break;
-            case 6: if(associado) gestor->menuReagentesRestritos();
+            case 6: if(associado) gestor->menuReagentesRestritos(); break;
             case 7: if(associado) gestor->retirarReagente(); break;
             case 8: if(associado) gestor->deletarEstudante(); break;
             case 9: if(associado) gestor->historicoRetiradas(); break;
