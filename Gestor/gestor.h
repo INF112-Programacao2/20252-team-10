@@ -7,6 +7,7 @@
 #include <mysql-cppconn/mysqlx/xdevapi.h>
 #include "../Reagente/reagente.h"
 #include "../PosGraduacao/posgraduacao.h"
+#include "../Estudante/estudante.h"
 
 
 using namespace mysqlx;
@@ -45,6 +46,15 @@ class Gestor : public Usuario {
         void associarLaboratorio();
         void associarEstudanteAoLaboratorio(Estudante* estudante, int idLaboratorio, const std::string& papel);
         void carregarUsuarios();
+        
+        //Menu principal de gerenciamento do laboratório
+        void gerenciarLaboratorio();
+
+        //Funcionalidades do Menu
+        void listarReagentesDoLaboratorio();
+        void editarReagente();
+        void excluirReagente();
+        void filtrarReagentes();
 
         //sets
         void setLaboratorio(Laboratorio* lab);

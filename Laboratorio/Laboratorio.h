@@ -89,6 +89,9 @@ public:
     void getAlertasGestor();  // Relatório consolidado para gestores
     std::string getEstatisticas();   // Estatísticas do laboratório
 
+    // Remove um reagente do vetor em memória pelo ID
+    void removerReagenteDaMemoria(int idReagente);
+
     //Getters
     std::vector<Usuario *> getVetorUsuarios() { return usuarios; }
     int getId() const { return id; }

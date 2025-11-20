@@ -382,7 +382,22 @@ void Laboratorio::cadastrarNovoReagente(
     }
 }
 
+void Laboratorio::removerReagenteDaMemoria(int idReagente){
+    //Percorre o vetor para remover com segurança
+    for(size_t i=0; i<reagentes.size(); i++){
+        if(reagentes[i]->getId() == idReagente){
 
+            delete reagentes[i]; //libera memoria do objeto
+            //remove o ponteiro do vetor na posicao i
+            reagentes.erase(reagentes.begin()+i);
+
+            std::cout << "Reagente removido da memória do sistema!\n";
+            return;//sai da funcao pra evitar erro de indice
+
+        }
+    }
+    std::cout << "Reagente não encontrado na memória local.\n";
+}
 /*
 std::vector<Reagente *> Laboratorio::listarReagentesPorLocal(const std::string &local) {
     //Implementar listagem de reagentes por local de armazenamento
