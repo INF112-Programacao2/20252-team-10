@@ -48,7 +48,8 @@ void Laboratorio::carregarReagentesDoDB() {
         std::vector<Row> rowsBase = resBase.fetchAll();  //Pega todas as linhas
 
         //LEFT JOIN é usado para pegar dados de Liquido ou Solido
-        SqlResult res = db->getSession().sql("SELECT *, DATE_FORMAT(validade, '%Y-%m-%d') as data_formatada FROM LabUFV.Reagente AS R LEFT JOIN LabUFV.ReagenteLiquido AS RL ON R.id = RL.id LEFT JOIN LabUFV.ReagenteSolido AS RS ON R.id = RS.id").execute();
+        //ORDER BY Permite listar reagentes em ordem alfabetica
+        SqlResult res = db->getSession().sql("SELECT *, DATE_FORMAT(validade, '%Y-%m-%d') as data_formatada FROM LabUFV.Reagente AS R LEFT JOIN LabUFV.ReagenteLiquido AS RL ON R.id = RL.id LEFT JOIN LabUFV.ReagenteSolido AS RS ON R.id = RS.id ORDER BY R.nome ASC").execute();
 
 
         for(int j = 0; j < res.count(); j++){

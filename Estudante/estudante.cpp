@@ -2,6 +2,7 @@
 #include "../Laboratorio/Laboratorio.h"
 #include <iostream>
 #include <vector>
+#include <iomanip>
 using namespace mysqlx;
 
 // Construtor
@@ -38,7 +39,7 @@ void Estudante::setNivel(std::string nivel){
 //Adicionar laboratorio a estudante
 void Estudante::adicionarLaboratorio(Laboratorio * laboratorio){
     // Verifica se o laboratorio já esta associado no objeto
-    for (int i = 0; i > this->laboratorios.size(); i++) {
+    for (int i = 0; i < this->laboratorios.size(); i++) {
         if (laboratorios[i]->getId() == laboratorio->getId()) { // Verifica se o ID é igual, se for retorna
             std::cout << getNome() <<" já possui o " << laboratorio->getNome() << ".\n";
             return;
@@ -72,7 +73,7 @@ void Estudante::removerLaboratorioObjeto(Laboratorio* laboratorio) {
 void Estudante::removerLaboratorio(Laboratorio* laboratorio, Schema* db) {
     // Verifica se o ponteiro do laboratorio e db são inválidos
     if (!laboratorio || !db) {
-        std::cerr << "[Erro] Paramêtros do laboratorio são nulos." << std::endl;
+        std::cerr << "[Erro] Parametros do laboratorio são nulos." << std::endl;
         return;
     }
     // Acessa a tabela associado
@@ -99,7 +100,7 @@ void Estudante::removerLaboratorio(Laboratorio* laboratorio, Schema* db) {
             .bind("estudanteId", this->getId())
             .bind("laboratorioId", laboratorio->getId())
             .execute()
-            .getAffectedItemsCount(); // Coleta o número dede linhas afetadas com o delete
+            .getAffectedItemsCount(); // Coleta o número de linhas afetadas com o delete
 
         if (dadosAfetados > 0) {
             std::cout << "Associação(ões) removida(s) com sucesso! (" << dadosAfetados << " registro(s))" << std::endl;
@@ -132,7 +133,7 @@ void Estudante::associarLaboratorio(Laboratorio* laboratorio, const std::string&
                                     .where("estudante_id = :estudanteId AND laboratorio_id = :laboratorioId AND papel = :papel") // mostrar quando o dado sao os dado pelo metodo
                                     .bind("estudanteId", this->getId()) // pega o id do estudante
                                     .bind("laboratorioId", laboratorio->getId()) // pega o id do laboratorio
-                                    .bind("papel", papel) // pega o paapel do estdunate
+                                    .bind("papel", papel) // pega o papel do estudante
                                     .execute(); // faz a consulta
 
             if (associadoResult.count() > 0) { // se a consulta resultar for maior que 0
@@ -217,4 +218,102 @@ void Estudante::acessarReagenteRestrito(int idReagente) {
     } catch (const mysqlx::Error &err) {
         std::cerr << "Erro ao acessar reagente: " << err.what() << std::endl;
     }
+}
+
+// Lista os laboratórios associados ao estudante
+void Estudante::acessarLaboratorios() {
+    if (laboratorios.empty()) {
+        std::cout << "\nVocê não está associado a nenhum laboratório.\n";
+        return;
+    }
+
+    std::cout << "\n Seus Laboratórios \n";
+    for (const auto& lab : laboratorios) {
+        std::cout << "- ID: " << lab->getId() 
+                  << " | Nome: " << lab->getNome() 
+                  << " | Dep: " << lab->getDepartamento() << "\n";
+    }
+    std::cout << "\n";
+}
+
+// Lista reagentes de todos os laboratórios do estudante
+void Estudante::consultarEstoque() {
+    if (this->laboratorios.empty()) {
+        std::cout << "Você não está associado a nenhum laboratório.\n";
+        return;
+    }
+
+    std::cout << "\n Consulta de Estoque \n";
+    
+    for (Laboratorio* lab : this->laboratorios) {
+        std::cout << "\n>> Laboratório: " << lab->getNome() << "\n";
+        
+        // Usa a função do laboratório para pegar a lista completa
+        std::vector<Reagente*> lista = lab->listarReagentes("");
+
+        if (lista.empty()) {
+            std::cout << "   (Nenhum reagente cadastrado)\n";
+            continue;
+        }
+
+        std::cout << std::left 
+                  << std::setw(25) << "Nome" 
+                  << std::setw(15) << "Qtd" 
+                  << std::setw(15) << "Nível" << "\n";
+        std::cout << "\n";
+
+        for (Reagente* r : lista) {
+            // Define a string de nível
+            std::string nivelStr;
+            if(r->getNivelAcesso() == 1) nivelStr = "Restrito";
+            else if(r->getNivelAcesso() == 2) nivelStr = "Livre";
+            else nivelStr = "Pós-Grad";
+
+            std::cout << std::left 
+                      << std::setw(25) << r->getNome()
+                      << std::setw(15) << (std::to_string(r->getQuantidade()) + " " + r->getUnidadeMedida())
+                      << std::setw(15) << nivelStr << "\n";
+        }
+    }
+    std::cout << "\n";
+}
+
+// Realiza a retirada de um reagente
+void Estudante::retirarReagente() {
+    if (laboratorios.empty()) {
+        std::cout << "Você precisa estar associado a um laboratório para retirar reagentes.\n";
+        return;
+    }
+
+    //Escolher o Laboratório
+    std::cout << "\n--- Retirada de Reagente ---\n";
+    std::cout << "Escolha o laboratório:\n";
+    for (size_t i = 0; i < laboratorios.size(); i++) {
+        std::cout << i + 1 << ". " << laboratorios[i]->getNome() << "\n";
+    }
+    std::cout << "Opção: ";
+    int opLab;
+    std::cin >> opLab;
+
+    if (opLab < 1 || opLab > (int)laboratorios.size()) {
+        std::cout << "Opção inválida.\n";
+        return;
+    }
+    Laboratorio* labEscolhido = laboratorios[opLab - 1];
+
+    // Escolher o Reagente (Busca por nome)
+    std::cout << "Digite o nome do reagente: ";
+    std::string nomeReagente;
+    std::cin.ignore();
+    std::getline(std::cin, nomeReagente);
+
+    // Escolher a Quantidade
+    std::cout << "Digite a quantidade a retirar: ";
+    float qtd;
+    std::cin >> qtd;
+
+    // Processar Retirada (O Laboratório faz as verificações de estoque e validade)
+    std::string resultado = labEscolhido->registrarRetirada(this, nomeReagente, qtd);
+    
+    std::cout << "\nResultado: " << resultado << "\n";
 }
