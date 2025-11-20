@@ -321,27 +321,6 @@ void Laboratorio::getAlertasGestor() {
     }
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-// FUNÇÕES NÃO IMPLEMENTADAS
-
-/*
-bool Laboratorio::verificarRetiradasPendentes(Usuario *usuario) {
-    //Implementar verificação de retiradas pendentes
-}
-*/
-
-
 void Laboratorio::cadastrarNovoReagente(
     int id, std::string nome, std::string dataValidade, int quantidade,
     int quantidadeCritica, std::string local, int nivelAcesso,
@@ -398,59 +377,11 @@ void Laboratorio::removerReagenteDaMemoria(int idReagente){
     }
     std::cout << "Reagente não encontrado na memória local.\n";
 }
-/*
-std::vector<Reagente *> Laboratorio::listarReagentesPorLocal(const std::string &local) {
-    //Implementar listagem de reagentes por local de armazenamento
-}
-*/
-
-/*
-std::vector<Retirada *> Laboratorio::listarRetiradasUsuario(Usuario *usuario) {
-    //Implementar listagem de retiradas por usuário
-}
-*/
-
-/*
-std::vector<Retirada *> Laboratorio::getHistoricoRecente() {
-    //Implementar obtenção das 10 retiradas mais recentes
-}
-*/
-
-std::string Laboratorio::adicionarUsuario(Usuario *usuario) {
-    //Implementar adição de usuário ao laboratório
-    return "Implementação em breve";
-}
-
-
-/*
-std::string Laboratorio::removerUsuario(Usuario *usuario) {
-    //Implementar remoção de usuário do laboratório
-}
-*/
-
-/*
-
-
-
-/*
-std::string Laboratorio::getEstatisticas() {
-    //Implementar estatísticas do laboratório
-}
-*/
-
-/*
-std::string Laboratorio::toString() const {
-    //Implementar representação em string do laboratório
-}
-*/
-
 
 void Laboratorio::limparLaboratorios() {
     //Implementar limpeza de memória de todos os laboratórios
     return;
 }
-
-
 
 void Laboratorio::adicionarGestor(Gestor* gestor) {
     //Implementar adição de gestor
@@ -590,13 +521,15 @@ std::string Laboratorio::associarEstudante(Estudante* estudante) {
     return "Estudante associado com sucesso!";
 }
 
-std::string Laboratorio::desassociarEstudante(Estudante* estudante) {
-    if (!estudante)
-        return "Erro: Estudante inválido.";
+void Laboratorio::desassociarEstudante(Estudante* estudante) {
+    if (estudante == nullptr) {
+        std::cout << "Erro: Estudante inválido.\n";
+        return;
+    }
 
     int idEstudante = estudante->getId();
 
-    // Verificar se ele realmente está associado
+    // Verificar no BD se está associado
     try {
         Table associado = db->getTable("Associado");
         RowResult r = associado.select("estudante_id")
@@ -605,14 +538,17 @@ std::string Laboratorio::desassociarEstudante(Estudante* estudante) {
             .bind("lab", this->id)
             .execute();
 
-        if (r.count() == 0)
-            return "O estudante não está associado a este laboratório.";
+        if (r.count() == 0) {
+            std::cout << "O estudante não está associado a este laboratório.\n";
+            return;
+        }
     }
     catch (const std::exception &e) {
-        return std::string("Erro ao consultar BD: ") + e.what();
+        std::cout << "Erro ao consultar BD: " << e.what() << "\n";
+        return;
     }
 
-    // 2. Remover do BD
+    // Remover no BD
     try {
         db->getTable("Associado")
             .remove()
@@ -622,44 +558,49 @@ std::string Laboratorio::desassociarEstudante(Estudante* estudante) {
             .execute();
     }
     catch (const std::exception &e) {
-        return std::string("Erro ao remover do BD: ") + e.what();
+        std::cout << "Erro ao remover no BD: " << e.what() << "\n";
+        return;
     }
 
-    // 3. Remover da memória
+    // Remover em memória (graduação)
     bool removido = false;
 
-    // Graduação
-    for (auto it = estudantesGraduacao.begin(); it != estudantesGraduacao.end(); ++it) {
-        if ((*it)->getId() == idEstudante) {
-            estudantesGraduacao.erase(it);
+    for (int i = 0; i < (int)estudantesGraduacao.size(); i++) {
+        if (estudantesGraduacao[i]->getId() == idEstudante) {
+            estudantesGraduacao.erase(estudantesGraduacao.begin() + i);
             removido = true;
             break;
         }
     }
 
-    // Pós
+    //  Remover em memória (pós), se ainda não removido
     if (!removido) {
-        for (auto it = estudantesPosGraduacao.begin(); it != estudantesPosGraduacao.end(); ++it) {
-            if ((*it)->getId() == idEstudante) {
-                estudantesPosGraduacao.erase(it);
+        for (int i = 0; i < (int)estudantesPosGraduacao.size(); i++) {
+            if (estudantesPosGraduacao[i]->getId() == idEstudante) {
+                estudantesPosGraduacao.erase(estudantesPosGraduacao.begin() + i);
                 break;
             }
         }
-    }
+    }   
 
-    return "Estudante desassociado com sucesso!";
+    // Mensagem final
+    std::cout << "Estudante desassociado com sucesso!\n";
 }
+
 void Laboratorio::menuDesassociarEstudante() {
     std::cout << "\n=== Estudantes associados ===\n";
 
-    auto associados = getEstudantes();
+    // pega o vetor explicitamente
+    std::vector<Estudante*> associados = getEstudantes();
 
     if (associados.empty()) {
         std::cout << "Nenhum estudante associado.\n";
         return;
     }
 
-    for (auto e : associados) {
+    // lista os estudantes associados
+    for (int i = 0; i < (int)associados.size(); i++) {
+        Estudante* e = associados[i];
         std::cout << "ID: " << e->getId()
                   << " | Nome: " << e->getNome() << "\n";
     }
@@ -668,65 +609,96 @@ void Laboratorio::menuDesassociarEstudante() {
     std::cout << "\nID para desassociar: ";
     std::cin >> id;
 
+    // procurar estudante pelo ID
     Estudante* escolhido = nullptr;
-    for (auto e : associados) {
+    for (int i = 0; i < (int)associados.size(); i++) {
+        Estudante* e = associados[i];
         if (e->getId() == id) {
             escolhido = e;
             break;
         }
     }
 
-    if (!escolhido) {
+    if (escolhido == nullptr) {
         std::cout << "Estudante não encontrado.\n";
         return;
     }
 
-    std::cout << desassociarEstudante(escolhido) << "\n";
+    // desassocia diretamente (sua função já imprime mensagens)
+    desassociarEstudante(escolhido);
 }
 
+
 void Laboratorio::menuAssociarEstudante() {
-    std::cout << "\n=== Estudantes disponíveis ===\n";
+std::cout << "\n=== Estudantes e Pós-Graduandos disponíveis ===\n";
+    // Carrega listas já existentes no Gestor
+    Estudante** estudantes = Gestor::estudantes;
+    int qtdEstudantesGraduacao = Gestor::quantidadeEstudantes;
 
-    // todos alunos do sistema
-    std::vector<Usuario*> usuarios = Usuario::listarUsuarios();
-    std::vector<Estudante*> todos;
+    PosGraduacao** pos = Gestor::posGraduandos;
+    int qtdEstudantesPos = Gestor::quantidadePos;
 
-    // filtra só estudantes
-    for (auto u : usuarios) {
-        if (auto e = dynamic_cast<Estudante*>(u))
-            todos.push_back(e);
-    }
-
-    if (todos.empty()) {
-        std::cout << "Nenhum estudante cadastrado.\n";
+    if (qtdEstudantesGraduacao == 0 && qtdEstudantesPos == 0) {
+        std::cout << "Nenhum estudante encontrado.\n";
         return;
     }
 
-    for (auto e : todos) {
-        std::cout << "ID: " << e->getId()
-                  << " | Nome: " << e->getNome() << "\n";
+    // Lista estudantes
+    if (qtdEstudantesGraduacao > 0) {
+        std::cout << "\n======Estudantes de Graduação=====\n";
+        for (int i = 0; i < qtdEstudantesGraduacao; i++) {
+            std::cout << "ID: " << estudantes[i]->getId()
+                    << " | Nome: " << estudantes[i]->getNome() << "\n";
+        }
+    }
+
+    // Lista pós
+    if (qtdEstudantesPos > 0) {
+        std::cout << "\n--- Pós-Graduandos ---\n";
+        for (int i = 0; i < qtdEstudantesPos; i++) {
+            std::cout << "ID: " << pos[i]->getId()
+                      << " | Nome: " << pos[i]->getNome() << "\n";
+        }
     }
 
     int id;
-    std::cout << "\nID para associar: ";
+    std::cout << "\nDigite o ID para associar: ";
     std::cin >> id;
 
-    Estudante* escolhido = nullptr;
-    for (auto e : todos) {
-        if (e->getId() == id) {
-            escolhido = e;
+    // Dois ponteiros SEPARADOS
+    Estudante* estudanteSelecionado = nullptr;
+    PosGraduacao* posSelecionado = nullptr;
+
+    // Procura entre os estudantes
+    for (int i = 0; i < qtdEstudantesGraduacao; i++) {
+        if (estudantes[i]->getId() == id) {
+            estudanteSelecionado = estudantes[i];
             break;
         }
     }
 
-    if (!escolhido) {
-        std::cout << "Estudante não encontrado.\n";
+    // Só busca pós se não encontrou estudante
+    if (!estudanteSelecionado) {
+        for (int i = 0; i < qtdEstudantesPos; i++) {
+            if (pos[i]->getId() == id) {
+                posSelecionado = pos[i];
+                break;
+            }
+        }
+    }
+
+    if (!estudanteSelecionado && !posSelecionado) {
+        std::cout << "Nenhum estudante ou pós-graduando com esse ID.\n";
         return;
     }
 
-    std::cout << associarEstudante(escolhido) << "\n";
+    // Associar ao laboratório
+    if (estudanteSelecionado) {
+        std::cout << associarEstudante(estudanteSel) << "\n";
+    } else {
+        std::cout << associarEstudante(posSel) << "\n";
+    }
 }
-
 
 
 /*

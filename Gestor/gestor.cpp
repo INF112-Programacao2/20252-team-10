@@ -255,6 +255,7 @@ void Gestor::listarUsuarios() {
     std::cout << std::string(65, '-') << "\n";
 }
 
+
 void Gestor::deletarUsuario() {
     std::cout << "Digite o email do usuário a ser deletado: ";
     std::string email;
