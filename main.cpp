@@ -89,8 +89,6 @@ void menuGestor(Gestor* gestor) {
             case 7: if(associado) gestor->retirarReagente(); break;
             case 8: if(associado) gestor->deletarUsuario(); break;
             case 9: if(associado) gestor->historicoRetiradas(); break;
-            case 10: if(associado) gestor->cadastrarEstudante(); break;
-            case 11: if(associado) gestor->cadastrarGestor(); break;
             case 12: if(associado) gestor->listarUsuarios(); break;
             case 13: if(associado) gestor->sairLaboratorio(); break;
             case 0:
@@ -189,7 +187,6 @@ int main() {
     }
     // ===================== Sistema =====================
     // ===================== Login =====================
-    Laboratorio::listarLaboratorios(db); // Carrega os laboratorios
     std::cout << "======Sejam bem-vindo ao LabUFV!======\n" << std::endl;
     std::cout << "Para realizar qualquer atividade, é necessário fazer Login\n" << std::endl;
     std::string email, senha; // Variáveis para armazenar as credenciais de login
@@ -272,6 +269,9 @@ int main() {
             }
     }
         if(usuarioLogado) {
+            Gestor::carregarUsuarios(db); // Carrega os dados dos usuarios
+            Laboratorio::listarLaboratorios(db); // Carrega os laboratorios
+            Gestor::carregarAssociacoes(db);
             if(usuarioLogado->getNivelAcesso() == 1){
             //Converte o ponteiro inteligente do tipo Usuario para do tipo Gestor
             // Isso é para acessar os metodos da classe Gestor

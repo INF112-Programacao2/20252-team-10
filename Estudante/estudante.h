@@ -13,7 +13,7 @@ class Estudante : public Usuario{
         std::string matricula;
         std::string curso;
         std::string nivel;
-        std::vector<Laboratorio*> laboratorios;
+        std::vector<std::pair<Laboratorio*, std::string>> laboratorios;
         // Array de laboratório em que os etudnate esta associado
 
     public:
@@ -28,24 +28,24 @@ class Estudante : public Usuario{
         virtual ~Estudante();
 
         // Gets
-        std::string getMatricula();
-        std::string getCurso();
-        std::string getNivel();
+        std::string getMatricula() const;
+        std::string getCurso() const;
+        std::string getNivel() const;
 
         // Sets
-        void setMatricula(std::string matricula);
-        void setCurso(std::string curso);
-        void setNivel(std::string nivel);
+        void setMatricula(const std::string & matricula);
+        void setCurso(const std::string & curso);
+        void setNivel(const std::string & nivel);
 
         // Demais metodos
         //Adicionar laboratorio a estudante
-        void adicionarLaboratorio(Laboratorio * laboratorio);
+        void adicionarLaboratorio(Laboratorio* laboratorio, const std::string& papel);
         // Remove o objeto no laboratorio no objeto estudante
         void removerLaboratorioObjeto(Laboratorio* laboratorio);
         // Remover laboratorio do estduante
         void removerLaboratorio(Laboratorio* laboratorio, Schema* db);
         // Associa estudante ao laboratorio
-        void associarLaboratorio(Laboratorio* laboratorio, const std::string& papel, Schema* db);
+        void associarLaboratorio(Laboratorio* laboratorio, const std::string& papel);
 
         void acessarLaboratorios();
 

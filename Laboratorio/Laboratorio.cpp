@@ -737,3 +737,45 @@ std::vector<int> Laboratorio::getIdsReagentesDoLaboratorio() const {
 
     return idsReagentes;
 }
+
+void Laboratorio::adicionarEstudante(Estudante* estudante) {
+    if (estudante == nullptr) {
+        std::cerr << "Erro: estudante inválido.\n";
+        return;
+    }
+    int nivel = estudante->getNivelAcesso();   // 
+    // -------------------------------
+    // Estudante de GRADUAÇÃO
+    // -------------------------------
+    if (nivel == 3) {
+        // Verifica duplicata
+        for (int i = 0; i < (int)estudantesGraduacao.size(); i++) {
+            if (estudantesGraduacao[i] == estudante) {
+                std::cout << "Estudante de graduação já associado.\n";
+                return;
+            }
+        }
+        estudantesGraduacao.push_back(estudante);
+        std::cout << "Estudante de GRADUAÇÃO adicionado ao laboratório.\n";
+        return;
+    }
+    if (nivel == 2) {
+        // Converter ponteiro base → PosGraduacao*
+        PosGraduacao* pos = static_cast<PosGraduacao*>(estudante);
+        // Verifica duplicata
+        for (int i = 0; i < (int)estudantesPosGraduacao.size(); i++) {
+            if (estudantesPosGraduacao[i] == pos) {
+                std::cout << "Estudante de pós já associado.\n";
+                return;
+            }
+        }
+        estudantesPosGraduacao.push_back(pos);
+        std::cout << "Estudante de PÓS-GRADUAÇÃO adicionado ao laboratório.\n";
+        return;
+    }
+
+    // -------------------------------
+    // Caso nível inválido
+    // -------------------------------
+    std::cout << "Nível desconhecido: " << nivel << "\n";
+}
