@@ -18,10 +18,10 @@ bool confirmacao() {
     return (resposta == 'S' || resposta == 's');
 }
 
-std::vector<Usuario*> Gestor::usuariosCarregados;
-std::vector<Gestor*> Gestor::gestores;
-std::vector<Estudante*> Gestor::estudantes;
-std::vector<PosGraduacao*> Gestor::posGraduandos;
+std::vector<Usuario*> Gestor::usuariosCarregados; // Usuario
+std::vector<Gestor*> Gestor::gestores;            // Gestor
+std::vector<Estudante*> Gestor::estudantes;       // Estudante
+std::vector<PosGraduacao*> Gestor::posGraduandos; // Pos
 
 // Construtor
 Gestor::Gestor(std::string nome, std::string email, std::string senha, int nivelAcesso, Schema* db) :
