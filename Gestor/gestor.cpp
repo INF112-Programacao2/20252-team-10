@@ -103,41 +103,44 @@ void Gestor::cadastrarUsuario() {
             default: nivel = "Desconhecido"; break;
         }
     }
-    try {
-        Table usuarioTable = db->getTable("Usuario"); // Insere na tabela Usuario (base)
-        Result res = usuarioTable.insert("nome", "email", "senha", "nivelAcesso") //Insere os dados básicos
-            .values(nome, email, senha, nivelAcesso).execute(); // Define os valores e executa a inserção
+    bool confirma = confirmacao();
+    if(confirma){
+        try {
+            Table usuarioTable = db->getTable("Usuario"); // Insere na tabela Usuario (base)
+            Result res = usuarioTable.insert("nome", "email", "senha", "nivelAcesso") //Insere os dados básicos
+                .values(nome, email, senha, nivelAcesso).execute(); // Define os valores e executa a inserção
 
-        // Recupera o ID do usuário recém-inserido
-        int usuarioId = res.getAutoIncrementValue();
+            // Recupera o ID do usuário recém-inserido
+            int usuarioId = res.getAutoIncrementValue();
 
-        // Insere nas tabelas especializadas conforme o nivelAcesso
-        if (nivelAcesso == 1) { // Gestor
-            db->getTable("Gestor") // Insere na tabela Gestor
-                .insert("id", "cadastrado_por_gestor_id") // Id do gestor e quem cadastrou
-                .values(usuarioId, getId()) // quem cadastrou é o gestor atual
-                .execute();
-            std::cout << "Gestor " << nome << " cadastrado com sucesso!\n"; // Mensagem de sucesso
+            // Insere nas tabelas especializadas conforme o nivelAcesso
+            if (nivelAcesso == 1) { // Gestor
+                db->getTable("Gestor") // Insere na tabela Gestor
+                    .insert("id", "cadastrado_por_gestor_id") // Id do gestor e quem cadastrou
+                    .values(usuarioId, getId()) // quem cadastrou é o gestor atual
+                    .execute();
+                std::cout << "Gestor " << nome << " cadastrado com sucesso!\n"; // Mensagem de sucesso
 
-        } else if (nivelAcesso == 2 || nivelAcesso == 3) { // Pos-Graduando ou Aluno de Graduacao
-            db->getTable("Estudante") // Insere na tabela Estudante
-                .insert("id", "matricula", "curso", "nivel", "cadastrado_por_gestor_id") // Dados do estudante
-                .values(usuarioId, matricula, curso, nivel, getId()) // quem cadastrou é o gestor atual
-                .execute(); // Executa a inserção
-
-            if (nivelAcesso == 2) { // Pos-Graduando
-                db->getTable("PosGraduacao") // Insere na tabela PosGraduacao
-                    .insert("id") // Apenas o ID do usuário
-                    .values(usuarioId) // Define o valor do ID
+            } else if (nivelAcesso == 2 || nivelAcesso == 3) { // Pos-Graduando ou Aluno de Graduacao
+                db->getTable("Estudante") // Insere na tabela Estudante
+                    .insert("id", "matricula", "curso", "nivel", "cadastrado_por_gestor_id") // Dados do estudante
+                    .values(usuarioId, matricula, curso, nivel, getId()) // quem cadastrou é o gestor atual
                     .execute(); // Executa a inserção
-                std::cout << "Pós-Graduando " << nome << " cadastrado com sucesso!\n"; // Mensagem de sucesso
-            } else {
-                std::cout << "Aluno de Graduação " << nome << " cadastrado com sucesso!\n"; // Mensagem de sucesso
-            }
-        }
 
-    } catch (const mysqlx::Error &err) {
-        std::cerr << "Erro ao cadastrar usuário: " << err.what() << std::endl;
+                if (nivelAcesso == 2) { // Pos-Graduando
+                    db->getTable("PosGraduacao") // Insere na tabela PosGraduacao
+                        .insert("id") // Apenas o ID do usuário
+                        .values(usuarioId) // Define o valor do ID
+                        .execute(); // Executa a inserção
+                    std::cout << "Pós-Graduando " << nome << " cadastrado com sucesso!\n"; // Mensagem de sucesso
+                } else {
+                    std::cout << "Aluno de Graduação " << nome << " cadastrado com sucesso!\n"; // Mensagem de sucesso
+                }
+            }
+
+        } catch (const mysqlx::Error &err) {
+            std::cerr << "Erro ao cadastrar usuário: " << err.what() << std::endl;
+        }
     }
 }
 
