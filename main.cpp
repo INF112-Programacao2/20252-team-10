@@ -51,9 +51,10 @@ void menuGestor(Gestor* gestor) {
                 std::cout << "5. Retirar reagente\n";                           // Retirar reagentes do laboratório (pede confirmação e registra retirada)
                 std::cout << "6. Histórico de retiradas (últimos 7 dias)\n";    // Mostra o histórico de retiradas recentes do laboratório
                 std::cout << "7. Cadastrar usuário\n";                           // Adiciona novo usuário (Gestor, Pós-graduação, Graduação)
-                std::cout << "8. Listar usuários do sistema\n";                 // Lista todos os usuários cadastrados (gestores e estudantes)
+
                 std::cout << "9. Deletar usuário\n";                          // Remove usuário do sistema completamente (pede confirmação)
                 std::cout << "10. Sair do laboratório\n";                        // Sai da gestão do laboratório (não desassocia automaticamente)
+                std::cout << "12. Listar usuários do sistema\n";                 // Lista todos os usuários cadastrados (gestores e estudantes)
             }else{ // Se nao estiver associado, imprime um menu para quem não é associaod a nada
                 // Menu quando o gestor não está associado a nenhum laboratório
                 std::cout << "1. Associar laboratório\n";   // Associa o gestor a um laboratório disponível (pede confirmação)

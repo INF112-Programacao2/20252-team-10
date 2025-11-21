@@ -101,7 +101,7 @@ void Gestor::cadastrarUsuario() {
                     .insert("id", "matricula", "curso", "nivel", "cadastrado_por_gestor_id") // Dados do estudante
                     .values(usuarioId, matricula, curso, "Graduacao", getId()) // quem cadastrou é o gestor atual
                     .execute(); // Executa a inserção
-                    
+
                 if (nivelAcesso == 2) { // Pos-Graduando
                     db->getTable("PosGraduacao") // Insere na tabela PosGraduacao
                         .insert("id") // Apenas o ID do usuário
@@ -196,13 +196,14 @@ void Gestor::carregarUsuarios(Schema *db)
                 continue;
 
             Row gestor = gestores.fetchOne();
+            if(!(gestor[0].isNull())){
             int cadastradoPorId = gestor[0].get<int>();
-
-            Gestor *gestorObj = getGestorById(id);
             Gestor *gestorCriador = getGestorById(cadastradoPorId);
-
+            Gestor *gestorObj = getGestorById(id);
             if (gestorObj)
                 gestorObj->setCadastradoPor(gestorCriador);
+            }
+
         }
 
         // -------------------------------------------------------
@@ -1319,7 +1320,7 @@ void Gestor::historicoRetiradas() {
 
     try {
         std::vector<int> idsReagentes = laboratorio->getIdsReagentesDoLaboratorio();
-        
+
         if (idsReagentes.empty()) {
             std::cout << "Nenhum reagente encontrado neste laboratório.\n";
             return;

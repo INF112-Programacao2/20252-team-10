@@ -22,6 +22,8 @@ Laboratorio::Laboratorio(int id, const std::string &nome, const std::string &dep
         // std::cout << "Laboratorio conectado ao DB. Reagentes sendo carregados" << std::endl;
         carregarReagentesDoDB();  //busca reagentes no banco
         carregarAlertasDB();
+        getReagentesCriticos();
+        getReagentesVencidos();
     }
 }
 
@@ -52,10 +54,11 @@ void Laboratorio::carregarReagentesDoDB() {
         SqlResult res = db->getSession().sql("SELECT *, DATE_FORMAT(validade, '%Y-%m-%d') as data_formatada FROM LabUFV.Reagente AS R LEFT JOIN LabUFV.ReagenteLiquido AS RL ON R.id = RL.id LEFT JOIN LabUFV.ReagenteSolido AS RS ON R.id = RS.id ORDER BY R.nome ASC").execute();
 
         int size = res.count();
-        for(int j = 0; j < res.count(); j++){
+        for(int j = 0; j < size; j++){
             Row row = res.fetchOne();
             Reagente* novoReagente = nullptr;
-            for (int i = 0; i < row.colCount(); i++) {
+            int cols = row.colCount();
+            for (int i = 0; i < cols; i++) {
 
                 std::string validade = "Desconhecida";
 
@@ -75,7 +78,7 @@ void Laboratorio::carregarReagentesDoDB() {
                     validade = "Desconhecida";
                 }
                 // Verifica se e Liquido (checa se a coluna do JOIN nao e nula)
-                if (!row[12].isNull()) {
+                if (!(row[12].isNull())) {
                     double densidade = row[13].get<double>();
                     double volume = row[14].get<double>();
                     novoReagente = new ReagenteLiquido(id, nome, validade, qtd, qtdCritica, local,
@@ -83,7 +86,7 @@ void Laboratorio::carregarReagentesDoDB() {
                         densidade, volume); //
                     }
                     // Verifica se e Solido
-                    else if (!row[15].isNull()) {
+                    else if (!(row[15].isNull())) {
                         double massa = row[16].get<double>();
                         std::string estado = row[17].get<std::string>();
                         novoReagente = new ReagenteSolido(id, nome, validade, qtd, qtdCritica, local,
@@ -109,12 +112,14 @@ Reagente *Laboratorio::buscarReagente(const std::string &nome)
     //Percorre todos os reagentes
     for (size_t i = 0; i < reagentes.size(); i++)
     {
+        std::cout << "Verificando reagente: '" << reagentes[i]->getId() << " - " << reagentes[i]->getNome() << "'\n"; // Debug reagent name
         //find retorna a posição onde encontrou, ou npos se não encontrou
         if (reagentes[i]->getNome().find(nome) != std::string::npos)
         {
             return reagentes[i];  //Retorna o ponteiro para o reagente
         }
     }
+    std::cout << "Nao encontrado\n";
     return nullptr;  //Retorna null se não encontrou
 }
 
@@ -140,18 +145,19 @@ std::vector<Reagente *> Laboratorio::listarReagentes(const std::string &filtroNo
 
 //Registra uma retirada de reagente
 std::string Laboratorio::registrarRetirada(Usuario *usuario, const std::string &nomeReagente, float quantidade)
-{
-    std::cout << "teste\n";
+{;
     //Primeiro encontra o reagente
     Reagente *reagente = buscarReagente(nomeReagente);
-    if (!reagente)
+    if (reagente == nullptr)
     {
+        std::cout << "Erro: Reagente '" + nomeReagente + "' nao encontrado" << std::endl;
         return "Erro: Reagente '" + nomeReagente + "' nao encontrado";
     }
 
     //Verifica se não está vencido
     if (reagente->estaVencido())
     {
+        std::cout << "Erro: Reagente '" + reagente->getNome() + "' esta vencido" << std::endl;
         return "Erro: Reagente '" + reagente->getNome() + "' esta vencido";
     }
 
@@ -201,6 +207,7 @@ std::string Laboratorio::registrarRetirada(Usuario *usuario, const std::string &
 //Lista reagentes com quantidade crítica (estoque baixo)
 std::vector<Reagente *> Laboratorio::getReagentesCriticos()
 {
+    Alerta *al;
     std::vector<Reagente *> criticos;
     for (size_t i = 0; i < reagentes.size(); i++)
     {
@@ -208,14 +215,15 @@ std::vector<Reagente *> Laboratorio::getReagentesCriticos()
         if (reagentes[i]->verificarNivelCritico())
         {
             criticos.push_back(reagentes[i]);
-            AlertaQuantidade(reagentes[i], 1);
+            al = new AlertaQuantidade(reagentes[i], 1);
+            alertas.push_back(al);
         }
     }
     return criticos;
 }
 
 std::vector<Reagente *> Laboratorio::getReagentesVencidos() {
-    Table tableAlerta = db->getTable("Alerta");
+    Alerta *al;
     std::vector<Reagente *> vencidos;
     for (size_t i = 0; i < reagentes.size(); i++)
     {
@@ -223,7 +231,8 @@ std::vector<Reagente *> Laboratorio::getReagentesVencidos() {
         if (reagentes[i]->estaVencido())
         {
             vencidos.push_back(reagentes[i]);
-            AlertaValidade(reagentes[i], 1);
+            al = new AlertaValidade(reagentes[i], 1);
+            alertas.push_back(al);
         }
     }
     return vencidos;
@@ -743,7 +752,7 @@ void Laboratorio::adicionarEstudante(Estudante* estudante) {
         std::cerr << "Erro: estudante inválido.\n";
         return;
     }
-    int nivel = estudante->getNivelAcesso();   // 
+    int nivel = estudante->getNivelAcesso();   //
     // -------------------------------
     // Estudante de GRADUAÇÃO
     // -------------------------------

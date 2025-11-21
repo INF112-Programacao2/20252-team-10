@@ -67,9 +67,12 @@ Reagente::Reagente(int id, std::string nome, std::string dataValidade, int quant
                     this->nivelAcesso = row[8].get<int>();
                     this->unidadeMedida = row[9].get<std::string>();
                     // a validade formatada vem na ultima linha
+                    if(!(row[row.colCount() - 1].isNull())){
                     this->dataValidade = row[row.colCount() - 1].get<std::string>();
                     std::cout << "Data de Validade: " << this->dataValidade << std::endl;
-
+                    } else {
+                        this->dataValidade = "Desconhecida";
+                    }
 
                 }
             }
@@ -100,12 +103,12 @@ Reagente::Reagente(int id, std::string nome, std::string dataValidade, int quant
                 time_t tempoBruto;
                 tempoBruto = std::time(nullptr);
 
-                tm *validade = {};
+                tm validade = {};
 
                 std::istringstream ss(this->dataValidade);
-                ss >> std::get_time(validade, "%Y-%m-%d");
+                ss >> std::get_time(&validade, "%Y-%m-%d");
 
-                time_t validadeBruta = mktime(validade);
+                time_t validadeBruta = mktime(&validade);
 
                 if(validadeBruta > tempoBruto){
                     return false;

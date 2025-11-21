@@ -15,7 +15,7 @@ private:
     public:
         //Construtor
         Gestor(std::string nome, std::string email, std::string senha, int nivelAcesso, Schema* db);
-        
+
         // Vetores estáticos dos usuários
         static std::vector<Usuario*> usuariosCarregados;
         static std::vector<Gestor*> gestores;
