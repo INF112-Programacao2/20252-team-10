@@ -14,59 +14,73 @@ Estudante::Estudante(std::string nome, std::string email, std::string senha, int
 Estudante::~Estudante() {}
 
 // Gets
-std::string Estudante::getMatricula(){
+std::string Estudante::getMatricula() const{
     return matricula;
 }
-std::string Estudante::getCurso(){
+std::string Estudante::getCurso() const{
     return curso;
 }
-std::string Estudante::getNivel(){
+std::string Estudante::getNivel() const{
     return nivel;
 }
 
+
+
 // Sets
-void Estudante::setMatricula(std::string matricula){
+void Estudante::setMatricula(const std::string &matricula){
     this->matricula = matricula;
 }
-void Estudante::setCurso(std::string curso){
+void Estudante::setCurso(const std::string &curso){
     this->curso = curso;
 }
-void Estudante::setNivel(std::string nivel){
+void Estudante::setNivel(const std::string &nivel){
     this->nivel = nivel;
 }
 
 //Outros métodos
 //Adicionar laboratorio a estudante
-void Estudante::adicionarLaboratorio(Laboratorio * laboratorio){
-    // Verifica se o laboratorio já esta associado no objeto
-    for (int i = 0; i < this->laboratorios.size(); i++) {
-        if (laboratorios[i]->getId() == laboratorio->getId()) { // Verifica se o ID é igual, se for retorna
-            std::cout << getNome() <<" já possui o " << laboratorio->getNome() << ".\n";
+// Estudante.cpp
+void Estudante::adicionarLaboratorio(Laboratorio* laboratorio, const std::string& papel) {
+    for (int i = 0; i < (int)laboratorios.size(); i++) {
+        if (laboratorios[i].first->getId() == laboratorio->getId()) {
+            std::cout << getNome() << " já possui o " << laboratorio->getNome()
+                      << " associado como " << laboratorios[i].second
+                      << ". Atualizando papel para " << papel << ".\n";
+            laboratorios[i].second = papel; // Atualiza papel
             return;
         }
-        //Caso não tenha, adiciona na lista
-        this->laboratorios.push_back(laboratorio);
-        std::cout << getNome() << " está associado ao " << laboratorio->getNome() << ".\n";
     }
-    return;
+
+    laboratorios.push_back(std::make_pair(laboratorio, papel));
+    std::cout << getNome() << " está associado ao " << laboratorio->getNome()
+              << " como " << papel << ".\n";
 }
+
 // Remove o objeto no laboratorio no objeto estudante
-void Estudante::removerLaboratorioObjeto(Laboratorio* laboratorio) {
-    std::vector<Laboratorio*> novoLaboratorios;  // vetor auxiliar para receber os laboratorios associados
-    bool removido = false; // flag para informar que foi removido
-    for (int i = 0; i < laboratorios.size(); i++) {
-        if (laboratorios[i]->getId() != laboratorio->getId()) { // se o id dos laboratorios forem diferentes , copia no novo vetor
-            novoLaboratorios.push_back(laboratorios[i]);
-        } else { // se for igual, atualiza o flag que foi removido
-            removido = true;
+void Estudante::removerLaboratorioObjeto(Laboratorio *laboratorio)
+{
+    std::vector<std::pair<Laboratorio *, std::string>> novoLaboratorios; // vetor auxiliar para receber os laboratorios associados
+    bool removido = false;                                               // flag para informar que foi removido
+    for (int i = 0; i < (int)laboratorios.size(); i++)
+    {
+        if (laboratorios[i].first->getId() != laboratorio->getId())
+        {
+            novoLaboratorios.push_back(laboratorios[i]); // copia os que não serão removidos
         }
-        if (removido) {
-        // Substitui o vetor antigo pelo novo
+        else
+        {
+            removido = true; // encontrou e vai remover
+        }
+    }
+
+    if (removido)
+    {
         this->laboratorios.swap(novoLaboratorios);
         std::cout << getNome() << " desassociado do " << laboratorio->getNome() << std::endl;
-        } else {
-            std::cout << "Aviso: Associação com " << laboratorio->getNome() << " não encontrada em memória." << std::endl;
-        }
+    }
+    else
+    {
+        std::cout << "Aviso: Associação com " << laboratorio->getNome() << " não encontrada em memória." << std::endl;
     }
 }
 // Remover laboratorio do estduante
@@ -117,9 +131,9 @@ void Estudante::removerLaboratorio(Laboratorio* laboratorio, Schema* db) {
         }
 }
 // Associa estudante ao laboratorio
-void Estudante::associarLaboratorio(Laboratorio* laboratorio, const std::string& papel, Schema* db) {
-    // Verifica se o ponteiro do laboratorio e db são inválidos
-    if (!laboratorio || !db) {
+void Estudante::associarLaboratorio(Laboratorio* laboratorio, const std::string& papel) {
+    // Verifica se o ponteiro do laboratorio  inválidos
+    if (!laboratorio ) {
         std::cerr << "[Erro] Paramêtros do laboratorio são nulos." << std::endl;
         return;
     }   //Acessa a tabela associado para associar estudante ao laboratorio
@@ -155,7 +169,7 @@ void Estudante::associarLaboratorio(Laboratorio* laboratorio, const std::string&
                 std::cout << "Associação atualizada! O estudante " << this->getNome() << " agora tem o papel '"
                         << papel << "' no laboratório " << laboratorio->getNome() << "." << std::endl;
                 // Para fins de segurança, associamos o laboratorio no estudnate
-                this->adicionarLaboratorio(laboratorio);
+                this->adicionarLaboratorio(laboratorio, papel);
                 return;
             }
             // Faz a inserção no banco de dados, caso nao tenha no bd
@@ -165,7 +179,7 @@ void Estudante::associarLaboratorio(Laboratorio* laboratorio, const std::string&
             // informa a associação
             std::cout << "Associação registrada! \n" << std::endl;
             // Aloca o laboratorio no objeto estudante
-            this->adicionarLaboratorio(laboratorio);
+            this->adicionarLaboratorio(laboratorio, papel);
         } catch (mysqlx::Error &err) {
         std::cerr << "Erro MySQL ao associar laboratório: " << err.what() << std::endl;
         } catch (std::exception &ex) {
@@ -228,11 +242,16 @@ void Estudante::acessarLaboratorios() {
     }
 
     std::cout << "\n Seus Laboratórios \n";
-    for (const auto& lab : laboratorios) {
-        std::cout << "- ID: " << lab->getId()
-                  << " | Nome: " << lab->getNome()
-                  << " | Dep: " << lab->getDepartamento() << "\n";
+    for (int i = 0; i < (int)laboratorios.size(); i++) {
+    Laboratorio* lab = laboratorios[i].first;  // pega o ponteiro
+    std::string papel = laboratorios[i].second; // pega o papel
+
+    std::cout << "- ID: " << lab->getId()
+              << " | Nome: " << lab->getNome()
+              << " | Dep: " << lab->getDepartamento()
+              << " | Papel: " << papel << "\n";
     }
+
     std::cout << "\n";
 }
 
@@ -245,10 +264,15 @@ void Estudante::consultarEstoque() {
 
     std::cout << "\n Consulta de Estoque \n";
 
-    for (Laboratorio* lab : this->laboratorios) {
-        std::cout << "\n>> Laboratório: " << lab->getNome() << "\n";
+    // Itera sobre o vetor de pair<Laboratorio*, string>
+    for (size_t i = 0; i < laboratorios.size(); i++) {
+        std::pair<Laboratorio*, std::string> p = laboratorios[i];
+        Laboratorio* lab = p.first;
+        std::string papel = p.second;
 
-        // Usa a função do laboratório para pegar a lista completa
+        std::cout << "\n>> Laboratório: " << lab->getNome()
+                  << " | Papel: " << papel << "\n";
+
         std::vector<Reagente*> lista = lab->listarReagentes("");
 
         if (lista.empty()) {
@@ -259,14 +283,13 @@ void Estudante::consultarEstoque() {
         std::cout << std::left
                   << std::setw(25) << "Nome"
                   << std::setw(15) << "Qtd"
-                  << std::setw(15) << "Nível" << "\n";
-        std::cout << "\n";
+                  << std::setw(15) << "Nível" << "\n\n";
 
-        for (Reagente* r : lista) {
-            // Define a string de nível
+        for (size_t j = 0; j < lista.size(); j++) {
+            Reagente* r = lista[j];
             std::string nivelStr;
-            if(r->getNivelAcesso() == 1) nivelStr = "Restrito";
-            else if(r->getNivelAcesso() == 2) nivelStr = "Livre";
+            if (r->getNivelAcesso() == 1) nivelStr = "Restrito";
+            else if (r->getNivelAcesso() == 2) nivelStr = "Livre";
             else nivelStr = "Pós-Grad";
 
             std::cout << std::left
@@ -277,7 +300,6 @@ void Estudante::consultarEstoque() {
     }
     std::cout << "\n";
 }
-
 // Realiza a retirada de um reagente
 void Estudante::retirarReagente() {
     if (laboratorios.empty()) {
@@ -289,7 +311,7 @@ void Estudante::retirarReagente() {
     std::cout << "\n--- Retirada de Reagente ---\n";
     std::cout << "Escolha o laboratório:\n";
     for (size_t i = 0; i < laboratorios.size(); i++) {
-        std::cout << i + 1 << ". " << laboratorios[i]->getNome() << "\n";
+        std::cout << i + 1 << ". " << laboratorios[i].first->getNome() << "\n";
     }
     std::cout << "Opção: ";
     int opLab;
@@ -299,7 +321,7 @@ void Estudante::retirarReagente() {
         std::cout << "Opção inválida.\n";
         return;
     }
-    Laboratorio* labEscolhido = laboratorios[opLab - 1];
+    Laboratorio* labEscolhido = laboratorios[opLab - 1].first;
 
     // Escolher o Reagente (Busca por nome)
     std::cout << "Digite o nome do reagente: ";

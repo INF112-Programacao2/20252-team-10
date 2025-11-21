@@ -16,59 +16,56 @@ private:
         //Construtor
         Gestor(std::string nome, std::string email, std::string senha, int nivelAcesso, Schema* db);
 
-         static std::vector<Usuario*>usuariosCarregados;
-         static std::vector<Gestor*>gestores;
-         static std::vector<Estudante*>estudantes;
-         static std::vector<PosGraduacao*>posGraduandos;
+        // Vetores estáticos dos usuários
+        static std::vector<Usuario*> usuariosCarregados;
+        static std::vector<Gestor*> gestores;
+        static std::vector<Estudante*> estudantes;
+        static std::vector<PosGraduacao*> posGraduandos;
+        //Destrutor
+        ~Gestor();
 
-    // static PosGraduacao** posGraduandos;
-    // static int quantidadePos;
-    // static int capacidadePos;
+        //Getters
+        Laboratorio* getLaboratorio();
 
-    ~Gestor();
+        //Demais funções
+        void cadastrarUsuario();
+        void deletarUsuario();
+        void listarUsuarios();
+        void associarLaboratorio();
+        void associarEstudanteAoLaboratorio(Estudante* estudante, int idLaboratorio, const std::string& papel);
+        static void carregarUsuarios(Schema* db);
+        void retirarReagente();
+        void historicoRetiradas();
+        void sairLaboratorio();
+        void desassociarEstudantes();
+        void listarReagentesDoLaboratorio();
+        void editarReagente();
+        void excluirReagente();
+        void filtrarReagentes();
 
+        // Menu principal de gerenciamento do laboratório
+        void gerenciarLaboratorio();
 
-        //Menu principal de gerenciamento do laboratório
-    //Getters
-    Laboratorio* getLaboratorio();
+        //sets
+        void setLaboratorio(Laboratorio* lab);
 
-    //Demais funções
-    void cadastrarUsuario();
-    void deletarUsuario();
-    void listarUsuarios();
-    void associarLaboratorio();
-    void associarEstudanteAoLaboratorio(Estudante* estudante, int idLaboratorio, const std::string& papel);
-    void carregarUsuarios();
-    void retirarReagente();
-    void historicoRetiradas();
-    void sairLaboratorio();
-    void desassociarEstudantes();
-    void listarReagentesDoLaboratorio();
-    void editarReagente();
-    void excluirReagente();
-    void filtrarReagentes();
+        //cadastra um novo reagente no laboratorio gerenciado por este gestor
+        void cadastrarReagente();
 
-    // Menu principal de gerenciamento do laboratório
-    void gerenciarLaboratorio();
+        //O Gestor tem acesso total
+        void acessarReagentesAlerta();
+        void listarReagentesRestritos();
+        void menuReagentesRestritos();
+        void acessarReagenteRestrito(int idReagente) override;
+        // Verifica se o usuário está associado a algum laboratório
+        bool estaAssociado() const;
+        void listarEstudantes();
+        void associarEstudantes();
+        void deletarGestor();
+        void deletarEstudante();
+        static Gestor* getGestorById(int id);
+        static void carregarAssociacoes(Schema* db);
 
-    //sets
-    void setLaboratorio(Laboratorio* lab);
-
-    //cadastra um novo reagente no laboratorio gerenciado por este gestor
-    void cadastrarReagente();
-
-    //O Gestor tem acesso total
-    void acessarReagentesAlerta();
-    void listarReagentesRestritos();
-    void menuReagentesRestritos();
-    void acessarReagenteRestrito(int idReagente) override;
-    bool estaAssociado() const;
-    void listarEstudantes();
-    void associarEstudantes();
-    void cadastrarEstudante();
-    void cadastrarGestor();
-    void deletarGestor();
-    void deletarEstudante();
 
 
 
