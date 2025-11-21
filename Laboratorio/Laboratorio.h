@@ -129,6 +129,8 @@ class Laboratorio{
         void desassociarEstudante(Estudante* estudante);
         void menuDesassociarEstudante();
         void menuAssociarEstudante();
+        std::vector<int> getIdsReagentesDoLaboratorio() const;
+
 
     };
 #endif

@@ -16,7 +16,12 @@ bool confirmacao() {
     char resposta;
     std::cin >> resposta;
     return (resposta == 'S' || resposta == 's');
-    }
+}
+
+std::vector<Usuario*> Gestor::usuariosCarregados;
+std::vector<Gestor*> Gestor::gestores;
+std::vector<Estudante*> Gestor::estudantes;
+std::vector<PosGraduacao*> Gestor::posGraduandos;
 
 // Construtor
 Gestor::Gestor(std::string nome, std::string email, std::string senha, int nivelAcesso, Schema* db) :
@@ -1241,7 +1246,7 @@ void Gestor::retirarReagente() {
         try {
             Table retiradaTable = db->getTable("Retirada");
             retiradaTable.insert("reagente_id", "usuario_id", "quantidadeRetirada", "dataHoraRetirada")
-                .values(reagenteEscolhido->getId(), this->getId(), quantidade, mysqlx::expr("NOW()"))
+                .values(reagenteEscolhido->getId(), this->getId(), quantidade, "NOW()")
                 .execute();
         } catch (...) {
             // Tabela Retirada pode não existir, continuar normalmente
@@ -1297,12 +1302,26 @@ void Gestor::historicoRetiradas() {
     std::cout << "\n=== HISTÓRICO DE RETIRADAS ===\n";
 
     try {
+        std::vector<int> idsReagentes = laboratorio->getIdsReagentesDoLaboratorio();
+        
+        if (idsReagentes.empty()) {
+            std::cout << "Nenhum reagente encontrado neste laboratório.\n";
+            return;
+        }
+        std::string filtro = "";
+        for (int i = 0; i < idsReagentes.size(); i++) {
+            filtro += "reagente_id = " + std::to_string(idsReagentes[i]);
+            if (i < idsReagentes.size() - 1)
+                filtro += " OR ";
+        }
+
         Table retiradaTable = db->getTable("Retirada");
-        RowResult res = retiradaTable.select("reagente_id", "usuario_id", "quantidadeRetirada", "dataHoraRetirada")
-            .where("EXISTS (SELECT 1 FROM Reagente R WHERE R.id = reagente_id AND R.laboratorio_id = :lab_id)")
-            .bind("lab_id", laboratorio->getId())
-            // .orderBy("dataHoraRetirada DESC")
-            .execute();
+        RowResult res = retiradaTable
+        .select("reagente_id", "usuario_id", "quantidadeRetirada", "dataHoraRetirada")
+        .where(filtro)
+        .orderBy("dataHoraRetirada DESC")
+        .execute();
+
         std::cout << std::left
                   << std::setw(25) << "Reagente"
                   << std::setw(20) << "Usuário"
@@ -1312,40 +1331,56 @@ void Gestor::historicoRetiradas() {
         std::cout << std::string(77, '-') << "\n";
 
         for (Row row : res) {
-            // Buscar nome do reagente e unidade
+            int idReagente = row[0].get<int>();
+            int idUsuario = row[1].get<int>();
+            double qtd = row[2].get<double>();
+            std::string dataHora = row[3].get<std::string>();
+
+            // Buscar nome e unidade do reagente
             Table reagenteTable = db->getTable("Reagente");
-            RowResult reagenteRes = reagenteTable.select("nome", "unidadeMedida")
+            RowResult r1 = reagenteTable
+                .select("nome", "unidadeMedida")
                 .where("id = :id")
-                .bind("id", row[0].get<int>())
+                .bind("id", idReagente)
                 .execute();
+
             std::string nomeReagente = "N/A";
             std::string unidade = "";
+
+            if (r1.count() > 0) {
+                Row rx = r1.fetchOne();
+                nomeReagente = rx[0].get<std::string>();
+                unidade = rx[1].get<std::string>();
+            }
+
+            // Buscar nome do usuário
+            Table usuarioTable = db->getTable("Usuario");
+            RowResult r2 = usuarioTable
+                .select("nome")
+                .where("id = :id")
+                .bind("id", idUsuario)
+                .execute();
+
             std::string nomeUsuario = "N/A";
 
-            RowResult usuarioRes = db->getTable("Usuario").select("nome").where("id =: usuarioID").bind("usuarioID",row[0].get<int>()).execute();
-
-            if (reagenteRes.count() > 0) {
-                Row reagenteRow = reagenteRes.fetchOne();
-                nomeReagente = reagenteRow[0].get<std::string>();
-                unidade = reagenteRow[1].get<std::string>();
+            if (r2.count() > 0) {
+                Row ux = r2.fetchOne();
+                nomeUsuario = ux[0].get<std::string>();
             }
 
-            if (usuarioRes.count() > 0) {
-                Row usuarioRow = usuarioRes.fetchOne();
-                nomeUsuario = usuarioRow[0].get<std::string>();
-            }
-
+            // Imprimir linha
             std::cout << std::left
-                      << std::setw(25) << nomeReagente
-                      << std::setw(20) << nomeUsuario
-                      << std::setw(12) << (std::to_string(row[2].get<double>()) + " " + unidade)
-                      << std::setw(20) << row[3].get<std::string>()
-                      << "\n";
+                << std::setw(25) << nomeReagente
+                << std::setw(20) << nomeUsuario
+                << std::setw(12) << (std::to_string(qtd) + " " + unidade)
+                << std::setw(20) << dataHora
+                << "\n";
         }
-        std::cout << std::string(77, '-') << "\n";
-        std::cout << "Total de retiradas: " << res.count() << std::endl;
 
-    } catch (const mysqlx::Error &err) {
+        std::cout << std::string(77, '-') << "\n";
+        std::cout << "Total de retiradas: " << res.count() << "\n";
+
+    } catch (const mysqlx::Error& err) {
         std::cerr << "Erro ao consultar histórico: " << err.what() << std::endl;
     }
 }

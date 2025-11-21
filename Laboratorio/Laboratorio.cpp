@@ -413,10 +413,10 @@ std::vector<Usuario *> Laboratorio::getUsuarios(){
 std::vector<Estudante*> Laboratorio::getEstudantes(){
     std::vector<Estudante*> todosEstudantes;
     // Adiciona estudantes de graduação
-    for (Estudante* e : estudantesGraduacao)
+    for (Estudante* e : this->estudantesGraduacao)
         todosEstudantes.push_back(e);
     // Adiciona estudantes de pós
-    for (PosGraduacao* p : estudantesPosGraduacao)
+    for (PosGraduacao* p : this->estudantesPosGraduacao)
         todosEstudantes.push_back(static_cast<Estudante*>(p));
 
         return todosEstudantes;
@@ -426,7 +426,9 @@ void Laboratorio::imprimirEstudantes(const std::vector<Estudante*>& estudantes) 
     std::cout << "\n-------------------------------------------------------------------------------\n";
     std::cout << "| ID  | Matricula     | Nome                     | Email                  | Nivel          |\n";
     std::cout << "-------------------------------------------------------------------------------\n";
-
+    if(estudantes.empty()){
+        std::cout << "            Não há estudantes cadastrados            \n";
+    }
     for (Estudante* e : estudantes) {
         std::string tipo;
 
@@ -708,15 +710,24 @@ std::cout << "\n=== Estudantes e Pós-Graduandos disponíveis ===\n";
     }
 }
 
+std::vector<int> Laboratorio::getIdsReagentesDoLaboratorio() const {
+    std::vector<int> idsReagentes;
 
-/*
-void Laboratorio::adicionarEstudante(Estudante* estudante) {
-    //Implementar adição de estudante ao laboratório
-}
-*/
+    try {
+        Table reagenteTable = db->getTable("Reagente");
+        RowResult reagentes = reagenteTable
+            .select("id")
+            .where("laboratorio_id = :lab")
+            .bind("lab", this->id)
+            .execute();
 
-/*
-void Laboratorio::removerEstudante(Estudante* estudante) {
-    //Implementar remoção de estudante do laboratório
+        for (Row r : reagentes) {
+            idsReagentes.push_back(r[0].get<int>());
+        }
+    }
+    catch (const mysqlx::Error &err) {
+        std::cerr << "Erro ao consultar reagentes: " << err.what() << std::endl;
+    }
+
+    return idsReagentes;
 }
-*/

@@ -44,7 +44,6 @@ void menuGestor(Gestor* gestor) {
 
             // Se for associado, imprime um menu especifico para este acso
             if(associado){
-                std::cout << "===== Menu Gestor - Laboratório: " << gestor->getLaboratorio()->getNome() << " =====\n";
                 std::cout << "1. Gerenciar laboratório\n";                     // Acessa o submenu de gestão do laboratório: dados, estatísticas, reagentes (cadastrar, editar, excluir)
                 std::cout << "2. Listar estudantes do laboratório\n";           // Mostra todos os estudantes atualmente associados ao laboratório
                 std::cout << "3. Acessar reagentes em alerta\n";               // Mostra reagentes próximos da validade ou com quantidade crítica
@@ -57,7 +56,6 @@ void menuGestor(Gestor* gestor) {
                 std::cout << "10. Sair do laboratório\n";                        // Sai da gestão do laboratório (não desassocia automaticamente)
             }else{ // Se nao estiver associado, imprime um menu para quem não é associaod a nada
                 // Menu quando o gestor não está associado a nenhum laboratório
-                std::cout << "===== Menu Gestor - Sem Laboratório Associado =====\n";
                 std::cout << "1. Associar laboratório\n";   // Associa o gestor a um laboratório disponível (pede confirmação)
                 std::cout << "2. Cadastrar usuário\n";      // Cria um novo usuario no sistema (sem associação inicial)
                 std::cout << "3. Listar usuários do sistema\n"; // Mostra todos os usuários cadastrados
