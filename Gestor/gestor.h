@@ -13,31 +13,31 @@ using namespace mysqlx;
 class Gestor : public Usuario {
 private:
     Laboratorio * laboratorio; // O laboratorio que este Gestor gerencia
-    
-public:
-    //Construtor
-    Gestor(std::string nome, std::string email, std::string senha, int nivelAcesso, Schema* db);
-    
-    // Destrutor
-    ~Gestor();
-
-    // Variáveis estáticas
-    static Usuario** usuariosCarregados;
-    static int quantidadeUsuarios;
-    static int capacidadeUsuarios;
-
-    static Gestor** gestores;
-    static int quantidadeGestores;
-    static int capacidadeGestores;
-
-    static Estudante** estudantes;
-    static int quantidadeEstudantes;
-    static int capacidadeEstudantes;
+    public:
+        //Construtor
+        Gestor(std::string nome, std::string email, std::string senha, int nivelAcesso, Schema* db);
+        
+        static std::vector<Usuario*>usuariosCarregados;
+        static std::vector<Gestor*>gestores;
+        static std::vector<Estudante*>estudantes;
+        static std::vector<PosGraduacao*>posGraduandos;
 
     static PosGraduacao** posGraduandos;
     static int quantidadePos;
     static int capacidadePos;
 
+        //Demais funções
+        void cadastrarUsuario();
+        void deletarUsuario();
+        void associarLaboratorio();
+        void associarEstudanteAoLaboratorio(Estudante* estudante, int idLaboratorio, const std::string& papel);
+        void carregarUsuarios();
+        void listarUsuarios();
+        void cadastrarGestor();
+        void cadastrarEstudante();
+        
+        //Menu principal de gerenciamento do laboratório
+        void gerenciarLaboratorio();
     //Getters
     Laboratorio* getLaboratorio();
 
