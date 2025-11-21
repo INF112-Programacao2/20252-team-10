@@ -1502,7 +1502,41 @@ void Gestor::desassociarEstudantes() {
 }
 
 void Gestor::carregarAssociacoes(Schema* db) {
-    try {
+         try {
+        Table gestorTable = db->getTable("Gestor");
+        
+        // Percorre todos os gestores carregados em memória
+        for (Gestor* g : gestores) {
+            // Consulta o laboratorio_id do gestor no banco
+            RowResult resultGestor = gestorTable
+                                         .select("laboratorio_id")
+                                         .where("id = :id")
+                                         .bind("id", g->getId())
+                                         .execute();
+
+            if (resultGestor.count() == 0)
+                continue;
+
+            Row rowGestor = resultGestor.fetchOne();
+
+            // Verifica se o campo laboratorio_id não é nulo
+            if (!rowGestor[0].isNull()) {
+                int laboratorioId = rowGestor[0].get<int>();
+
+                // Busca o laboratório correspondente na lista de laboratórios carregados
+                for (Laboratorio* lab : Laboratorio::laboratorios) {
+                    if (lab->getId() == laboratorioId) {
+                        g->setLaboratorio(lab);
+                        break;
+                    }
+                }
+            }
+        }
+    } catch (const mysqlx::Error& err) {
+        std::cerr << "Erro ao carregar associações gestor-laboratório: " << err.what() << std::endl;
+    }
+
+        try {
         Table tableAssociado = db->getTable("Associado");
         RowResult result = tableAssociado.select("estudante_id", "laboratorio_id", "papel").execute();
 
