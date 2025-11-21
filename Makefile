@@ -1,4 +1,5 @@
 CXX = g++
+CXXFLAGS = -g
 LDFLAGS = -lmysqlcppconnx
 
 # acha todod arquivos com cpp, mesmo em subpasta

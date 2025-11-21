@@ -7,8 +7,8 @@
 #include <iostream>
 using namespace mysqlx;
 
-// Função auxiliar para confirmação 
-bool confirmacao() {
+// Função auxiliar para confirmação
+bool confirmacao1() {
     std::cout << "Tem certeza em realizar esta ação? Digite S para Sim e N para Não: ";
     char resposta;
     std::cin >> resposta;
@@ -19,23 +19,26 @@ void menuGestor(Gestor* gestor) {
     int opcao = 0;
     do {
             std::cout << "\n===== Menu Gestor =====\n";
-            // Imprime os dados dos gestor em uso 
+            // Imprime os dados dos gestor em uso
             std::cout << "Seja bem-vindo " << gestor->getNome() << " novamente!\n";
             std::cout << "Dados do usuário: ("
                         // Imprime o ID do usuario
-                        << gestor->getId(); << ") " 
+                        << gestor->getId()  << ") "
                         // Imprime o nome do usuario
-                        << gestor->getNome() << " - " 
+                        << gestor->getNome() << " - "
                         // Imprime o email do usuario
-                        << gestor->getEmail()  << " - "
+                        << gestor->getEmail()  << " - ";
                         // Imprime o nome do laboratorio
-                        << gestor->getLaboratorio()->getNome(); << " - "
-                        // Imprime o nivel de acesso do usuario, em forma de texto, que representa o que é no sistema 
-                        << ((gestor->getNivelAcesso() == 1) ? "Gestor"
-                            : (gestor->getNivelAcesso() == 2) ? "Pós-graduação"
-                            : (gestor->getNivelAcesso() == 3) ? "Graduação"
-                            : "Desconhecido"); 
-            // Atributo que recebe true se estiver associado a um laboratorio e false, caso contrário                   
+                        if(gestor->getLaboratorio()){
+                        std::cout << gestor->getLaboratorio()->getNome() << " - \n";
+                        }
+
+                        // Imprime o nivel de acesso do usuario, em forma de texto, que representa o que é no sistema
+                        std::cout << ((gestor->getNivelAcesso() == 1) ? "Gestor\n"
+                            : (gestor->getNivelAcesso() == 2) ? "Pós-graduação\n"
+                            : (gestor->getNivelAcesso() == 3) ? "Graduação\n"
+                            : "Desconhecido\n");
+            // Atributo que recebe true se estiver associado a um laboratorio e false, caso contrário
             bool associado = gestor->estaAssociado();
 
             // Se for associado, imprime um menu especifico para este acso
@@ -43,8 +46,9 @@ void menuGestor(Gestor* gestor) {
                 std::cout << "===== Menu Gestor =====\n";
                 std::cout << "1. Gerenciar laboratório\n";                     // Acessa o submenu de gestão do laboratório: dados, estatísticas, reagentes (cadastrar, editar, excluir)
                 std::cout << "2. Listar estudantes do laboratório\n";           // Mostra todos os estudantes atualmente associados ao laboratório
-                // std::cout << "3. Acessar reagentes em alerta\n";               // Mostra reagentes próximos da validade ou com quantidade crítica
-                // std::cout << "4. Acessar reagentes restritos\n";               // Acessa reagentes restritos que exigem autorização especial
+                std::cout << "3. Acessar reagentes em alerta\n";  // Lista reagentes em alerta
+
+                std::cout << "4. Acessar reagentes restritos\n";               // Acessa reagentes restritos que exigem autorização especial
                 // std::cout << "5. Retirar reagente\n";                           // Retirar reagentes do laboratório (pede confirmação e registra retirada)
                 // std::cout << "8. Deletar estudante\n";                          // Remove estudante do sistema completamente (pede confirmação)
                 // std::cout << "9. Histórico de retiradas (últimos 7 dias)\n";    // Mostra o histórico de retiradas recentes do laboratório
@@ -59,6 +63,8 @@ void menuGestor(Gestor* gestor) {
                 std::cout << "3. Listar usuários do sistema\n"; // Mostra todos os usuários cadastrados
                 std::cout << "4. Deletar gestor\n";        // Exclui um gestor do sistema (pede confirmação)
                 std::cout << "5. Deletar estudante\n";     // Exclui um estudante do sistema (pede confirmação)
+
+
             }
             std::cout << "0. Sair do sistema\n";  // Encerra o menu principal
             std::cout << "Escolha uma opção: ";
@@ -72,13 +78,14 @@ void menuGestor(Gestor* gestor) {
                 if(associado) gestor->getLaboratorio()->listarEstudantes();
                 else gestor->cadastrarUsuario();
                 break;
-            // case 3:
-            //     if(associado) gestor->associarEstudantes();
-            //     else gestor->listarUsuarios();
-            //     break;
-            // case 4:
-            //     if(associado) gestor->desassociarEstudantes();
-            //     break;
+            case 3:
+                if(associado) gestor->acessarReagentesAlerta();
+                 else
+                gestor->listarUsuarios();
+                break;
+            case 4:
+                if(associado) gestor->menuReagentesRestritos();
+                break;
             // case 5:
             //     if(associado) gestor->menuReagentesRestritos();
             //     else gestor->deletarGestor();
@@ -114,11 +121,13 @@ void menuEstudante(Estudante* estudante) {
 
         switch (opcao) {
             case 1:
-                estudante->acessarLaboratorios();    // Dentro dessa função, o usuário pode acessar laboratório, listar usuários, reagentes, filtrar, etc.
+                //estudante->acessarLaboratorios();    // Dentro dessa função, o usuário pode acessar laboratório, listar usuários, reagentes, filtrar, etc.
+                std::cout << "Lab acessado" << std::endl;
                 break;
             case 2:
-                if (confirmacao()) {
-                    estudante->retirarReagente();   // Função interna cuida da retirada e registro
+                if (confirmacao1()) {
+                    std::cout << "Reagente retirado" << std::endl;
+                    //estudante->retirarReagente();   // Função interna cuida da retirada e registro
                 }
                 break;
             case 0:

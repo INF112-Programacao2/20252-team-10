@@ -96,7 +96,7 @@ class Laboratorio{
         // Retorna um vetor de ponterio com todos ussuarios fazendo um upcasting
         std::vector<Usuario *> getUsuarios();
         int getId() const { return id; }
-        std::string getNome() const { return nome; }
+        std::string getNome() { return nome; }
         std::string getDepartamento() const { return departamento; }
         int getTotalReagentes() const { return reagentes.size(); }
         int getTotalGestores() const { return gestores.size(); }

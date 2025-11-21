@@ -536,10 +536,10 @@ if(this->db == nullptr){
 
         // Insere dados comuns
         Result res = reagenteTable.insert(
-            "nome", "dataValidade", "quantidade", "quantidadeCritica",
-            "localArmazenamento", "nivelAcesso", "unidadeMedida", "marca", "codigoReferencia"
+            "nome", "validade", "quantidade", "quantidadeCritica",
+            "localArmazenamento", "nivelAcesso", "unidadeMedida", "marca", "referencia", "laboratorio_id"
         ).values(nome, dataValidade, quantidade, quantidadeCritica,
-                 local, nivelAcesso, unidade, marca, codRef)
+                 local, nivelAcesso, unidade, marca, codRef, this->laboratorio->getId())
          .execute(); // Executa a insercao no DB
 
         // Pega o ID do reagente que acabou de ser criado
@@ -573,7 +573,7 @@ if(this->db == nullptr){
             local, nivelAcesso, unidade, marca, codRef, tipo,
             densidade, volume, massa, estadoFisico
         );
-     
+
     } catch (const mysqlx::Error &err) {
         // Se qualquer operacao do 'try' falhar, captura o erro
         // (Ex: se o banco estiver offline ou a tabela nao existir)
@@ -582,11 +582,7 @@ if(this->db == nullptr){
 }
 
 void Gestor::acessarReagentesAlerta(){
-    if(confirmacao())
     laboratorio->getAlertasGestor();
-    else {
-        std::cout << "Solicitação cancelada\n";
-    }
 }
 
 // Metodo para vincular o gestor a um laboratorio
@@ -620,7 +616,6 @@ void Gestor::acessarReagenteRestrito(int idReagente) {
             Row row = res.fetchOne();
 
             // O Gestor imprime tudo (não há checagem de nível)
-            std::cout << "Acesso Permitido (Nível Gestor):\n";
             std::cout << "Nome:    " << row[1].get<std::string>() << "\n";
             std::cout << "Qtde:    " << row[2].get<int>() << " " << row[3].get<std::string>() << "\n";
             std::cout << "Local:   " << row[4].get<std::string>() << "\n";
@@ -643,16 +638,20 @@ void Gestor::listarReagentesRestritos(){
             Table reagenteTable = db->getTable("Reagente");
 
             // Busca o reagente pelo ID
-            RowResult res = reagenteTable.select(
-                "id", "nome", "quantidade", "unidadeMedida",
-                "localArmazenamento", "dataValidade", "nivelAcesso"
-            ).where("nivelAcesso =: nivel").bind("nivelAcesso", 1).execute();
+            // RowResult res = reagenteTable.select(
+            //     "id", "nome", "quantidade", "unidadeMedida",
+            //     "localArmazenamento", "validade", "nivelAcesso"
+            // ).where("nivelAcesso =: nivel").bind("nivel", 1).execute();
+
+            SqlResult res = db->getSession().sql("SELECT id, nome, quantidade, unidadeMedida, localArmazenamento, DATE_FORMAT(validade, '%Y-%m-%d') as data_formatada FROM LabUFV.Reagente WHERE nivelAcesso = 1").execute();
 
             if (res.count() == 0) {
                 std::cout << "Reagentes restritos não encontrados\n" << std::endl;
                 return;
             }
-            for(int i = 0; i < res.count(); i++){
+            int size = res.count();
+            for(int i = 0; i < size; i++){
+            std::cout << res.count() << std::endl;
             // Pega os detalhes
             Row row = res.fetchOne();
 
@@ -661,6 +660,7 @@ void Gestor::listarReagentesRestritos(){
             std::cout << "Nome:    " << row[1].get<std::string>() << "\n";
             std::cout << "Qtde:    " << row[2].get<int>() << " " << row[3].get<std::string>() << "\n";
             std::cout << "Local:   " << row[4].get<std::string>() << "\n";
+            if(!row[5].isNull())
             std::cout << "Validade: " << row[5].get<std::string>() << "\n";
             std::cout << "-------------------------------------\n";
             }
@@ -676,26 +676,35 @@ void Gestor::menuReagentesRestritos(){
 
                 std::cout << "===== Menu Reagentes Restritos =====\n";
                 std::cout << "1. Listar reagentes restritos\n";
-                std::cout << "2. Retirar reagente restrito\n";
-                std::cout << "3. Registrar reagente restrito\n";
+                std::cout << "2. Retirar reagente\n";
+                std::cout << "3. Registrar reagente\n";
                 std::cout << "0. Sair do sistema\n";
                 std::cout << "Escolha uma opção: ";
                 std::cin >> opcao;
                 switch(opcao) {
-                case 1:
+                case 1: {
                     this->listarReagentesRestritos();
-                    break;
-                case 2:
-                    std::cout << "implementacao em breve\n";
-                    break;
-                case 3:
-                    std::cout << "implementacao em breve\n";
-                    break;
-                case 0:
+                    break; }
+                case 2: {
+                    std::cout << "Digite o nome do reagente: (Encontra nome parcial)\n";
+                    std::string nomeBuscado;
+                    float quantidadeRetirada;
+                    std::cin.ignore();
+                    std::getline(std::cin, nomeBuscado);
+                    std::cout << "Digite a quantidade retirada: \n";
+                    std::cin >> quantidadeRetirada;
+                    if(confirmacao()){
+                    this->laboratorio->registrarRetirada(this, nomeBuscado, quantidadeRetirada); }
+                     else std::cout << "Ação cancelada pelo usuário\n";
+                    break; }
+                case 3: {
+                    this->cadastrarReagente();
+                    break; }
+                case 0: {
                     std::cout << "Saindo...\n";
-                    break;
-                default:
-                    std::cout << "Opção inválida! Tente novamente.\n";
+                    break; }
+                default: {
+                    std::cout << "Opção inválida! Tente novamente.\n"; }
             }
 
     } while(opcao != 0);
@@ -709,7 +718,7 @@ void Gestor::gerenciarLaboratorio(){
     //Verifica vinculo antes abrir o menu
     if(this->laboratorio == nullptr){
         std::cout << "Erro: Gestor não está vinculado a nenhum laboratório.\n";
-        return; 
+        return;
     }
 
     int opcao = 0;
@@ -744,9 +753,9 @@ void Gestor::gerenciarLaboratorio(){
                 std::cout<<"Retornando..\n";
                 break;
             default:
-                std::cout << "Opção inválida. Tente novamente.\n";      
+                std::cout << "Opção inválida. Tente novamente.\n";
         }
-    } 
+    }
     while(opcao != 0);
 }
 
@@ -771,7 +780,7 @@ void Gestor::listarReagentesDoLaboratorio(){
     std::cout << std::string(70,'-') << "\n";
 
    for (Reagente* r : lista) {
-        std::cout << std::left 
+        std::cout << std::left
                   << std::setw(5) << r->getId()
                   << std::setw(25) << r->getNome()
                   << std::setw(15) << (std::to_string(r->getQuantidade()) + " " + r->getUnidadeMedida())
@@ -784,7 +793,7 @@ void Gestor::listarReagentesDoLaboratorio(){
 void Gestor::editarReagente() {
     std::cout << "\n Editar Reagente \n";
     std::cout << "Digite o nome do reagente que deseja editar: ";
-    std::string nomeBusca; //variavel local para guardar temporariamente o nome do reagente 
+    std::string nomeBusca; //variavel local para guardar temporariamente o nome do reagente
     std::cin.ignore(); // Limpa buffer antes de ler string
     std::getline(std::cin, nomeBusca);
 
@@ -807,7 +816,7 @@ void Gestor::editarReagente() {
     std::cout << "6. Corrigir Dados Específicos (Densidade/Volume ou Massa/Estado)\n";
     std::cout << "0. Cancelar\n";
     std::cout << "Opção: ";
-    
+
     int subOpcao;
     std::cin >> subOpcao;
 
@@ -815,12 +824,12 @@ void Gestor::editarReagente() {
 
     try {
         Table table = db->getTable("Reagente");
-        
+
         if (subOpcao == 1) { // Quantidade
             int novaQtd;
             std::cout << "Nova Quantidade: ";
             std::cin >> novaQtd;
-            
+
             if (!confirmacao()) return;
 
             table.update().set("quantidade", novaQtd).where("id = :id").bind("id", reagente->getId()).execute();
@@ -873,7 +882,7 @@ void Gestor::editarReagente() {
             reagente->setNivelAcesso(novoNivel);
             std::cout << "Nível de acesso atualizado com sucesso!\n";
 
-        } else if (subOpcao == 6) { 
+        } else if (subOpcao == 6) {
             std::cout << "Qual o tipo deste reagente?\n";
             std::cout << "1. Líquido\n";
             std::cout << "2. Sólido\n";
@@ -884,7 +893,7 @@ void Gestor::editarReagente() {
             if (tipoEscolhido == 1) {
                 // Converte manualmente o ponteiro para Liquido
                 ReagenteLiquido* liq = static_cast<ReagenteLiquido*>(reagente);
-                
+
                 double novaDensidade, novoVolume;
                 std::cout << "Editando Líquido\n";
                 std::cout << "Nova Densidade (Atual: " << liq->getDensidade() << "): ";
@@ -909,7 +918,7 @@ void Gestor::editarReagente() {
 
                 double novaMassa;
                 std::string novoEstado;
-                
+
                 std::cout << "Editando Sólido \n";
                 std::cout << "Nova Massa (Atual: " << sol->getMassa() << "): ";
                 std::cin >> novaMassa;
@@ -960,7 +969,7 @@ void Gestor::excluirReagente() {
     int idParaRemover = reagente->getId();
 
     try {
-        // 1-Remove das tabelas filhas 
+        // 1-Remove das tabelas filhas
         db->getTable("ReagenteLiquido").remove().where("id = :id").bind("id", idParaRemover).execute();
         db->getTable("ReagenteSolido").remove().where("id = :id").bind("id", idParaRemover).execute();
 
@@ -1043,4 +1052,3 @@ void Gestor::filtrarReagentes() {
     }
     std::cout << "\n";
 }
-

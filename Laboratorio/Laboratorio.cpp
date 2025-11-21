@@ -50,7 +50,7 @@ void Laboratorio::carregarReagentesDoDB() {
         //LEFT JOIN é usado para pegar dados de Liquido ou Solido
         SqlResult res = db->getSession().sql("SELECT *, DATE_FORMAT(validade, '%Y-%m-%d') as data_formatada FROM LabUFV.Reagente AS R LEFT JOIN LabUFV.ReagenteLiquido AS RL ON R.id = RL.id LEFT JOIN LabUFV.ReagenteSolido AS RS ON R.id = RS.id").execute();
 
-
+        int size = res.count();
         for(int j = 0; j < res.count(); j++){
             Row row = res.fetchOne();
             Reagente* novoReagente = nullptr;
@@ -140,6 +140,7 @@ std::vector<Reagente *> Laboratorio::listarReagentes(const std::string &filtroNo
 //Registra uma retirada de reagente
 std::string Laboratorio::registrarRetirada(Usuario *usuario, const std::string &nomeReagente, float quantidade)
 {
+    std::cout << "teste\n";
     //Primeiro encontra o reagente
     Reagente *reagente = buscarReagente(nomeReagente);
     if (!reagente)
@@ -160,6 +161,8 @@ std::string Laboratorio::registrarRetirada(Usuario *usuario, const std::string &
     std::string resultado = novaRetirada->confirmarRetirada();
 
     //Se deu certo (não tem "Erro:" na mensagem)
+    std::cout << reagente->getQuantidade() << std::endl;
+    std::cout << reagente->getId() << std::endl;
     if (resultado.find("Erro:") == std::string::npos)
     {
         try {
@@ -366,7 +369,7 @@ void Laboratorio::cadastrarNovoReagente(
                 id, nome, dataValidade, quantidade, quantidadeCritica,
                 local, nivelAcesso, unidade, marca, codRef,
                 massa, estadoFisico
-            ); 
+            );
         }
         else {
             std::cerr << "Erro: Tipo de reagente inválido ao atualizar memória." << std::endl;
@@ -375,7 +378,7 @@ void Laboratorio::cadastrarNovoReagente(
         //adiciona ao vetor de reagentes do laboratorio
         this->reagentes.push_back(novoReagente);
 
-        std::cout << "Memória do laboratório atualizada com sucesso." << std::endl; 
+        std::cout << "Memória do laboratório atualizada com sucesso." << std::endl;
     }
     catch (const std::exception& e){
         std::cerr << "Erro ao criar objeto na memória: " << e.what() << std::endl;
@@ -523,10 +526,12 @@ void Laboratorio::listarEstudantes() {
 
     switch (opcao) {
         case 1:
-            menuAssociarEstudante();
+            // menuAssociarEstudante();
+            std::cout << "sera implementado\n";
             break;
         case 2:
-            menuAssociarEstudante();
+            // menuDesassociarEstudante();
+            std::cout << "sera implementado\n";
             break;
         case 0:
             return;
@@ -537,7 +542,7 @@ void Laboratorio::listarEstudantes() {
 }
 
 std::string Laboratorio::associarEstudante(Estudante* estudante) {
-    if (!estudante) 
+    if (!estudante)
         return "Erro: Estudante inválido.";
 
     int idEstudante = estudante->getId();
@@ -562,7 +567,7 @@ std::string Laboratorio::associarEstudante(Estudante* estudante) {
     std::cout << "\nDigite o papel do estudante no laboratório: ";
     std::getline(std::cin >> std::ws, papel);   // lê linha inteira e limpa buffer
 
-    if (papel.empty()) 
+    if (papel.empty())
         papel = "Estudante";  // padrão
 
     // Inserir associação no BD
@@ -579,7 +584,7 @@ std::string Laboratorio::associarEstudante(Estudante* estudante) {
     // Inserir no vetor correto (graduação ou pós)
     if (estudante->getNivel() == "Graduação") {
         estudantesGraduacao.push_back(estudante);
-    } 
+    }
     else {
         PosGraduacao* pg = dynamic_cast<PosGraduacao*>(estudante);
 
@@ -649,83 +654,83 @@ std::string Laboratorio::desassociarEstudante(Estudante* estudante) {
 
     return "Estudante desassociado com sucesso!";
 }
-void Laboratorio::menuDesassociarEstudante() {
-    std::cout << "\n=== Estudantes associados ===\n";
+// void Laboratorio::menuDesassociarEstudante() {
+//     std::cout << "\n=== Estudantes associados ===\n";
 
-    auto associados = getEstudantes();
+//     auto associados = getEstudantes();
 
-    if (associados.empty()) {
-        std::cout << "Nenhum estudante associado.\n";
-        return;
-    }
+//     if (associados.empty()) {
+//         std::cout << "Nenhum estudante associado.\n";
+//         return;
+//     }
 
-    for (auto e : associados) {
-        std::cout << "ID: " << e->getId()
-                  << " | Nome: " << e->getNome() << "\n";
-    }
+//     for (auto e : associados) {
+//         std::cout << "ID: " << e->getId()
+//                   << " | Nome: " << e->getNome() << "\n";
+//     }
 
-    int id;
-    std::cout << "\nID para desassociar: ";
-    std::cin >> id;
+//     int id;
+//     std::cout << "\nID para desassociar: ";
+//     std::cin >> id;
 
-    Estudante* escolhido = nullptr;
-    for (auto e : associados) {
-        if (e->getId() == id) {
-            escolhido = e;
-            break;
-        }
-    }
+//     Estudante* escolhido = nullptr;
+//     for (auto e : associados) {
+//         if (e->getId() == id) {
+//             escolhido = e;
+//             break;
+//         }
+//     }
 
-    if (!escolhido) {
-        std::cout << "Estudante não encontrado.\n";
-        return;
-    }
+//     if (!escolhido) {
+//         std::cout << "Estudante não encontrado.\n";
+//         return;
+//     }
 
-    std::cout << desassociarEstudante(escolhido) << "\n";
-}
+//     std::cout << desassociarEstudante(escolhido) << "\n";
+// }
 
-void Laboratorio::menuAssociarEstudante() {
-    std::cout << "\n=== Estudantes disponíveis ===\n";
+// void Laboratorio::menuAssociarEstudante() {
+//     std::cout << "\n=== Estudantes disponíveis ===\n";
 
-    // todos alunos do sistema
-    std::vector<Usuario*> usuarios = Usuario::listarUsuarios();
-    std::vector<Estudante*> todos;
+//     // todos alunos do sistema
+//     std::vector<Usuario*> usuarios = Usuario::listarUsuarios();
+//     std::vector<Estudante*> todos;
 
-    // filtra só estudantes
-    for (auto u : usuarios) {
-        if (auto e = dynamic_cast<Estudante*>(u))
-            todos.push_back(e);
-    }
+//     // filtra só estudantes
+//     for (auto u : usuarios) {
+//         if (auto e = dynamic_cast<Estudante*>(u))
+//             todos.push_back(e);
+//     }
 
-    if (todos.empty()) {
-        std::cout << "Nenhum estudante cadastrado.\n";
-        return;
-    }
+//     if (todos.empty()) {
+//         std::cout << "Nenhum estudante cadastrado.\n";
+//         return;
+//     }
 
-    for (auto e : todos) {
-        std::cout << "ID: " << e->getId()
-                  << " | Nome: " << e->getNome() << "\n";
-    }
+//     for (auto e : todos) {
+//         std::cout << "ID: " << e->getId()
+//                   << " | Nome: " << e->getNome() << "\n";
+//     }
 
-    int id;
-    std::cout << "\nID para associar: ";
-    std::cin >> id;
+//     int id;
+//     std::cout << "\nID para associar: ";
+//     std::cin >> id;
 
-    Estudante* escolhido = nullptr;
-    for (auto e : todos) {
-        if (e->getId() == id) {
-            escolhido = e;
-            break;
-        }
-    }
+//     Estudante* escolhido = nullptr;
+//     for (auto e : todos) {
+//         if (e->getId() == id) {
+//             escolhido = e;
+//             break;
+//         }
+//     }
 
-    if (!escolhido) {
-        std::cout << "Estudante não encontrado.\n";
-        return;
-    }
+//     if (!escolhido) {
+//         std::cout << "Estudante não encontrado.\n";
+//         return;
+//     }
 
-    std::cout << associarEstudante(escolhido) << "\n";
-}
+//     std::cout << associarEstudante(escolhido) << "\n";
+// }
 
 
 
