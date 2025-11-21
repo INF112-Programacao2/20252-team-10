@@ -1250,11 +1250,7 @@ void Gestor::retirarReagente() {
         try {
             Table retiradaTable = db->getTable("Retirada");
             retiradaTable.insert("reagente_id", "usuario_id", "quantidadeRetirada", "dataHoraRetirada")
-<<<<<<< HEAD
-                .values(reagenteEscolhido->getId(), this->getId(), quantidade, "NOW()")
-=======
                 .values(reagenteEscolhido->getId(), this->getId(), quantidade, hora)
->>>>>>> 388678cf9a2e12e243b732e33278f7b7730c6557
                 .execute();
         } catch (...) {
             // Tabela Retirada pode não existir, continuar normalmente
