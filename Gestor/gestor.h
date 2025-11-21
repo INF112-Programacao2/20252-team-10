@@ -18,22 +18,11 @@ class Gestor : public Usuario {
     public:
         //Construtor
         Gestor(std::string nome, std::string email, std::string senha, int nivelAcesso, Schema* db);
-
-        static Usuario** usuariosCarregados;
-        static int quantidadeUsuarios;
-        static int capacidadeUsuarios;
-
-        static Gestor** gestores;
-        static int quantidadeGestores;
-        static int capacidadeGestores;
-
-        static Estudante** estudantes;
-        static int quantidadeEstudantes;
-        static int capacidadeEstudantes;
-
-        static PosGraduacao** posGraduandos;
-        static int quantidadePos;
-        static int capacidadePos;
+        
+        static std::vector<Usuario*>usuariosCarregados;
+        static std::vector<Gestor*>gestores;
+        static std::vector<Estudante*>estudantes;
+        static std::vector<PosGraduacao*>posGraduandos;
 
         // Destrutor
         ~Gestor();
@@ -41,10 +30,12 @@ class Gestor : public Usuario {
         //Demais funções
         void cadastrarUsuario();
         void deletarUsuario();
-        void listarUsuarios();
         void associarLaboratorio();
         void associarEstudanteAoLaboratorio(Estudante* estudante, int idLaboratorio, const std::string& papel);
         void carregarUsuarios();
+        void listarUsuarios();
+        void cadastrarGestor();
+        void cadastrarEstudante();
         
         //Menu principal de gerenciamento do laboratório
         void gerenciarLaboratorio();

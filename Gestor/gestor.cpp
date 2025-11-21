@@ -10,21 +10,6 @@
 
 using namespace mysqlx;
 
-Usuario** Gestor::usuariosCarregados = new Usuario*[10];
-int Gestor::quantidadeUsuarios = 0;
-int Gestor::capacidadeUsuarios = 10;
-
-Gestor** Gestor::gestores = new Gestor*[10];
-int Gestor::quantidadeGestores = 0;
-int Gestor::capacidadeGestores = 10;
-
-Estudante** Gestor::estudantes = new Estudante*[10];
-int Gestor::quantidadeEstudantes = 0;
-int Gestor::capacidadeEstudantes = 10;
-
-PosGraduacao** Gestor::posGraduandos = new PosGraduacao*[10];
-int Gestor::quantidadePos = 0;
-int Gestor::capacidadePos = 10;
 
 // Funcao auxiliar para cofirmacao
 bool confirmacao(){
@@ -43,25 +28,7 @@ Gestor::Gestor(std::string nome, std::string email, std::string senha, int nivel
     }
 
 // Destrutor
-Gestor::~Gestor() {
-    for (int i = 0; i < quantidadeUsuarios; i++) {
-        delete usuariosCarregados[i];
-    }
-    delete[] usuariosCarregados;
-    delete[] gestores;
-    delete[] estudantes;
-    delete[] posGraduandos;
-
-    quantidadeUsuarios = 0;
-    quantidadeGestores = 0;
-    quantidadeEstudantes = 0;
-    quantidadePos = 0;
-    usuariosCarregados = nullptr;
-    gestores = nullptr;
-    estudantes = nullptr;
-    posGraduandos = nullptr;
-
-}
+Gestor::~Gestor() {}
 
 // Demais funções
 void Gestor::cadastrarUsuario() {
@@ -137,79 +104,46 @@ void Gestor::cadastrarUsuario() {
 
 //função que carrega os usuários do banco de dados para o array dinâmico
 void Gestor::carregarUsuarios() {
+
+    usuariosCarregados.clear();
+    gestores.clear();
+    estudantes.clear();
+    posGraduandos.clear();
     try{
         Table usuarioTable = db->getTable("Usuario"); //pega a tabela usuario do banco
         RowResult resultado = usuarioTable.select("id", "nome", "email", "senha", "nivelAcesso").execute();//seleciona os campos necessários
 
         for (Row row : resultado) {
-            int nivel = row[4].get<int>();//pega o nivel de acesso do usuario
-            Usuario* u = nullptr;//ponteiro para objeto do tipo Usuario
+            int id = row[0].get<int>();
+        std::string nome = row[1].get<std::string>();
+        std::string email = row[2].get<std::string>();
+        std::string senha = row[3].get<std::string>();
+        int nivel = row[4].get<int>();
 
-            //cria o objeto do tipo correto baseado no nivel de acesso
-            if (nivel == 1) {
+        Usuario* u = nullptr;
 
-                u = new Gestor(row[1].get<std::string>(), row[2].get<std::string>(), row[3].get<std::string>(), nivel, db);
-            }
-            else if (nivel == 2) {
-                Table estudanteTable = db->getTable("Estudante");
-                RowResult r = estudanteTable.select("matricula", "curso", "nivel").where("id = :id").bind("id",row[0]).execute();
-                Row estudanteRow = r.fetchOne();
-                u = new Estudante(row[1].get<std::string>(), row[2].get<std::string>(), row[3].get<std::string>(), nivel, db, estudanteRow[1].get<std::string>(), estudanteRow[2].get<std::string>(), estudanteRow[3].get<std::string>());
-            }
-            else if (nivel == 3) {
-                Table estudanteTable = db->getTable("Estudante");
-                RowResult r = estudanteTable.select("matricula", "curso", "nivel").where("id = :id").bind("id",row[0]).execute();
-                Row estudanteRow = r.fetchOne();
-                u = new PosGraduacao(row[1].get<std::string>(), row[2].get<std::string>(), row[3].get<std::string>(), nivel, db, estudanteRow[1].get<std::string>(), estudanteRow[2].get<std::string>(), estudanteRow[3].get<std::string>());
-            }
-
-            u->setId(row[0].get<int>());//define o id do usuario
-
-            // Adiciona no vetor geral
-            if (quantidadeUsuarios == capacidadeUsuarios) {
-                int novaCapacidade = capacidadeUsuarios * 2;
-                Usuario** novo = new Usuario*[novaCapacidade];
-                for (int i = 0; i < quantidadeUsuarios; i++) novo[i] = usuariosCarregados[i];
-                delete[] usuariosCarregados;
-                usuariosCarregados = novo;
-                capacidadeUsuarios = novaCapacidade;
-            }
-            usuariosCarregados[quantidadeUsuarios++] = u;//adiciona o usuario no array geral
-
-            // Adiciona no vetor específico
-            if (nivel == 1) {
-                if (quantidadeGestores == capacidadeGestores) {
-                    int novaCapacidade = capacidadeGestores * 2;
-                    Gestor** novo = new Gestor*[novaCapacidade];
-                    for (int i = 0; i < quantidadeGestores; i++) novo[i] = gestores[i];
-                    delete[] gestores;
-                    gestores = novo;
-                    capacidadeGestores = novaCapacidade;
-                }
-                gestores[quantidadeGestores++] = (Gestor*)u;//adiciona o gestor no array de gestores
-            } else if (nivel == 2) {
-                if (quantidadeEstudantes == capacidadeEstudantes) {
-                    int novaCapacidade = capacidadeEstudantes * 2;
-                    Estudante** novo = new Estudante*[novaCapacidade];
-                    for (int i = 0; i < quantidadeEstudantes; i++) novo[i] = estudantes[i];
-                    delete[] estudantes;
-                    estudantes = novo;
-                    capacidadeEstudantes = novaCapacidade;
-                }
-                estudantes[quantidadeEstudantes++] = (Estudante*)u;//adiciona o estudante no array de estudantes
-            } else if (nivel == 3) {
-                if (quantidadePos == capacidadePos) {
-                    int novaCapacidade = capacidadePos * 2;
-                    PosGraduacao** novo = new PosGraduacao*[novaCapacidade];
-                    for (int i = 0; i < quantidadePos; i++) novo[i] = posGraduandos[i];
-                    delete[] posGraduandos;
-                    posGraduandos = novo;
-                    capacidadePos = novaCapacidade;
-                }
-                posGraduandos[quantidadePos++] = (PosGraduacao*)u;//adiciona o pos graduando no array de pos graduandos
-            }
-
+        if (nivel == 1) { 
+            auto* g = new Gestor(nome, email, senha, nivel, db);
+            g->setId(id);
+            gestores.push_back(g);
+            u = g;
         }
+        else if (nivel == 2) { // estudante
+            auto* e = new Estudante(nome, email, senha, nivel, db, "", "", "grad");
+            e->setId(id);
+            estudantes.push_back(e);
+            u = e;
+        }
+        else if (nivel == 3) { // estudante pos
+            auto* p = new PosGraduacao(nome, email, senha, nivel, db, "", "", "pos");
+            p->setId(id);
+            posGraduandos.push_back(p);
+            u = p;
+        }
+
+        usuariosCarregados.push_back(u);
+    }
+
     } catch (const mysqlx::Error &err) {
         std::cerr << "Erro ao carregar usuários: " << err.what() << std::endl;
     }
@@ -251,60 +185,228 @@ void Gestor::listarUsuarios() {
 
 
 void Gestor::deletarUsuario() {
-    std::cout << "Digite o email do usuário a ser deletado: ";
+    // Pede o email dentro da função
     std::string email;
+    std::cout << "Digite o email do usuário a ser deletado: ";
     std::cin >> email;
 
-    try{
-        //Busca o usuário no banco de dados
-        Table usuarioTable = db->getTable("Usuario");
-        RowResult result = usuarioTable.select("id", "nivelAcesso")
-                                .where("email = :email")
-                                .bind("email", email)
-                                .execute();
+    try {
+        // Verifica Gestores
+        for (size_t i = 0; i < gestores.size(); ++i) {
+            if (gestores[i]->getEmail() == email) {
+                if (!confirmacao()) {
+                    std::cout << "Operação cancelada.\n";
+                    return;
+                }
 
-        //Caso não encontre o usuário com o email fornecido
-        if (result.count() == 0) {
-            std::cout << "Usuário com email " << email << " não encontrado." << std::endl;
-            return;
-        }
-        Row row = result.fetchOne();//pega a primeira linha do resultado
-        int usuarioId = row[0];// ID do usuário a ser deletado
-        int nivelAcesso = row[1];// Nível de acesso do usuário a ser deletado
+                int id = gestores[i]->getId();
 
-        //Deleta das tabelas especializadas conforme o tipo de usuário
-        if (nivelAcesso == 1) { // Gestor
-            db->getTable("Gestor")
-                .remove()
-                .where("id = :id")
-                .bind("id", usuarioId)
-                .execute();
-        } else if (nivelAcesso == 2 || nivelAcesso == 3) { // Pos-Graduando ou Aluno de Graduacao
-            db->getTable("Estudante")
-                .remove()
-                .where("id = :id")
-                .bind("id", usuarioId)
-                .execute();
+                db->getTable("Gestor")
+                  .remove()
+                  .where("id = :id")
+                  .bind("id", id)
+                  .execute();
 
-            if (nivelAcesso == 2) { // Pos-Graduando
-                db->getTable("PosGraduacao")
-                    .remove()
-                    .where("id = :id")
-                    .bind("id", usuarioId)
-                    .execute();
+                db->getTable("Usuario")
+                  .remove()
+                  .where("id = :id")
+                  .bind("id", id)
+                  .execute();
+
+                for (size_t j = 0; j < usuariosCarregados.size(); ++j) {
+                    if (usuariosCarregados[j]->getEmail() == email) {
+                        delete usuariosCarregados[j];
+                        usuariosCarregados.erase(usuariosCarregados.begin() + j);
+                        break;
+                    }
+                }
+
+                delete gestores[i];
+                gestores.erase(gestores.begin() + i);
+
+                std::cout << "Gestor deletado!\n";
+                return;
             }
         }
-        //Deleta da tabela base Usuario
-        usuarioTable.remove()
-                    .where("id = :id")
-                    .bind("id", usuarioId)
-                    .execute();
 
-        std::cout << "Usuário deletado com sucesso!" << std::endl;// Mensagem de sucesso
+        // Verifica Estudantes
+        for (size_t i = 0; i < estudantes.size(); ++i) {
+            if (estudantes[i]->getEmail() == email) {
+                if (!confirmacao()) {
+                    std::cout << "Operação cancelada.\n";
+                    return;
+                }
+
+                int id = estudantes[i]->getId();
+
+                db->getTable("Estudante")
+                  .remove()
+                  .where("id = :id")
+                  .bind("id", id)
+                  .execute();
+
+                db->getTable("Usuario")
+                  .remove()
+                  .where("id = :id")
+                  .bind("id", id)
+                  .execute();
+
+                for (size_t j = 0; j < usuariosCarregados.size(); ++j) {
+                    if (usuariosCarregados[j]->getEmail() == email) {
+                        delete usuariosCarregados[j];
+                        usuariosCarregados.erase(usuariosCarregados.begin() + j);
+                        break;
+                    }
+                }
+
+                delete estudantes[i];
+                estudantes.erase(estudantes.begin() + i);
+
+                std::cout << "Estudante deletado!\n";
+                return;
+            }
+        }
+
+        // Verifica Pós-Graduacao
+        for (size_t i = 0; i < posGraduandos.size(); ++i) {
+            if (posGraduandos[i]->getEmail() == email) {
+                if (!confirmacao()) {
+                    std::cout << "Operação cancelada.\n";
+                    return;
+                }
+
+                int id = posGraduandos[i]->getId();
+
+                db->getTable("PosGraduacao")
+                  .remove()
+                  .where("id = :id")
+                  .bind("id", id)
+                  .execute();
+
+                db->getTable("Usuario")
+                  .remove()
+                  .where("id = :id")
+                  .bind("id", id)
+                  .execute();
+
+                for (size_t j = 0; j < usuariosCarregados.size(); ++j) {
+                    if (usuariosCarregados[j]->getEmail() == email) {
+                        delete usuariosCarregados[j];
+                        usuariosCarregados.erase(usuariosCarregados.begin() + j);
+                        break;
+                    }
+                }
+
+                delete posGraduandos[i];
+                posGraduandos.erase(posGraduandos.begin() + i);
+
+                std::cout << "Pós-Graduando deletado!\n";
+                return;
+            }
+        }
+
+        std::cout << "Usuário com email '" << email << "' não encontrado.\n";
+
     } catch (const mysqlx::Error &err) {
-        std::cerr << "Erro ao deletar usuário: " << err.what() << std::endl;//mensagem de erro
+        std::cerr << "Erro ao deletar usuário: " << err.what() << std::endl;
     }
 }
+
+void Gestor::cadastrarGestor() {
+    std::string nome, email, senha;
+
+    std::cout << "\n=== CADASTRAR GESTOR ===\n";
+    std::cout << "Digite o nome do gestor: ";
+    std::cin >> nome;
+    std::cout << "Digite o email do gestor: ";
+    std::cin >> email;
+    std::cout << "Digite a senha do gestor: ";
+    std::cin >> senha;
+
+    try {
+        // Insere na tabela Usuario (base)
+        Table usuarioTable = db->getTable("Usuario");
+        Result res = usuarioTable.insert("nome", "email", "senha", "nivelAcesso")
+            .values(nome, email, senha, 1) // 1 = Gestor
+            .execute();
+
+        // Recupera o ID do gestor recém-criado
+        int gestorId = res.getAutoIncrementValue();
+
+        // Insere na tabela Gestor
+        db->getTable("Gestor")
+            .insert("id", "cadastrado_por_gestor_id") // ID do gestor e quem cadastrou
+            .values(gestorId, getId()) // quem cadastrou é o gestor atual
+            .execute();
+
+        std::cout << "Gestor " << nome << " cadastrado com sucesso!\n";
+
+    } catch (const mysqlx::Error &err) {
+        std::cerr << "Erro ao cadastrar gestor: " << err.what() << std::endl;
+    }
+}
+void Gestor::cadastrarEstudante() {
+    std::string nome, email, senha, matricula, curso, nivel;
+    int nivelInt;
+    int nivelAcesso;
+
+    std::cout << "Digite o nome do estudante: ";
+    std::cin >> nome;
+    std::cout << "Digite o email do estudante: ";
+    std::cin >> email;
+    std::cout << "Digite a senha do estudante: ";
+    std::cin >> senha;
+    std::cout << "Digite a matrícula do estudante: ";
+    std::cin >> matricula;
+    std::cout << "Digite o curso do estudante: ";
+    std::cin >> curso;
+    std::cout << "Digite o numero correspondente ao nível (1-Graduacao, 2-Mestrado, 3-Doutorado, 4-PosDoutorado): ";
+    std::cin >> nivelInt;
+
+    switch(nivelInt) {
+        case 1: nivel = "Graduacao"; nivelAcesso = 2; break;
+        case 2: nivel = "Mestrado"; nivelAcesso = 3; break;
+        case 3: nivel = "Doutorado"; nivelAcesso = 3; break;
+        case 4: nivel = "PosDoutorado"; nivelAcesso = 3; break;
+        default: nivel = "Desconhecido"; nivelAcesso = 2; break;
+    }
+    try {
+        // Inserir na tabela Usuario
+        Table usuarioTable = db->getTable("Usuario");
+        Result res = usuarioTable.insert("nome", "email", "senha", "nivelAcesso")
+                                  .values(nome, email, senha, nivelAcesso) 
+                                  .execute();
+
+        int usuarioId = res.getAutoIncrementValue();
+
+        Estudante* estudante = new Estudante(nome, email, senha, nivelAcesso, db, matricula, curso, nivel);
+        estudante->setId(usuarioId);
+        this->estudantes.push_back(estudante);
+
+        // Inserir na tabela Estudante
+        db->getTable("Estudante")
+          .insert("id", "matricula", "curso", "nivel", "cadastrado_por_gestor_id")
+          .values(usuarioId, matricula, curso, nivel, getId())
+          .execute();
+
+        
+        std::cout << "Estudante " << nome << " cadastrado com sucesso!\n";
+
+        // Se o gestor tem laboratório associado, associa automaticamente
+        if (this->laboratorio != nullptr) {
+            this->associarEstudanteAoLaboratorio(estudante, this->laboratorio->getId(), "Aluno");
+            std::cout << "Estudante associado automaticamente ao laboratório: " 
+                      << this->laboratorio->getNome() << std::endl;
+        }
+
+    } catch (const mysqlx::Error &err) {
+        std::cerr << "Erro ao cadastrar estudante: " << err.what() << std::endl;
+    }
+}
+
+
+ 
+
 
 // void Gestor::listarUsuarios() {
 //     std::cout << "\n=== LISTANDO USUÁRIOS (via Gestor) ===" << std::endl;

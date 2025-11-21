@@ -64,11 +64,11 @@ void menuGestor(Gestor* gestor) {
                 break;
             case 5:
                 if(associado) gestor->menuReagentesRestritos();
-                else gestor->deletarGestor();
+                else gestor->deletarUsuario();
                 break;
             case 6: if(associado) gestor->menuReagentesRestritos(); break;
             case 7: if(associado) gestor->retirarReagente(); break;
-            case 8: if(associado) gestor->deletarEstudante(); break;
+            case 8: if(associado) gestor->deletarUsuario(); break;
             case 9: if(associado) gestor->historicoRetiradas(); break;
             case 10: if(associado) gestor->cadastrarEstudante(); break;
             case 11: if(associado) gestor->cadastrarGestor(); break;
