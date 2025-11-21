@@ -5,9 +5,9 @@
 
 Alerta::Alerta(Reagente *reagenteEmAlerta,  bool situacao)
     : _reagenteEmAlerta(reagenteEmAlerta), _situacao(situacao) {
-        time_t *agora;
-        time(agora);
-        _dataEmissao = ctime(agora);
+        time_t agora;
+        time(&agora);
+        _dataEmissao = ctime(&agora);
     }
 
 

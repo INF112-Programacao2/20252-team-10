@@ -16,10 +16,10 @@ private:
         //Construtor
         Gestor(std::string nome, std::string email, std::string senha, int nivelAcesso, Schema* db);
 
-         std::vector<Usuario*>usuariosCarregados;
-         std::vector<Gestor*>gestores;
-         std::vector<Estudante*>estudantes;
-         std::vector<PosGraduacao*>posGraduandos;
+         static std::vector<Usuario*>usuariosCarregados;
+         static std::vector<Gestor*>gestores;
+         static std::vector<Estudante*>estudantes;
+         static std::vector<PosGraduacao*>posGraduandos;
 
     // static PosGraduacao** posGraduandos;
     // static int quantidadePos;
