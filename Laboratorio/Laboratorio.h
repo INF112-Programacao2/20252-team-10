@@ -11,6 +11,7 @@
 #include "../Alerta/Alerta.h"
 #include "../Alerta/AlertaQuantidade.h"
 #include "../Alerta/AlertaValidade.h"
+#include <mysql-cppconn/mysqlx/xdevapi.h>
 
 
 //Declaração das classes
@@ -24,7 +25,7 @@ using namespace mysqlx;
 class Laboratorio{
     private:
         Schema *db;  //Ponteiro para o banco de dados
-        int id;      //D único do laboratório
+        int id;      //ID único do laboratório
         std::string nome;  //Nome do laboratório
         std::string departamento;  //Departamento ao qual pertence
 
@@ -94,7 +95,7 @@ class Laboratorio{
 
         //Getters
         // Retorna um vetor de ponterio com todos ussuarios fazendo um upcasting
-        std::vector<Usuario *> getUsuarios();
+        std::vector<Usuario *> getVetorUsuarios();
         int getId() const { return id; }
         std::string getNome() { return nome; }
         std::string getDepartamento() const { return departamento; }
