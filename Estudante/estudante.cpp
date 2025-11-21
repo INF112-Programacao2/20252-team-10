@@ -122,7 +122,7 @@ void Estudante::associarLaboratorio(Laboratorio* laboratorio, const std::string&
     if (!laboratorio || !db) {
         std::cerr << "[Erro] Paramêtros do laboratorio são nulos." << std::endl;
         return;
-    }   //Acessa a tabela associado para associar estudante ao laboratorio 
+    }   //Acessa a tabela associado para associar estudante ao laboratorio
         //Tal tabela representa as possibilidades de um estudante esta associado a varios laboratorios
         //E o laboratório poder ter varios estudantes
     try{
@@ -229,8 +229,8 @@ void Estudante::acessarLaboratorios() {
 
     std::cout << "\n Seus Laboratórios \n";
     for (const auto& lab : laboratorios) {
-        std::cout << "- ID: " << lab->getId() 
-                  << " | Nome: " << lab->getNome() 
+        std::cout << "- ID: " << lab->getId()
+                  << " | Nome: " << lab->getNome()
                   << " | Dep: " << lab->getDepartamento() << "\n";
     }
     std::cout << "\n";
@@ -244,10 +244,10 @@ void Estudante::consultarEstoque() {
     }
 
     std::cout << "\n Consulta de Estoque \n";
-    
+
     for (Laboratorio* lab : this->laboratorios) {
         std::cout << "\n>> Laboratório: " << lab->getNome() << "\n";
-        
+
         // Usa a função do laboratório para pegar a lista completa
         std::vector<Reagente*> lista = lab->listarReagentes("");
 
@@ -256,9 +256,9 @@ void Estudante::consultarEstoque() {
             continue;
         }
 
-        std::cout << std::left 
-                  << std::setw(25) << "Nome" 
-                  << std::setw(15) << "Qtd" 
+        std::cout << std::left
+                  << std::setw(25) << "Nome"
+                  << std::setw(15) << "Qtd"
                   << std::setw(15) << "Nível" << "\n";
         std::cout << "\n";
 
@@ -269,7 +269,7 @@ void Estudante::consultarEstoque() {
             else if(r->getNivelAcesso() == 2) nivelStr = "Livre";
             else nivelStr = "Pós-Grad";
 
-            std::cout << std::left 
+            std::cout << std::left
                       << std::setw(25) << r->getNome()
                       << std::setw(15) << (std::to_string(r->getQuantidade()) + " " + r->getUnidadeMedida())
                       << std::setw(15) << nivelStr << "\n";
@@ -314,6 +314,6 @@ void Estudante::retirarReagente() {
 
     // Processar Retirada (O Laboratório faz as verificações de estoque e validade)
     std::string resultado = labEscolhido->registrarRetirada(this, nomeReagente, qtd);
-    
+
     std::cout << "\nResultado: " << resultado << "\n";
 }

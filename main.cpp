@@ -8,12 +8,13 @@
 using namespace mysqlx;
 
 // Função auxiliar para confirmação
-bool confirmacao1() {
+bool confirmacaoMenu() {
     std::cout << "Tem certeza em realizar esta ação? Digite S para Sim e N para Não: ";
     char resposta;
     std::cin >> resposta;
     return (resposta == 'S' || resposta == 's');
 }
+
 
 void menuGestor(Gestor* gestor) {
     int opcao = 0;
@@ -121,7 +122,7 @@ void menuEstudante(Estudante* estudante) {
                 std::cout << "Lab acessado" << std::endl;
                 break;
             case 2:
-                if (confirmacao1()) {
+                if (confirmacaoMenu()) {
                     std::cout << "Reagente retirado" << std::endl;
                     //estudante->retirarReagente();   // Função interna cuida da retirada e registro
                 }

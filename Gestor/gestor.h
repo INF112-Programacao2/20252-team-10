@@ -16,28 +16,20 @@ private:
     public:
         //Construtor
         Gestor(std::string nome, std::string email, std::string senha, int nivelAcesso, Schema* db);
-        
+
         static std::vector<Usuario*>usuariosCarregados;
         static std::vector<Gestor*>gestores;
         static std::vector<Estudante*>estudantes;
         static std::vector<PosGraduacao*>posGraduandos;
 
-    static PosGraduacao** posGraduandos;
-    static int quantidadePos;
-    static int capacidadePos;
+    // static PosGraduacao** posGraduandos;
+    // static int quantidadePos;
+    // static int capacidadePos;
 
-        //Demais funções
-        void cadastrarUsuario();
-        void deletarUsuario();
-        void associarLaboratorio();
-        void associarEstudanteAoLaboratorio(Estudante* estudante, int idLaboratorio, const std::string& papel);
-        void carregarUsuarios();
-        void listarUsuarios();
-        void cadastrarGestor();
-        void cadastrarEstudante();
-        
+    ~Gestor();
+
+
         //Menu principal de gerenciamento do laboratório
-        void gerenciarLaboratorio();
     //Getters
     Laboratorio* getLaboratorio();
 
@@ -56,16 +48,16 @@ private:
     void editarReagente();
     void excluirReagente();
     void filtrarReagentes();
-    
+
     // Menu principal de gerenciamento do laboratório
     void gerenciarLaboratorio();
 
     //sets
     void setLaboratorio(Laboratorio* lab);
-    
+
     //cadastra um novo reagente no laboratorio gerenciado por este gestor
     void cadastrarReagente();
-    
+
     //O Gestor tem acesso total
     void acessarReagentesAlerta();
     void listarReagentesRestritos();
@@ -78,6 +70,9 @@ private:
     void cadastrarGestor();
     void deletarGestor();
     void deletarEstudante();
+
+
+
 };
 
 #endif

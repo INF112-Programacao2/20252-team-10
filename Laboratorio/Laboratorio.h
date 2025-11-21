@@ -95,7 +95,7 @@ class Laboratorio{
 
         //Getters
         // Retorna um vetor de ponterio com todos ussuarios fazendo um upcasting
-        std::vector<Usuario *> getVetorUsuarios();
+        std::vector<Usuario *> getUsuarios();
         int getId() const { return id; }
         std::string getNome() { return nome; }
         std::string getDepartamento() const { return departamento; }
@@ -126,7 +126,9 @@ class Laboratorio{
         std::vector<Estudante*> getEstudantes();
         void listarEstudantes();
         std::string associarEstudante(Estudante* estudante);
-        std::string desassociarEstudante(Estudante* estudante);
+        void desassociarEstudante(Estudante* estudante);
+        void menuDesassociarEstudante();
+        void menuAssociarEstudante();
 
     };
 #endif

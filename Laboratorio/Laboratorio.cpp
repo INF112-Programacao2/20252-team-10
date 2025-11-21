@@ -593,6 +593,8 @@ void Laboratorio::desassociarEstudante(Estudante* estudante) {
     std::cout << "Estudante desassociado com sucesso!\n";
 }
 
+
+
 void Laboratorio::menuDesassociarEstudante() {
     std::cout << "\n=== Estudantes associados ===\n";
 
@@ -638,11 +640,11 @@ void Laboratorio::menuDesassociarEstudante() {
 void Laboratorio::menuAssociarEstudante() {
 std::cout << "\n=== Estudantes e Pós-Graduandos disponíveis ===\n";
     // Carrega listas já existentes no Gestor
-    Estudante** estudantes = Gestor::estudantes;
-    int qtdEstudantesGraduacao = Gestor::quantidadeEstudantes;
+    std::vector<Estudante *> estudantes = Gestor::estudantes;
+    int qtdEstudantesGraduacao = Gestor::estudantes.size();
 
-    PosGraduacao** pos = Gestor::posGraduandos;
-    int qtdEstudantesPos = Gestor::quantidadePos;
+    std::vector<PosGraduacao *> pos = Gestor::posGraduandos;
+    int qtdEstudantesPos = Gestor::posGraduandos.size();
 
     if (qtdEstudantesGraduacao == 0 && qtdEstudantesPos == 0) {
         std::cout << "Nenhum estudante encontrado.\n";
@@ -700,9 +702,9 @@ std::cout << "\n=== Estudantes e Pós-Graduandos disponíveis ===\n";
 
     // Associar ao laboratório
     if (estudanteSelecionado) {
-        std::cout << associarEstudante(estudanteSel) << "\n";
+        std::cout << associarEstudante(estudanteSelecionado) << "\n";
     } else {
-        std::cout << associarEstudante(posSel) << "\n";
+        std::cout << associarEstudante(posSelecionado) << "\n";
     }
 }
 

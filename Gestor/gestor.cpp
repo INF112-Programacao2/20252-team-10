@@ -11,6 +11,12 @@
 using namespace mysqlx;
 
 
+bool confirmacao() {
+    std::cout << "Tem certeza em realizar esta ação? Digite S para Sim e N para Não: ";
+    char resposta;
+    std::cin >> resposta;
+    return (resposta == 'S' || resposta == 's');
+    }
 
 // Construtor
 Gestor::Gestor(std::string nome, std::string email, std::string senha, int nivelAcesso, Schema* db) :
@@ -1266,7 +1272,7 @@ void Gestor::sairLaboratorio() {
         // Atualizar no banco de dados - remover associação
         Table gestorTable = db->getTable("Gestor");
         gestorTable.update()
-            .set("laboratorio_id", mysqlx::null())
+            .set("laboratorio_id", mysqlx::nullvalue)
             .where("id = :id")
             .bind("id", this->getId())
             .execute();
@@ -1292,7 +1298,7 @@ void Gestor::historicoRetiradas() {
         RowResult res = retiradaTable.select("reagente_id", "usuario_id", "quantidadeRetirada", "dataHoraRetirada")
             .where("EXISTS (SELECT 1 FROM Reagente R WHERE R.id = reagente_id AND R.laboratorio_id = :lab_id)")
             .bind("lab_id", laboratorio->getId())
-            .orderBy("dataHoraRetirada DESC")
+            // .orderBy("dataHoraRetirada DESC")
             .execute();
         std::cout << std::left
                   << std::setw(25) << "Reagente"
@@ -1312,6 +1318,8 @@ void Gestor::historicoRetiradas() {
             std::string nomeReagente = "N/A";
             std::string unidade = "";
             std::string nomeUsuario = "N/A";
+
+            RowResult usuarioRes = db->getTable("Usuario").select("nome").where("id =: usuarioID").bind("usuarioID",row[0].get<int>()).execute();
 
             if (reagenteRes.count() > 0) {
                 Row reagenteRow = reagenteRes.fetchOne();
@@ -1363,7 +1371,7 @@ void Gestor::desassociarEstudantes() {
             int estudanteId = row[0].get<int>();
 
             // Buscar estudante
-            for (int i = 0; i < quantidadeEstudantes; i++) {
+            for (int i = 0; i < estudantes.size(); i++) {
                 if (estudantes[i]->getId() == estudanteId) {
                     estudantesAssociados.push_back(estudantes[i]);
                     break;

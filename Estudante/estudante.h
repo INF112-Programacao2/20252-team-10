@@ -3,7 +3,7 @@
 #include "../Usuario/usuario.h"
 #include <string>
 #include <mysql-cppconn/mysqlx/xdevapi.h>
-#include <vector> 
+#include <vector>
 
 // Evitar dependência circular
 class Laboratorio;
@@ -38,14 +38,20 @@ class Estudante : public Usuario{
         void setNivel(std::string nivel);
 
         // Demais metodos
-        //Adicionar laboratorio a estudante 
+        //Adicionar laboratorio a estudante
         void adicionarLaboratorio(Laboratorio * laboratorio);
         // Remove o objeto no laboratorio no objeto estudante
         void removerLaboratorioObjeto(Laboratorio* laboratorio);
-        // Remover laboratorio do estduante 
+        // Remover laboratorio do estduante
         void removerLaboratorio(Laboratorio* laboratorio, Schema* db);
         // Associa estudante ao laboratorio
         void associarLaboratorio(Laboratorio* laboratorio, const std::string& papel, Schema* db);
+
+        void acessarLaboratorios();
+
+        void consultarEstoque();
+
+        void retirarReagente();
         // esta funçao checa se o nivel de acesso do estudante e suficiente.
         void acessarReagenteRestrito(int idReagente) override;
 };
