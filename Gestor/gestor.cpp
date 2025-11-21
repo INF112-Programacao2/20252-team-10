@@ -1237,11 +1237,15 @@ void Gestor::retirarReagente() {
         // Atualizar na memória
         reagenteEscolhido->setQuantidade(novaQuantidade);
 
+        time_t *agora;
+        time(agora);
+        std::string hora = ctime(agora);
+
         // Registrar a retirada (se a tabela existir)
         try {
             Table retiradaTable = db->getTable("Retirada");
             retiradaTable.insert("reagente_id", "usuario_id", "quantidadeRetirada", "dataHoraRetirada")
-                .values(reagenteEscolhido->getId(), this->getId(), quantidade, mysqlx::expr("NOW()"))
+                .values(reagenteEscolhido->getId(), this->getId(), quantidade, hora)
                 .execute();
         } catch (...) {
             // Tabela Retirada pode não existir, continuar normalmente

@@ -1,10 +1,9 @@
 #ifndef CLASSE_GESTOR
 #define CLASSE_GESTOR
-
+#include <mysql-cppconn/mysqlx/xdevapi.h>
 #include "../Usuario/usuario.h"
 #include "../Laboratorio/Laboratorio.h"
 #include <string>
-#include <mysql-cppconn/mysqlx/xdevapi.h>
 #include "../Reagente/reagente.h"
 #include "../PosGraduacao/posgraduacao.h"
 
@@ -17,10 +16,10 @@ private:
         //Construtor
         Gestor(std::string nome, std::string email, std::string senha, int nivelAcesso, Schema* db);
 
-        static std::vector<Usuario*>usuariosCarregados;
-        static std::vector<Gestor*>gestores;
-        static std::vector<Estudante*>estudantes;
-        static std::vector<PosGraduacao*>posGraduandos;
+         std::vector<Usuario*>usuariosCarregados;
+         std::vector<Gestor*>gestores;
+         std::vector<Estudante*>estudantes;
+         std::vector<PosGraduacao*>posGraduandos;
 
     // static PosGraduacao** posGraduandos;
     // static int quantidadePos;

@@ -640,11 +640,17 @@ void Laboratorio::menuDesassociarEstudante() {
 void Laboratorio::menuAssociarEstudante() {
 std::cout << "\n=== Estudantes e Pós-Graduandos disponíveis ===\n";
     // Carrega listas já existentes no Gestor
-    std::vector<Estudante *> estudantes = Gestor::estudantes;
-    int qtdEstudantesGraduacao = Gestor::estudantes.size();
+    std::vector<Estudante *> estudantes;
+    for(int i = 0; i < gestores[0]->estudantes.size(); i++){
+        estudantes.push_back(gestores[0]->estudantes[i]);
+    }
+    int qtdEstudantesGraduacao = gestores[0]->estudantes.size();
 
-    std::vector<PosGraduacao *> pos = Gestor::posGraduandos;
-    int qtdEstudantesPos = Gestor::posGraduandos.size();
+    std::vector<PosGraduacao *> pos;
+    for(int i = 0; i < gestores[0]->posGraduandos.size(); i++){
+        pos.push_back(gestores[0]->posGraduandos[i]);
+    }
+    int qtdEstudantesPos = gestores[0]->posGraduandos.size();
 
     if (qtdEstudantesGraduacao == 0 && qtdEstudantesPos == 0) {
         std::cout << "Nenhum estudante encontrado.\n";
