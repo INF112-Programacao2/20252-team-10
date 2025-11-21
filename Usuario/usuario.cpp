@@ -1,10 +1,13 @@
 #include "../Usuario/usuario.h"
+#include "../Gestor/gestor.h"
 #include <iostream>
 using namespace mysqlx;
 
 // Construtor
 Usuario::Usuario(std::string nome, std::string email, std::string senha, int nivelAcesso, mysqlx::abi2::r0::Schema* db)
-    : id(-1), nome(nome), email(email), senha(senha), nivelAcesso(nivelAcesso), db(db) {}
+    : id(-1), nome(nome), email(email), senha(senha), nivelAcesso(nivelAcesso), db(db) {
+        cadastradoPor = nullptr;
+    }
 // ID corresponde a -1 quando o usuário ainda não foi salvo no banco de dados, assim que ao salvar,
 // o ID será atualizado com o valor do banco de dados
 
@@ -37,6 +40,10 @@ int Usuario::getNivelAcesso() const {
 std::string Usuario::getSenha() const {
     return senha;
 }
+// Retorna o gestor que cadastrou o osuário
+Gestor * Usuario::getCadastradoPor() const {
+    return cadastradoPor;
+}
 
 
 // Sets
@@ -60,6 +67,9 @@ void Usuario::setNivelAcesso(int nivelAcesso) {
 // Atribui a nova senha de acesso do usuario
 void Usuario::setSenha(const std::string s) {
     this->senha = s;
+}
+void Usuario::setCadastradoPor (Gestor * gestor){
+    this->cadastradoPor = gestor;
 }
 
 // Demais métodos

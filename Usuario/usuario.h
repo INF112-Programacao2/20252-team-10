@@ -6,19 +6,12 @@
 #include "../Laboratorio/Laboratorio.h"
 
 class Laboratorio;
+class Gestor;
 
 using namespace mysqlx;
 
 // Struct criada devido da classe ser abstrata devido o metodo puramente virtual,
 //criou-se uma struct auxiliar para contribuir em fazer login do usuário
-
-struct DadosUsuario {
-    int id;
-    std::string nome;
-    std::string email;
-    std::string senha;
-    int nivelAcesso;
-};
 class Usuario{
     protected:
         Schema *db; // Ponteiro para o esquema do banco de dados
@@ -29,6 +22,7 @@ class Usuario{
         int id;            // ID do Usuario, por normalização, o ID inicial será -1, significa que não foi
         // cadastrado ou encontrado, assim que algumas dessas sentenças for verdadeiras, o BD retorna seu ID
         int nivelAcesso; // Corresponde ao Tipo de Usuário, devido que a depender possui influência no acesso dos Reagentes
+        Gestor * cadastradoPor;
     public:
         // Construtor
         Usuario(std::string nome, std::string email, std::string senha, int nivelAcesso, Schema *db); // Com os parametros
@@ -47,18 +41,21 @@ class Usuario{
         virtual int getNivelAcesso() const;
         // Retorna a senha de acesso do usuario
         virtual std::string getSenha() const;
+        virtual Gestor* getCadastradoPor() const;
 
         // Sets
         // Atribui o nome do usuario
-        virtual void setNome(std::string nome);
+        virtual void setNome(const std::string nome);
         // Atribui o email do usuario
-        virtual void setEmail(std::string email);
+        virtual void setEmail(const std::string email);
         // Atribui o ID do usuario
         virtual void setId(int id);
         // Atribui o nivel de acesso do usuario
         virtual void setNivelAcesso(int nivelAcesso);
         // Atribui senha do usuario
         virtual void setSenha(const std::string senha);
+        // Atribui o objeto gestor que cadastrou o usuário
+        virtual void setCadastradoPor(Gestor * Gestor);
 
         // Demais
         // Imprime o perfil do Usuario
