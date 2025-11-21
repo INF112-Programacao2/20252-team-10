@@ -54,7 +54,6 @@ void Laboratorio::carregarReagentesDoDB() {
         SqlResult res = db->getSession().sql("SELECT *, DATE_FORMAT(validade, '%Y-%m-%d') as data_formatada FROM LabUFV.Reagente AS R LEFT JOIN LabUFV.ReagenteLiquido AS RL ON R.id = RL.id LEFT JOIN LabUFV.ReagenteSolido AS RS ON R.id = RS.id ORDER BY R.nome ASC").execute();
 
         int size = res.count();
-        std::cout << size << std::endl;
         for(int j = 0; j < size; j++){
             Row row = res.fetchOne();
             Reagente* novoReagente = nullptr;
@@ -753,7 +752,7 @@ void Laboratorio::adicionarEstudante(Estudante* estudante) {
         std::cerr << "Erro: estudante inválido.\n";
         return;
     }
-    int nivel = estudante->getNivelAcesso();   // 
+    int nivel = estudante->getNivelAcesso();   //
     // -------------------------------
     // Estudante de GRADUAÇÃO
     // -------------------------------

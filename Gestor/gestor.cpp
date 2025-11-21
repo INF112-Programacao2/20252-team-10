@@ -196,13 +196,14 @@ void Gestor::carregarUsuarios(Schema *db)
                 continue;
 
             Row gestor = gestores.fetchOne();
+            if(!(gestor[0].isNull())){
             int cadastradoPorId = gestor[0].get<int>();
-
-            Gestor *gestorObj = getGestorById(id);
             Gestor *gestorCriador = getGestorById(cadastradoPorId);
-
+            Gestor *gestorObj = getGestorById(id);
             if (gestorObj)
                 gestorObj->setCadastradoPor(gestorCriador);
+            }
+
         }
 
         // -------------------------------------------------------
