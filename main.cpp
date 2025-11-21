@@ -80,23 +80,17 @@ void menuGestor(Gestor* gestor) {
                 else gestor->deletarUsuario();
                 break;
             case 5:
-                if(associado) gestor->retirarReagente();
+                if(associado) gestor->menuReagentesRestritos();
+                else gestor->deletarUsuario();
                 break;
-            case 6:
-                if(associado) gestor->historicoRetiradas();
-                break;
-            case 7:
-                if(associado) gestor->cadastrarUsuario();
-                break;
-            case 8:
-                if(associado) gestor->listarUsuarios();
-                break;
-            case 9:
-                if(associado) gestor->deletarUsuario();
-                break;
-            case 10:
-                if(associado) gestor->sairLaboratorio();
-                break;
+            case 6: if(associado) gestor->menuReagentesRestritos(); break;
+            case 7: if(associado) gestor->retirarReagente(); break;
+            case 8: if(associado) gestor->deletarUsuario(); break;
+            case 9: if(associado) gestor->historicoRetiradas(); break;
+            case 10: if(associado) gestor->cadastrarEstudante(); break;
+            case 11: if(associado) gestor->cadastrarGestor(); break;
+            case 12: if(associado) gestor->listarUsuarios(); break;
+            case 13: if(associado) gestor->sairLaboratorio(); break;
             case 0:
                 std::cout << "Saindo...\n";
                 break;
