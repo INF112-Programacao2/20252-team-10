@@ -130,20 +130,14 @@ bool Usuario::validarSenha(const std::string& senha) {
         if(senha.length() < 6){ // Verifica se a senha tem pelo menos 6 caracteres
             throw std::invalid_argument("A senha deve ter pelo menos 6 caracteres.");
         }
+        if (senha.find(' ') != std::string::npos) {
+            throw std::invalid_argument("A senha não pode conter espaços.");
+        }
         return true;
 }
 
 bool Usuario::verificarSenha(std::string senha) {
     return this->senha == senha;
-}
-
-void Usuario::alterarSenha(std::string senhaAntiga, std::string senhaNova) {
-    if (verificarSenha(senhaAntiga)) {
-        this->senha = senhaNova;
-        std::cout << "Senha alterada com sucesso!" << std::endl;
-    } else {
-        std::cout << "Senha antiga incorreta!" << std::endl;
-    }
 }
 
 //Implementacao do metodo para consultar reagentes no DB.
