@@ -298,7 +298,9 @@ INSERT INTO Alerta (reagente_id, dataHoraEmissao, tipo, situacao) VALUES
 -- 11. Tabela Associado (N:M Estudante x Laboratorio)
 -- ----------------------------
 INSERT INTO Associado (estudante_id, laboratorio_id, papel) VALUES
-(4, 1, 'Pesquisador'),
+(3, 1, 'IC'),
+(4, 1, 'IC'),
 (5, 2, 'Pesquisador'),
-(6, 1, 'Pesquisador');
+(6, 1, 'Pesquisador'),
+(7, 1, 'Mestrando');
 -- ==========================
