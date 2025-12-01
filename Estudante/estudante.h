@@ -31,6 +31,7 @@ class Estudante : public Usuario{
         std::string getMatricula() const;
         std::string getCurso() const;
         std::string getNivel() const;
+        std::vector<std::pair<Laboratorio*, std::string>> getLaboratorios() const;
 
         // Sets
         void setMatricula(const std::string & matricula);
@@ -48,7 +49,7 @@ class Estudante : public Usuario{
         void associarLaboratorio(Laboratorio* laboratorio, const std::string& papel);
 
         void acessarLaboratorios();
-
+        void consultarEstoqueLaboratorio(Laboratorio* lab);
         void consultarEstoque();
 
         void retirarReagente();
