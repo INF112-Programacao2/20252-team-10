@@ -153,8 +153,7 @@ void menuEstudante(Estudante *estudante)
         switch (opcao)
         {
         case 1:
-            // estudante->acessarLaboratorios();    // Dentro dessa função, o usuário pode acessar laboratório, listar usuários, reagentes, filtrar, etc.
-            std::cout << "Lab acessado" << std::endl;
+            estudante->acessarLaboratorios(); // Dentro dessa função, o usuário pode acessar laboratório, listar usuários, reagentes, filtrar, etc.
             break;
         case 2:
             if (confirmacaoMenu())

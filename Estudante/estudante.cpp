@@ -1,8 +1,10 @@
 #include "estudante.h"
 #include "../Laboratorio/Laboratorio.h"
+#include "../PosGraduacao/posgraduacao.h"
 #include <iostream>
 #include <vector>
 #include <iomanip>
+#include <limits>
 using namespace mysqlx;
 
 // Construtor
@@ -24,7 +26,9 @@ std::string Estudante::getNivel() const{
     return nivel;
 }
 
-
+std::vector<std::pair<Laboratorio*, std::string>> Estudante::getLaboratorios() const {
+    return laboratorios;
+}
 
 // Sets
 void Estudante::setMatricula(const std::string &matricula){
@@ -39,7 +43,6 @@ void Estudante::setNivel(const std::string &nivel){
 
 //Outros métodos
 //Adicionar laboratorio a estudante
-// Estudante.cpp
 void Estudante::adicionarLaboratorio(Laboratorio* laboratorio, const std::string& papel) {
     for (int i = 0; i < (int)laboratorios.size(); i++) {
         if (laboratorios[i].first->getId() == laboratorio->getId()) {
@@ -83,6 +86,7 @@ void Estudante::removerLaboratorioObjeto(Laboratorio *laboratorio)
         std::cout << "Aviso: Associação com " << laboratorio->getNome() << " não encontrada em memória." << std::endl;
     }
 }
+
 // Remover laboratorio do estduante
 void Estudante::removerLaboratorio(Laboratorio* laboratorio, Schema* db) {
     // Verifica se o ponteiro do laboratorio e db são inválidos
@@ -130,6 +134,7 @@ void Estudante::removerLaboratorio(Laboratorio* laboratorio, Schema* db) {
             std::cerr << "Erro geral ao remover laboratório: " << ex.what() << std::endl;
         }
 }
+
 // Associa estudante ao laboratorio
 void Estudante::associarLaboratorio(Laboratorio* laboratorio, const std::string& papel) {
     // Verifica se o ponteiro do laboratorio  inválidos
@@ -241,18 +246,129 @@ void Estudante::acessarLaboratorios() {
         return;
     }
 
-    std::cout << "\n Seus Laboratórios \n";
-    for (int i = 0; i < (int)laboratorios.size(); i++) {
-    Laboratorio* lab = laboratorios[i].first;  // pega o ponteiro
-    std::string papel = laboratorios[i].second; // pega o papel
+    std::cout << "\n=== SEUS LABORATÓRIOS ===\n";
+    
+    for (int i = 0; i < laboratorios.size(); i++) {
+        Laboratorio* lab = laboratorios[i].first;
+        std::string papel = laboratorios[i].second;
 
-    std::cout << "- ID: " << lab->getId()
-              << " | Nome: " << lab->getNome()
-              << " | Dep: " << lab->getDepartamento()
-              << " | Papel: " << papel << "\n";
+        std::cout << "\n[" << i + 1 << "] " << lab->getNome() 
+                  << " (" << lab->getDepartamento() << ")\n";
+        std::cout << "   Papel: " << papel << "\n";
+        std::cout << "   ID: " << lab->getId() << "\n";
     }
 
-    std::cout << "\n";
+    // Opção para gerenciar um laboratório específico
+    std::cout << "\nO que deseja fazer?\n";
+    std::cout << "1. Ver reagentes de um laboratório\n";
+    std::cout << "2. Retirar reagente de um laboratório\n";
+    std::cout << "3. Consultar estoque geral\n";
+    std::cout << "0. Voltar\n";
+    std::cout << "Escolha: ";
+    
+    int opcao;
+    std::cin >> opcao;
+
+    switch (opcao) {
+        case 1: {
+            if (laboratorios.size() == 1) {
+                // Se só tem um laboratório, usa ele diretamente
+                consultarEstoqueLaboratorio(laboratorios[0].first);
+            } else {
+                std::cout << "\nEscolha o laboratório:\n";
+                for (int i = 0; i < laboratorios.size(); i++) {
+                    std::cout << i + 1 << ". " << laboratorios[i].first->getNome() << "\n";
+                }
+                std::cout << "Opção: ";
+                
+                int escolha;
+                std::cin >> escolha;
+                
+                if (escolha >= 1 && escolha <= static_cast<int>(laboratorios.size())) {
+                    consultarEstoqueLaboratorio(laboratorios[escolha - 1].first);
+                } else {
+                    std::cout << "Opção inválida!\n";
+                }
+            }
+            break;
+        }
+        case 2:
+            retirarReagente(); 
+            break;
+        case 3:
+            consultarEstoque(); 
+            break;
+        case 0:
+            return;
+        default:
+            std::cout << "Opção inválida!\n";
+    }
+}
+
+// Funcão auxiliar para consultar estoque de um laboratório específico
+void Estudante::consultarEstoqueLaboratorio(Laboratorio* lab) {
+    if (!lab) {
+        std::cout << "Laboratório inválido.\n";
+        return;
+    }
+
+    std::cout << "\n=== ESTOQUE DO LABORATÓRIO " << lab->getNome() << " ===\n";
+    
+    std::vector<Reagente*> lista = lab->listarReagentes("");
+    
+    if (lista.empty()) {
+        std::cout << "Nenhum reagente cadastrado neste laboratório.\n";
+        return;
+    }
+
+    // Cabecalho da tabela
+    std::cout << std::left
+              << std::setw(5) << "ID"
+              << std::setw(25) << "Nome"
+              << std::setw(15) << "Qtd/Unidade"
+              << std::setw(15) << "Validade"
+              << std::setw(10) << "Nível" << "\n";
+    std::cout << std::string(70, '-') << "\n";
+
+    // Lista os reagentes
+    for (Reagente* r : lista) {
+        // Verifica se o estudante tem permissão para ver este reagente
+        if (this->getNivelAcesso() <= r->getNivelAcesso()) {
+            std::string nivelStr;
+            switch(r->getNivelAcesso()) {
+                case 1: nivelStr = "Restrito"; break;
+                case 2: nivelStr = "Livre"; break;
+                case 3: nivelStr = "Pós"; break;
+                default: nivelStr = "Desconhecido";
+            }
+
+            std::cout << std::left
+                      << std::setw(5) << r->getId()
+                      << std::setw(25) << r->getNome()
+                      << std::setw(15) << (std::to_string(r->getQuantidade()) + " " + r->getUnidadeMedida())
+                      << std::setw(15) << r->getDataValidade()
+                      << std::setw(10) << nivelStr << "\n";
+        } else {
+            // Se não tem permissão, mostra apenas nome e indica que é restrito
+            std::cout << std::left
+                      << std::setw(5) << r->getId()
+                      << std::setw(25) << r->getNome()
+                      << std::setw(15) << "***"
+                      << std::setw(15) << "***"
+                      << std::setw(10) << "Restrito" << "\n";
+        }
+    }
+    
+    std::cout << std::string(70, '-') << "\n";
+    
+    // Opção para ver detalhes de um reagente específico
+    std::cout << "\nDigite o ID do reagente para ver detalhes (0 para sair): ";
+    int idReagente;
+    std::cin >> idReagente;
+    
+    if (idReagente > 0) {
+        acessarReagenteRestrito(idReagente);
+    }
 }
 
 // Lista reagentes de todos os laboratórios do estudante
@@ -262,10 +378,10 @@ void Estudante::consultarEstoque() {
         return;
     }
 
-    std::cout << "\n Consulta de Estoque \n";
+    std::cout << "\n=== CONSULTA DE ESTOQUE GERAL ===\n";
 
     // Itera sobre o vetor de pair<Laboratorio*, string>
-    for (size_t i = 0; i < laboratorios.size(); i++) {
+    for (int i = 0; i < laboratorios.size(); i++) {
         std::pair<Laboratorio*, std::string> p = laboratorios[i];
         Laboratorio* lab = p.first;
         std::string papel = p.second;
@@ -285,21 +401,30 @@ void Estudante::consultarEstoque() {
                   << std::setw(15) << "Qtd"
                   << std::setw(15) << "Nível" << "\n\n";
 
-        for (size_t j = 0; j < lista.size(); j++) {
+        for (int j = 0; j < lista.size(); j++) {
             Reagente* r = lista[j];
             std::string nivelStr;
             if (r->getNivelAcesso() == 1) nivelStr = "Restrito";
             else if (r->getNivelAcesso() == 2) nivelStr = "Livre";
             else nivelStr = "Pós-Grad";
 
-            std::cout << std::left
-                      << std::setw(25) << r->getNome()
-                      << std::setw(15) << (std::to_string(r->getQuantidade()) + " " + r->getUnidadeMedida())
-                      << std::setw(15) << nivelStr << "\n";
+            // Verifica permissão
+            if (this->getNivelAcesso() <= r->getNivelAcesso()) {
+                std::cout << std::left
+                          << std::setw(25) << r->getNome()
+                          << std::setw(15) << (std::to_string(r->getQuantidade()) + " " + r->getUnidadeMedida())
+                          << std::setw(15) << nivelStr << "\n";
+            } else {
+                std::cout << std::left
+                          << std::setw(25) << r->getNome()
+                          << std::setw(15) << "***"
+                          << std::setw(15) << "Restrito" << "\n";
+            }
         }
     }
     std::cout << "\n";
 }
+
 // Realiza a retirada de um reagente
 void Estudante::retirarReagente() {
     if (laboratorios.empty()) {
@@ -307,10 +432,10 @@ void Estudante::retirarReagente() {
         return;
     }
 
-    //Escolher o Laboratório
-    std::cout << "\n--- Retirada de Reagente ---\n";
+    // Escolher o Laboratório
+    std::cout << "\n=== RETIRADA DE REAGENTE ===\n";
     std::cout << "Escolha o laboratório:\n";
-    for (size_t i = 0; i < laboratorios.size(); i++) {
+    for (int i = 0; i < laboratorios.size(); i++) {
         std::cout << i + 1 << ". " << laboratorios[i].first->getNome() << "\n";
     }
     std::cout << "Opção: ";
@@ -333,6 +458,12 @@ void Estudante::retirarReagente() {
     std::cout << "Digite a quantidade a retirar: ";
     float qtd;
     std::cin >> qtd;
+
+    // Validar quantidade
+    if (qtd <= 0) {
+        std::cout << "Quantidade deve ser maior que zero.\n";
+        return;
+    }
 
     // Processar Retirada (O Laboratório faz as verificações de estoque e validade)
     std::string resultado = labEscolhido->registrarRetirada(this, nomeReagente, qtd);
