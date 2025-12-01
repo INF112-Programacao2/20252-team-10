@@ -3,26 +3,15 @@
 
 #include "../Alerta/Alerta.h"
 
+class AlertaQuantidade : public Alerta
+{
 
-class AlertaQuantidade : public Alerta {
-
-
-    public:
+public:
     AlertaQuantidade(Reagente *reagenteEmAlerta, bool situacao);
     AlertaQuantidade(int id, Reagente *reagenteEmAlerta, std::string dataEmissao, bool situacao);
 
     void notificar() override;
-    void adicionarAlertaBD() override;
-
-
+    void adicionarAlertaBD(Schema *db) override;
 };
-
-
-
-
-
-
-
-
 
 #endif

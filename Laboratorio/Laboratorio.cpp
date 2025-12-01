@@ -10,55 +10,61 @@
 #include <mysql-cppconn/mysqlx/xdevapi.h>
 using namespace mysqlx;
 
-//lista de todos os laboratórios
-std::vector<Laboratorio*> Laboratorio::laboratorios;
+// lista de todos os laboratórios
+std::vector<Laboratorio *> Laboratorio::laboratorios;
 
-//Construtor
-Laboratorio::Laboratorio(int id, const std::string &nome, const std::string &departamento, Schema* db)
-: id(id), nome(nome), departamento(departamento), db(db)
+// Construtor
+Laboratorio::Laboratorio(int id, const std::string &nome, const std::string &departamento, Schema *db)
+    : id(id), nome(nome), departamento(departamento), db(db)
 {
-    //Se tem conexão com BD, carrega os reagentes
-    if (this->db) {
+    // Se tem conexão com BD, carrega os reagentes
+    if (this->db)
+    {
         // std::cout << "Laboratorio conectado ao DB. Reagentes sendo carregados" << std::endl;
-        carregarReagentesDoDB();  //busca reagentes no banco
+        carregarReagentesDoDB(); // busca reagentes no banco
         carregarAlertasDB();
         getReagentesCriticos();
         getReagentesVencidos();
     }
 }
 
-//Destrutor
+// Destrutor
 Laboratorio::~Laboratorio()
 {
-    //Libera todas as retiradas
-    for (size_t i = 0; i < retiradas.size(); i++) {
-        delete retiradas[i];  // delete para ponteiros alocados com new
+    // Libera todas as retiradas
+    for (size_t i = 0; i < retiradas.size(); i++)
+    {
+        delete retiradas[i]; // delete para ponteiros alocados com new
     }
-    //Libera todos os reagentes
-    for (size_t i = 0; i < reagentes.size(); i++) {
+    // Libera todos os reagentes
+    for (size_t i = 0; i < reagentes.size(); i++)
+    {
         delete reagentes[i];
     }
 }
 
-
-//Carrega reagentes do banco de dados para a memória
-void Laboratorio::carregarReagentesDoDB() {
-    try {
-        //Primeiro carrega todos os reagentes da tabela base
+// Carrega reagentes do banco de dados para a memória
+void Laboratorio::carregarReagentesDoDB()
+{
+    try
+    {
+        // Primeiro carrega todos os reagentes da tabela base
         Table reagenteTable = db->getTable("Reagente");
         RowResult resBase = reagenteTable.select("*").execute();
-        std::vector<Row> rowsBase = resBase.fetchAll();  //Pega todas as linhas
+        std::vector<Row> rowsBase = resBase.fetchAll(); // Pega todas as linhas
 
-        //LEFT JOIN é usado para pegar dados de Liquido ou Solido
-        //ORDER BY Permite listar reagentes em ordem alfabetica
+        // LEFT JOIN é usado para pegar dados de Liquido ou Solido
+        // ORDER BY Permite listar reagentes em ordem alfabetica
         SqlResult res = db->getSession().sql("SELECT *, DATE_FORMAT(validade, '%Y-%m-%d') as data_formatada FROM LabUFV.Reagente AS R LEFT JOIN LabUFV.ReagenteLiquido AS RL ON R.id = RL.id LEFT JOIN LabUFV.ReagenteSolido AS RS ON R.id = RS.id ORDER BY R.nome ASC").execute();
 
         int size = res.count();
-        for(int j = 0; j < size; j++){
+        for (int j = 0; j < size; j++)
+        {
             Row row = res.fetchOne();
-            Reagente* novoReagente = nullptr;
+            Reagente *novoReagente = nullptr;
             int cols = row.colCount();
-            for (int i = 0; i < cols; i++) {
+            for (int i = 0; i < cols; i++)
+            {
 
                 std::string validade = "Desconhecida";
 
@@ -72,81 +78,88 @@ void Laboratorio::carregarReagentesDoDB() {
                 int nivelAcesso = row[8].get<int>();
                 std::string unidade = row[9].get<std::string>();
                 // a validade formatada vem na ultima linha
-                if(!(row[row.colCount() - 1].isNull())){
+                if (!(row[row.colCount() - 1].isNull()))
+                {
                     validade = row[row.colCount() - 1].get<std::string>();
-                } else {
+                }
+                else
+                {
                     validade = "Desconhecida";
                 }
                 // Verifica se e Liquido (checa se a coluna do JOIN nao e nula)
-                if (!(row[12].isNull())) {
+                if (!(row[12].isNull()))
+                {
                     double densidade = row[13].get<double>();
                     double volume = row[14].get<double>();
                     novoReagente = new ReagenteLiquido(id, nome, validade, qtd, qtdCritica, local,
-                        nivelAcesso, unidade, marca, codRef,
-                        densidade, volume); //
-                    }
-                    // Verifica se e Solido
-                    else if (!(row[15].isNull())) {
-                        double massa = row[16].get<double>();
-                        std::string estado = row[17].get<std::string>();
-                        novoReagente = new ReagenteSolido(id, nome, validade, qtd, qtdCritica, local,
-                            nivelAcesso, unidade, marca, codRef,
-                            massa, estado); //
-                        }
-
-
-                    }
-                    if (novoReagente) {
-                        this->reagentes.push_back(novoReagente); // Adiciona no vector
-                    }
-
+                                                       nivelAcesso, unidade, marca, codRef,
+                                                       densidade, volume); //
                 }
-                // std::cout << this->reagentes.size() << " reagentes carregados do DB para a memoria." << std::endl;
-            } catch (const mysqlx::Error &err) {
-                std::cerr << "Erro ao carregar reagentes do DB: " << err.what() << std::endl;
-            }}
+                // Verifica se e Solido
+                else if (!(row[15].isNull()))
+                {
+                    double massa = row[16].get<double>();
+                    std::string estado = row[17].get<std::string>();
+                    novoReagente = new ReagenteSolido(id, nome, validade, qtd, qtdCritica, local,
+                                                      nivelAcesso, unidade, marca, codRef,
+                                                      massa, estado); //
+                }
+            }
+            if (novoReagente)
+            {
+                this->reagentes.push_back(novoReagente); // Adiciona no vector
+            }
+        }
+        // std::cout << this->reagentes.size() << " reagentes carregados do DB para a memoria." << std::endl;
+    }
+    catch (const mysqlx::Error &err)
+    {
+        std::cerr << "Erro ao carregar reagentes do DB: " << err.what() << std::endl;
+    }
+}
 
-//Busca reagente pelo nome (busca parcial - encontra "ácido" em "ácido sulfúrico")
+// Busca reagente pelo nome (busca parcial - encontra "ácido" em "ácido sulfúrico")
 Reagente *Laboratorio::buscarReagente(const std::string &nome)
 {
-    //Percorre todos os reagentes
+    // Percorre todos os reagentes
     for (size_t i = 0; i < reagentes.size(); i++)
     {
         std::cout << "Verificando reagente: '" << reagentes[i]->getId() << " - " << reagentes[i]->getNome() << "'\n"; // Debug reagent name
-        //find retorna a posição onde encontrou, ou npos se não encontrou
+        // find retorna a posição onde encontrou, ou npos se não encontrou
         if (reagentes[i]->getNome().find(nome) != std::string::npos)
         {
-            return reagentes[i];  //Retorna o ponteiro para o reagente
+            return reagentes[i]; // Retorna o ponteiro para o reagente
         }
     }
     std::cout << "Nao encontrado\n";
-    return nullptr;  //Retorna null se não encontrou
+    return nullptr; // Retorna null se não encontrou
 }
 
-//Lista reagentes
+// Lista reagentes
 std::vector<Reagente *> Laboratorio::listarReagentes(const std::string &filtroNome)
 {
     if (filtroNome.empty())
     {
-        return reagentes;  //Retorna cópia do vetor completo
+        return reagentes; // Retorna cópia do vetor completo
     }
 
-    //Se tem filtro, cria novo vetor apenas com os que correspondem
+    // Se tem filtro, cria novo vetor apenas com os que correspondem
     std::vector<Reagente *> resultado;
     for (size_t i = 0; i < reagentes.size(); i++)
     {
         if (reagentes[i]->getNome().find(filtroNome) != std::string::npos)
         {
-            resultado.push_back(reagentes[i]);  //Adiciona no resultado
+            resultado.push_back(reagentes[i]); // Adiciona no resultado
         }
     }
     return resultado;
 }
 
-//Registra uma retirada de reagente
+// Registra uma retirada de reagente
 std::string Laboratorio::registrarRetirada(Usuario *usuario, const std::string &nomeReagente, float quantidade)
-{;
-    //Primeiro encontra o reagente
+{
+    ;
+    // Primeiro encontra o reagente
     Reagente *reagente = buscarReagente(nomeReagente);
     if (reagente == nullptr)
     {
@@ -154,142 +167,145 @@ std::string Laboratorio::registrarRetirada(Usuario *usuario, const std::string &
         return "Erro: Reagente '" + nomeReagente + "' nao encontrado";
     }
 
-    //Verifica se não está vencido
+    // Verifica se não está vencido
     if (reagente->estaVencido())
     {
         std::cout << "Erro: Reagente '" + reagente->getNome() + "' esta vencido" << std::endl;
         return "Erro: Reagente '" + reagente->getNome() + "' esta vencido";
     }
 
-    //Cria objeto Retirada
+    // Cria objeto Retirada
     Retirada *novaRetirada = new Retirada(retiradas.size() + 1, usuario, reagente, quantidade);
 
-    //Tenta confirmar a retirada (verifica estoque, etc)
+    // Tenta confirmar a retirada (verifica estoque, etc)
     std::string resultado = novaRetirada->confirmarRetirada();
 
-    //Se deu certo (não tem "Erro:" na mensagem)
+    // Se deu certo (não tem "Erro:" na mensagem)
     std::cout << reagente->getQuantidade() << std::endl;
     std::cout << reagente->getId() << std::endl;
     if (resultado.find("Erro:") == std::string::npos)
     {
-        try {
-            //Pega nova quantidade após retirada
+        try
+        {
+            // Pega nova quantidade após retirada
             int novaQuantidade = reagente->getQuantidade();
             int reagenteId = reagente->getId();
 
-            //Atualiza no banco de dados
-            db->getTable("Reagente").update()
-                .set("quantidade", novaQuantidade)
-                .where("id = :id")
-                .bind("id", reagenteId)
-                .execute();
+            // Atualiza no banco de dados
+            db->getTable("Reagente").update().set("quantidade", novaQuantidade).where("id = :id").bind("id", reagenteId).execute();
 
             std::cout << "Banco de dados atualizado para a retirada." << std::endl;
-            retiradas.push_back(novaRetirada);  //Adiciona no histórico
-
-        } catch (const mysqlx::Error &err) {
-            //Se BD falhou, cancela a retirada na memória
+            retiradas.push_back(novaRetirada); // Adiciona no histórico
+        }
+        catch (const mysqlx::Error &err)
+        {
+            // Se BD falhou, cancela a retirada na memória
             std::cerr << "ERRO de DB ao atualizar quantidade: " << err.what() << std::endl;
-            novaRetirada->cancelarRetirada();  // Reverte estoque na memória
-            delete novaRetirada;  // Libera memória
+            novaRetirada->cancelarRetirada(); // Reverte estoque na memória
+            delete novaRetirada;              // Libera memória
             return "Erro no banco ao registrar retirada. Estoque em memoria revertido.";
         }
     }
     else
     {
-        //Se a retirada falhou na memória (ex: sem estoque), libera memória
+        // Se a retirada falhou na memória (ex: sem estoque), libera memória
         delete novaRetirada;
     }
 
-    return resultado;  //Retorna mensagem de sucesso ou erro
+    return resultado; // Retorna mensagem de sucesso ou erro
 }
 
-//Lista reagentes com quantidade crítica (estoque baixo)
+// Lista reagentes com quantidade crítica (estoque baixo)
 std::vector<Reagente *> Laboratorio::getReagentesCriticos()
 {
     Alerta *al;
     std::vector<Reagente *> criticos;
     for (size_t i = 0; i < reagentes.size(); i++)
     {
-        //Usa método do reagente para verificar se está crítico
+        // Usa método do reagente para verificar se está crítico
         if (reagentes[i]->verificarNivelCritico())
         {
             criticos.push_back(reagentes[i]);
             al = new AlertaQuantidade(reagentes[i], 1);
             alertas.push_back(al);
+            al->adicionarAlertaBD(db);
         }
     }
     return criticos;
 }
 
-std::vector<Reagente *> Laboratorio::getReagentesVencidos() {
+std::vector<Reagente *> Laboratorio::getReagentesVencidos()
+{
     Alerta *al;
     std::vector<Reagente *> vencidos;
     for (size_t i = 0; i < reagentes.size(); i++)
     {
-        //Usa método do reagente para verificar se está crítico
+        // Usa método do reagente para verificar se está crítico
         if (reagentes[i]->estaVencido())
         {
             vencidos.push_back(reagentes[i]);
             al = new AlertaValidade(reagentes[i], 1);
             alertas.push_back(al);
+            al->adicionarAlertaBD(db);
         }
     }
     return vencidos;
 }
 
-
-
-//Carrega todos os laboratórios do banco para a memória
-std::vector<Laboratorio*> Laboratorio::listarLaboratorios(Schema* db)
+// Carrega todos os laboratórios do banco para a memória
+std::vector<Laboratorio *> Laboratorio::listarLaboratorios(Schema *db)
 {
-    Laboratorio::laboratorios.clear();  // Limpa lista atual
+    Laboratorio::laboratorios.clear(); // Limpa lista atual
     Table table = db->getTable("Laboratorio");
     RowResult result = table.select("id", "nome", "departamento").execute();
 
     Row row;
-    //fetchOne() retorna uma linha por vez, quando acaba retorna Row vazia (false)
-    while((row = result.fetchOne())){
+    // fetchOne() retorna uma linha por vez, quando acaba retorna Row vazia (false)
+    while ((row = result.fetchOne()))
+    {
         int id = row[0].get<int>();
         std::string nome = row[1].get<std::string>();
         std::string departamento = row[2].get<std::string>();
 
-        //Cria novo laboratório e adiciona na lista estática
-        Laboratorio* laboratorio = new Laboratorio(id, nome, departamento, db);
+        // Cria novo laboratório e adiciona na lista estática
+        Laboratorio *laboratorio = new Laboratorio(id, nome, departamento, db);
         Laboratorio::laboratorios.push_back(laboratorio);
     }
     return Laboratorio::laboratorios;
 }
 
-//Imprime lista formatada de laboratórios
+// Imprime lista formatada de laboratórios
 void Laboratorio::imprimirLaboratorios()
 {
     std::cout << "\n-----------------------------------------------\n";
     std::cout << "| ID  | Nome                 | Departamento    |\n";
     std::cout << "-----------------------------------------------\n";
 
-    //Percorre todos os laboratórios carregados
-    for (size_t i = 0; i < Laboratorio::laboratorios.size(); i++) {
-        Laboratorio* laboratorio = Laboratorio::laboratorios[i];
-        //Usa setw para formatar a tabela bonitinha >-<
+    // Percorre todos os laboratórios carregados
+    for (size_t i = 0; i < Laboratorio::laboratorios.size(); i++)
+    {
+        Laboratorio *laboratorio = Laboratorio::laboratorios[i];
+        // Usa setw para formatar a tabela bonitinha >-<
         std::cout << "| "
-                  << std::setw(3)  << laboratorio->getId()        << " | "
-                  << std::setw(20) << laboratorio->getNome()      << " | "
+                  << std::setw(3) << laboratorio->getId() << " | "
+                  << std::setw(20) << laboratorio->getNome() << " | "
                   << std::setw(15) << laboratorio->getDepartamento()
                   << " |\n";
     }
     std::cout << "-----------------------------------------------\n";
 }
 
-
 // FUNCOES ALERTA
 
-void Laboratorio::carregarAlertasDB(){
-    try{
-    Alerta *novoAlerta = nullptr;
-    SqlResult res = db->getSession().sql("SELECT *, DATE_FORMAT(dataHoraEmissao, '%Y-%m-%d %H:%i:%s') as data_formatada FROM LabUFV.Alerta").execute();
+void Laboratorio::carregarAlertasDB()
+{
+    try
+    {
+        Alerta *novoAlerta = nullptr;
+        SqlResult res = db->getSession().sql("SELECT *, DATE_FORMAT(dataHoraEmissao, '%Y-%m-%d %H:%i:%s') as data_formatada FROM LabUFV.Alerta").execute();
         int achados = res.count();
-        for(int i = 0; i < achados; i++){
+        for (int i = 0; i < achados; i++)
+        {
             Row row = res.fetchOne();
             int id = row[0].get<int>();
             int reagente_id = row[1].get<int>();
@@ -300,36 +316,46 @@ void Laboratorio::carregarAlertasDB(){
 
             Reagente *reagenteEmAlerta = nullptr;
 
-            for(int j = 0; j < reagentes.size(); j++){
-                if(reagentes.at(j)->getId() == id)
+            for (int j = 0; j < reagentes.size(); j++)
+            {
+                if (reagentes.at(j)->getId() == id)
                     reagenteEmAlerta = reagentes.at(j);
             }
 
-            if(tipo == 1) { // se o tipo for validade
+            if (tipo == 1)
+            { // se o tipo for validade
                 novoAlerta = new AlertaValidade(id, reagenteEmAlerta, dataHoraEmissao, situacao);
-            } else if (tipo == 2){ // se o tipo for quantidade critica
+            }
+            else if (tipo == 2)
+            { // se o tipo for quantidade critica
                 novoAlerta = new AlertaQuantidade(id, reagenteEmAlerta, dataHoraEmissao, situacao);
             }
 
-            if(novoAlerta){
+            if (novoAlerta)
+            {
                 alertas.push_back(novoAlerta);
             }
-      }} catch(mysqlx::Error &e){
+        }
+    }
+    catch (mysqlx::Error &e)
+    {
         std::cout << "Erro ao carregar Alertas" << std::endl;
-      }
-
+    }
 }
 
-
-
-void Laboratorio::getAlertasGestor() {
+void Laboratorio::getAlertasGestor()
+{
     bool nenhumAlertaAtivo = true;
-    for(Alerta *a : alertas){
-        if(a->getSituacao() == true){
+    for (Alerta *a : alertas)
+    {
+        if (a->getSituacao() == true)
+        {
             a->notificar();
             nenhumAlertaAtivo = false;
-        }}
-    if(nenhumAlertaAtivo){
+        }
+    }
+    if (nenhumAlertaAtivo)
+    {
         std::cout << "Nenhum alerta ativo!\n";
     }
 }
@@ -339,124 +365,140 @@ void Laboratorio::cadastrarNovoReagente(
     int quantidadeCritica, std::string local, int nivelAcesso,
     std::string unidade, std::string marca, std::string codRef,
     int tipo, double densidade, double volume,
-    double massa, std::string estadoFisico
-) {
-    //Cadastro de novo reagente no sistema
-    Reagente* novoReagente = nullptr;
+    double massa, std::string estadoFisico)
+{
+    // Cadastro de novo reagente no sistema
+    Reagente *novoReagente = nullptr;
 
-    try{
-    //Verificar o tipo para instanciar a classe correta
-        if(tipo == 1){ //Liquido
+    try
+    {
+        // Verificar o tipo para instanciar a classe correta
+        if (tipo == 1)
+        { // Liquido
             novoReagente = new ReagenteLiquido(
                 id, nome, dataValidade, quantidade, quantidadeCritica,
                 local, nivelAcesso, unidade, marca, codRef,
-                densidade, volume
-            );
+                densidade, volume);
         }
-        else if (tipo == 2) { //solido
-           novoReagente = new ReagenteSolido (
+        else if (tipo == 2)
+        { // solido
+            novoReagente = new ReagenteSolido(
                 id, nome, dataValidade, quantidade, quantidadeCritica,
                 local, nivelAcesso, unidade, marca, codRef,
-                massa, estadoFisico
-            );
+                massa, estadoFisico);
         }
-        else {
+        else
+        {
             std::cerr << "Erro: Tipo de reagente inválido ao atualizar memória." << std::endl;
             return;
         }
-        //adiciona ao vetor de reagentes do laboratorio
+        // adiciona ao vetor de reagentes do laboratorio
         this->reagentes.push_back(novoReagente);
 
         std::cout << "Memória do laboratório atualizada com sucesso." << std::endl;
     }
-    catch (const std::exception& e){
+    catch (const std::exception &e)
+    {
         std::cerr << "Erro ao criar objeto na memória: " << e.what() << std::endl;
     }
 }
 
-void Laboratorio::removerReagenteDaMemoria(int idReagente){
-    //Percorre o vetor para remover com segurança
-    for(size_t i=0; i<reagentes.size(); i++){
-        if(reagentes[i]->getId() == idReagente){
+void Laboratorio::removerReagenteDaMemoria(int idReagente)
+{
+    // Percorre o vetor para remover com segurança
+    for (size_t i = 0; i < reagentes.size(); i++)
+    {
+        if (reagentes[i]->getId() == idReagente)
+        {
 
-            delete reagentes[i]; //libera memoria do objeto
-            //remove o ponteiro do vetor na posicao i
-            reagentes.erase(reagentes.begin()+i);
+            delete reagentes[i]; // libera memoria do objeto
+            // remove o ponteiro do vetor na posicao i
+            reagentes.erase(reagentes.begin() + i);
 
             std::cout << "Reagente removido da memória do sistema!\n";
-            return;//sai da funcao pra evitar erro de indice
-
+            return; // sai da funcao pra evitar erro de indice
         }
     }
     std::cout << "Reagente não encontrado na memória local.\n";
 }
 
-void Laboratorio::limparLaboratorios() {
-    //Implementar limpeza de memória de todos os laboratórios
+void Laboratorio::limparLaboratorios()
+{
+    // Implementar limpeza de memória de todos os laboratórios
     return;
 }
 
-void Laboratorio::adicionarGestor(Gestor* gestor) {
-    //Implementar adição de gestor
+void Laboratorio::adicionarGestor(Gestor *gestor)
+{
+    // Implementar adição de gestor
     return;
 }
 
 // Retorna um vetor de ponterio com todos ussuarios fazendo um upcasting
-std::vector<Usuario *> Laboratorio::getUsuarios(){
-    std::vector<Usuario*> todosUsuarios;
+std::vector<Usuario *> Laboratorio::getUsuarios()
+{
+    std::vector<Usuario *> todosUsuarios;
     // Adiciona gestores
-    for (Gestor* g : gestores)
-        todosUsuarios.push_back(static_cast<Usuario*>(g));
+    for (Gestor *g : gestores)
+        todosUsuarios.push_back(static_cast<Usuario *>(g));
 
     // Adiciona estudantes de graduação
-    for (Estudante* e : estudantesGraduacao)
-        todosUsuarios.push_back(static_cast<Usuario*>(e));
+    for (Estudante *e : estudantesGraduacao)
+        todosUsuarios.push_back(static_cast<Usuario *>(e));
 
     // Adiciona estudantes de pós
-    for (PosGraduacao* p : estudantesPosGraduacao)
-        todosUsuarios.push_back(static_cast<Usuario*>(p));
+    for (PosGraduacao *p : estudantesPosGraduacao)
+        todosUsuarios.push_back(static_cast<Usuario *>(p));
 
     return todosUsuarios;
 };
 
-std::vector<Estudante*> Laboratorio::getEstudantes(){
-    std::vector<Estudante*> todosEstudantes;
+std::vector<Estudante *> Laboratorio::getEstudantes()
+{
+    std::vector<Estudante *> todosEstudantes;
     // Adiciona estudantes de graduação
-    for (Estudante* e : this->estudantesGraduacao)
+    for (Estudante *e : this->estudantesGraduacao)
         todosEstudantes.push_back(e);
     // Adiciona estudantes de pós
-    for (PosGraduacao* p : this->estudantesPosGraduacao)
-        todosEstudantes.push_back(static_cast<Estudante*>(p));
+    for (PosGraduacao *p : this->estudantesPosGraduacao)
+        todosEstudantes.push_back(static_cast<Estudante *>(p));
 
-        return todosEstudantes;
+    return todosEstudantes;
 };
 
-void Laboratorio::imprimirEstudantes(const std::vector<Estudante*>& estudantes) {
+void Laboratorio::imprimirEstudantes(const std::vector<Estudante *> &estudantes)
+{
     std::cout << "\n-------------------------------------------------------------------------------\n";
     std::cout << "| ID  | Matricula     | Nome                     | Email                  | Nivel          |\n";
     std::cout << "-------------------------------------------------------------------------------\n";
-    if(estudantes.empty()){
+    if (estudantes.empty())
+    {
         std::cout << "            Não há estudantes cadastrados            \n";
     }
-    for (Estudante* e : estudantes) {
+    for (Estudante *e : estudantes)
+    {
         std::string tipo;
 
-        if (e->getNivelAcesso() == 2) tipo = "Graduacao";
-        else if (e->getNivelAcesso() == 3) tipo = "Pos";
-        else tipo = "Desconhecido";
+        if (e->getNivelAcesso() == 2)
+            tipo = "Graduacao";
+        else if (e->getNivelAcesso() == 3)
+            tipo = "Pos";
+        else
+            tipo = "Desconhecido";
 
         std::cout << "| "
-                    << std::setw(3)  << e->getId() << " | "
-                    << std::setw(12) << e->getMatricula() << " | "
-                    << std::setw(23) << e->getNome() << " | "
-                    << std::setw(20) << e->getEmail() << " | "
-                    << std::setw(13) << tipo << " |\n";
+                  << std::setw(3) << e->getId() << " | "
+                  << std::setw(12) << e->getMatricula() << " | "
+                  << std::setw(23) << e->getNome() << " | "
+                  << std::setw(20) << e->getEmail() << " | "
+                  << std::setw(13) << tipo << " |\n";
     }
 
     std::cout << "-------------------------------------------------------------------------------\n";
 }
 
-void Laboratorio::listarEstudantes() {
+void Laboratorio::listarEstudantes()
+{
     imprimirEstudantes(getEstudantes());
 
     int opcao;
@@ -467,79 +509,92 @@ void Laboratorio::listarEstudantes() {
     std::cout << "Escolha: ";
     std::cin >> opcao;
 
-    switch (opcao) {
-        case 1:
-            // menuAssociarEstudante();
-            std::cout << "sera implementado\n";
-            break;
-        case 2:
-            // menuDesassociarEstudante();
-            std::cout << "sera implementado\n";
-            break;
-        case 0:
-            return;
-        default:
-            std::cout << "Opcao invalida!\n";
-            break;
+    switch (opcao)
+    {
+    case 1:
+        // menuAssociarEstudante();
+        std::cout << "sera implementado\n";
+        break;
+    case 2:
+        // menuDesassociarEstudante();
+        std::cout << "sera implementado\n";
+        break;
+    case 0:
+        return;
+    default:
+        std::cout << "Opcao invalida!\n";
+        break;
     }
 }
 
-std::string Laboratorio::associarEstudante(Estudante* estudante) {
+std::string Laboratorio::associarEstudante(Estudante *estudante)
+{
     if (!estudante)
         return "Erro: Estudante inválido.";
 
     int idEstudante = estudante->getId();
 
     // Verifica se já está associado
-    try {
+    try
+    {
         Table associado = db->getTable("Associado");
         RowResult r = associado.select("estudante_id")
-            .where("estudante_id = :id AND laboratorio_id = :lab")
-            .bind("id", idEstudante)
-            .bind("lab", this->id)
-            .execute();
+                          .where("estudante_id = :id AND laboratorio_id = :lab")
+                          .bind("id", idEstudante)
+                          .bind("lab", this->id)
+                          .execute();
 
-        if (r.count() > 0) return "Estudante já está associado ao laboratório.";
+        if (r.count() > 0)
+            return "Estudante já está associado ao laboratório.";
     }
-    catch (const std::exception &e) {
+    catch (const std::exception &e)
+    {
         return std::string("Erro no BD: ") + e.what();
     }
 
     // Inserir associação no BD
     std::string papel;
     std::cout << "\nDigite o papel do estudante no laboratório: ";
-    std::getline(std::cin >> std::ws, papel);   // lê linha inteira e limpa buffer
+    std::getline(std::cin >> std::ws, papel); // lê linha inteira e limpa buffer
 
     if (papel.empty())
-        papel = "Estudante";  // padrão
+        papel = "Estudante"; // padrão
 
     // Inserir associação no BD
-    try {
+    try
+    {
         db->getTable("Associado")
             .insert("estudante_id", "laboratorio_id", "papel")
             .values(idEstudante, this->id, papel)
             .execute();
     }
-    catch (const std::exception& e) {
+    catch (const std::exception &e)
+    {
         return std::string("Erro ao inserir no BD: ") + e.what();
     }
 
     // Inserir no vetor correto (graduação ou pós)
-    if (estudante->getNivel() == "Graduação") {
+    if (estudante->getNivel() == "Graduação")
+    {
         estudantesGraduacao.push_back(estudante);
     }
-    else {
-        PosGraduacao* pg = dynamic_cast<PosGraduacao*>(estudante);
+    else
+    {
+        PosGraduacao *pg = dynamic_cast<PosGraduacao *>(estudante);
 
-        if (pg) estudantesPosGraduacao.push_back(pg);
-        else estudantesGraduacao.push_back(estudante); // fallback
+        if (pg)
+            estudantesPosGraduacao.push_back(pg);
+        else
+            estudantesGraduacao.push_back(estudante); // fallback
     }
 
     return "Estudante associado com sucesso!";
 }
 
-void Laboratorio::desassociarEstudante(Estudante* estudante) {
-    if (estudante == nullptr) {
+void Laboratorio::desassociarEstudante(Estudante *estudante)
+{
+    if (estudante == nullptr)
+    {
         std::cout << "Erro: Estudante inválido.\n";
         return;
     }
@@ -547,26 +602,30 @@ void Laboratorio::desassociarEstudante(Estudante* estudante) {
     int idEstudante = estudante->getId();
 
     // Verificar no BD se está associado
-    try {
+    try
+    {
         Table associado = db->getTable("Associado");
         RowResult r = associado.select("estudante_id")
-            .where("estudante_id = :id AND laboratorio_id = :lab")
-            .bind("id", idEstudante)
-            .bind("lab", this->id)
-            .execute();
+                          .where("estudante_id = :id AND laboratorio_id = :lab")
+                          .bind("id", idEstudante)
+                          .bind("lab", this->id)
+                          .execute();
 
-        if (r.count() == 0) {
+        if (r.count() == 0)
+        {
             std::cout << "O estudante não está associado a este laboratório.\n";
             return;
         }
     }
-    catch (const std::exception &e) {
+    catch (const std::exception &e)
+    {
         std::cout << "Erro ao consultar BD: " << e.what() << "\n";
         return;
     }
 
     // Remover no BD
-    try {
+    try
+    {
         db->getTable("Associado")
             .remove()
             .where("estudante_id = :id AND laboratorio_id = :lab")
@@ -574,7 +633,8 @@ void Laboratorio::desassociarEstudante(Estudante* estudante) {
             .bind("lab", this->id)
             .execute();
     }
-    catch (const std::exception &e) {
+    catch (const std::exception &e)
+    {
         std::cout << "Erro ao remover no BD: " << e.what() << "\n";
         return;
     }
@@ -582,8 +642,10 @@ void Laboratorio::desassociarEstudante(Estudante* estudante) {
     // Remover em memória (graduação)
     bool removido = false;
 
-    for (int i = 0; i < (int)estudantesGraduacao.size(); i++) {
-        if (estudantesGraduacao[i]->getId() == idEstudante) {
+    for (int i = 0; i < (int)estudantesGraduacao.size(); i++)
+    {
+        if (estudantesGraduacao[i]->getId() == idEstudante)
+        {
             estudantesGraduacao.erase(estudantesGraduacao.begin() + i);
             removido = true;
             break;
@@ -591,9 +653,12 @@ void Laboratorio::desassociarEstudante(Estudante* estudante) {
     }
 
     //  Remover em memória (pós), se ainda não removido
-    if (!removido) {
-        for (int i = 0; i < (int)estudantesPosGraduacao.size(); i++) {
-            if (estudantesPosGraduacao[i]->getId() == idEstudante) {
+    if (!removido)
+    {
+        for (int i = 0; i < (int)estudantesPosGraduacao.size(); i++)
+        {
+            if (estudantesPosGraduacao[i]->getId() == idEstudante)
+            {
                 estudantesPosGraduacao.erase(estudantesPosGraduacao.begin() + i);
                 break;
             }
@@ -604,41 +669,44 @@ void Laboratorio::desassociarEstudante(Estudante* estudante) {
     std::cout << "Estudante desassociado com sucesso!\n";
 }
 
-
-
-void Laboratorio::menuDesassociarEstudante() {
+void Laboratorio::menuDesassociarEstudante()
+{
     std::cout << "\n=== Estudantes associados ===\n";
 
     // pega o vetor explicitamente
-    std::vector<Estudante*> associados = getEstudantes();
+    std::vector<Estudante *> associados = getEstudantes();
 
-//     if (associados.empty()) {
-//         std::cout << "Nenhum estudante associado.\n";
-//         return;
-//     }
+    //     if (associados.empty()) {
+    //         std::cout << "Nenhum estudante associado.\n";
+    //         return;
+    //     }
 
     // lista os estudantes associados
-    for (int i = 0; i < (int)associados.size(); i++) {
-        Estudante* e = associados[i];
+    for (int i = 0; i < (int)associados.size(); i++)
+    {
+        Estudante *e = associados[i];
         std::cout << "ID: " << e->getId()
                   << " | Nome: " << e->getNome() << "\n";
     }
 
-//     int id;
-//     std::cout << "\nID para desassociar: ";
-//     std::cin >> id;
+    //     int id;
+    //     std::cout << "\nID para desassociar: ";
+    //     std::cin >> id;
 
     // procurar estudante pelo ID
-    Estudante* escolhido = nullptr;
-    for (int i = 0; i < (int)associados.size(); i++) {
-        Estudante* e = associados[i];
-        if (e->getId() == id) {
+    Estudante *escolhido = nullptr;
+    for (int i = 0; i < (int)associados.size(); i++)
+    {
+        Estudante *e = associados[i];
+        if (e->getId() == id)
+        {
             escolhido = e;
             break;
         }
     }
 
-    if (escolhido == nullptr) {
+    if (escolhido == nullptr)
+    {
         std::cout << "Estudante não encontrado.\n";
         return;
     }
@@ -647,40 +715,47 @@ void Laboratorio::menuDesassociarEstudante() {
     desassociarEstudante(escolhido);
 }
 
-
-void Laboratorio::menuAssociarEstudante() {
-std::cout << "\n=== Estudantes e Pós-Graduandos disponíveis ===\n";
+void Laboratorio::menuAssociarEstudante()
+{
+    std::cout << "\n=== Estudantes e Pós-Graduandos disponíveis ===\n";
     // Carrega listas já existentes no Gestor
     std::vector<Estudante *> estudantes;
-    for(int i = 0; i < gestores[0]->estudantes.size(); i++){
+    for (int i = 0; i < gestores[0]->estudantes.size(); i++)
+    {
         estudantes.push_back(gestores[0]->estudantes[i]);
     }
     int qtdEstudantesGraduacao = gestores[0]->estudantes.size();
 
     std::vector<PosGraduacao *> pos;
-    for(int i = 0; i < gestores[0]->posGraduandos.size(); i++){
+    for (int i = 0; i < gestores[0]->posGraduandos.size(); i++)
+    {
         pos.push_back(gestores[0]->posGraduandos[i]);
     }
     int qtdEstudantesPos = gestores[0]->posGraduandos.size();
 
-    if (qtdEstudantesGraduacao == 0 && qtdEstudantesPos == 0) {
+    if (qtdEstudantesGraduacao == 0 && qtdEstudantesPos == 0)
+    {
         std::cout << "Nenhum estudante encontrado.\n";
         return;
     }
 
     // Lista estudantes
-    if (qtdEstudantesGraduacao > 0) {
+    if (qtdEstudantesGraduacao > 0)
+    {
         std::cout << "\n======Estudantes de Graduação=====\n";
-        for (int i = 0; i < qtdEstudantesGraduacao; i++) {
+        for (int i = 0; i < qtdEstudantesGraduacao; i++)
+        {
             std::cout << "ID: " << estudantes[i]->getId()
-                    << " | Nome: " << estudantes[i]->getNome() << "\n";
+                      << " | Nome: " << estudantes[i]->getNome() << "\n";
         }
     }
 
     // Lista pós
-    if (qtdEstudantesPos > 0) {
+    if (qtdEstudantesPos > 0)
+    {
         std::cout << "\n--- Pós-Graduandos ---\n";
-        for (int i = 0; i < qtdEstudantesPos; i++) {
+        for (int i = 0; i < qtdEstudantesPos; i++)
+        {
             std::cout << "ID: " << pos[i]->getId()
                       << " | Nome: " << pos[i]->getNome() << "\n";
         }
@@ -691,75 +766,93 @@ std::cout << "\n=== Estudantes e Pós-Graduandos disponíveis ===\n";
     std::cin >> id;
 
     // Dois ponteiros SEPARADOS
-    Estudante* estudanteSelecionado = nullptr;
-    PosGraduacao* posSelecionado = nullptr;
+    Estudante *estudanteSelecionado = nullptr;
+    PosGraduacao *posSelecionado = nullptr;
 
     // Procura entre os estudantes
-    for (int i = 0; i < qtdEstudantesGraduacao; i++) {
-        if (estudantes[i]->getId() == id) {
+    for (int i = 0; i < qtdEstudantesGraduacao; i++)
+    {
+        if (estudantes[i]->getId() == id)
+        {
             estudanteSelecionado = estudantes[i];
             break;
         }
     }
 
     // Só busca pós se não encontrou estudante
-    if (!estudanteSelecionado) {
-        for (int i = 0; i < qtdEstudantesPos; i++) {
-            if (pos[i]->getId() == id) {
+    if (!estudanteSelecionado)
+    {
+        for (int i = 0; i < qtdEstudantesPos; i++)
+        {
+            if (pos[i]->getId() == id)
+            {
                 posSelecionado = pos[i];
                 break;
             }
         }
     }
 
-    if (!estudanteSelecionado && !posSelecionado) {
+    if (!estudanteSelecionado && !posSelecionado)
+    {
         std::cout << "Nenhum estudante ou pós-graduando com esse ID.\n";
         return;
     }
 
     // Associar ao laboratório
-    if (estudanteSelecionado) {
+    if (estudanteSelecionado)
+    {
         std::cout << associarEstudante(estudanteSelecionado) << "\n";
-    } else {
+    }
+    else
+    {
         std::cout << associarEstudante(posSelecionado) << "\n";
     }
 }
 
-std::vector<int> Laboratorio::getIdsReagentesDoLaboratorio() const {
+std::vector<int> Laboratorio::getIdsReagentesDoLaboratorio() const
+{
     std::vector<int> idsReagentes;
 
-    try {
+    try
+    {
         Table reagenteTable = db->getTable("Reagente");
         RowResult reagentes = reagenteTable
-            .select("id")
-            .where("laboratorio_id = :lab")
-            .bind("lab", this->id)
-            .execute();
+                                  .select("id")
+                                  .where("laboratorio_id = :lab")
+                                  .bind("lab", this->id)
+                                  .execute();
 
-        for (Row r : reagentes) {
+        for (Row r : reagentes)
+        {
             idsReagentes.push_back(r[0].get<int>());
         }
     }
-    catch (const mysqlx::Error &err) {
+    catch (const mysqlx::Error &err)
+    {
         std::cerr << "Erro ao consultar reagentes: " << err.what() << std::endl;
     }
 
     return idsReagentes;
 }
 
-void Laboratorio::adicionarEstudante(Estudante* estudante) {
-    if (estudante == nullptr) {
+void Laboratorio::adicionarEstudante(Estudante *estudante)
+{
+    if (estudante == nullptr)
+    {
         std::cerr << "Erro: estudante inválido.\n";
         return;
     }
-    int nivel = estudante->getNivelAcesso();   //
+    int nivel = estudante->getNivelAcesso(); //
     // -------------------------------
     // Estudante de GRADUAÇÃO
     // -------------------------------
-    if (nivel == 3) {
+    if (nivel == 3)
+    {
         // Verifica duplicata
-        for (int i = 0; i < (int)estudantesGraduacao.size(); i++) {
-            if (estudantesGraduacao[i] == estudante) {
+        for (int i = 0; i < (int)estudantesGraduacao.size(); i++)
+        {
+            if (estudantesGraduacao[i] == estudante)
+            {
                 std::cout << "Estudante de graduação já associado.\n";
                 return;
             }
@@ -768,12 +861,15 @@ void Laboratorio::adicionarEstudante(Estudante* estudante) {
         std::cout << "Estudante de GRADUAÇÃO adicionado ao laboratório.\n";
         return;
     }
-    if (nivel == 2) {
+    if (nivel == 2)
+    {
         // Converter ponteiro base → PosGraduacao*
-        PosGraduacao* pos = static_cast<PosGraduacao*>(estudante);
+        PosGraduacao *pos = static_cast<PosGraduacao *>(estudante);
         // Verifica duplicata
-        for (int i = 0; i < (int)estudantesPosGraduacao.size(); i++) {
-            if (estudantesPosGraduacao[i] == pos) {
+        for (int i = 0; i < (int)estudantesPosGraduacao.size(); i++)
+        {
+            if (estudantesPosGraduacao[i] == pos)
+            {
                 std::cout << "Estudante de pós já associado.\n";
                 return;
             }
