@@ -22,7 +22,7 @@ public:
     Alerta(Reagente *reagenteEmAlerta, bool situacao);
 
     // Destrutor
-    ~Alerta();
+    virtual ~Alerta();
 
     // Gets
     int getId();

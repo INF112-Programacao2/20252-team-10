@@ -359,9 +359,12 @@ int main()
             // Converte o ponteiro inteligente do tipo Usuario para do tipo Gestor
             //  Isso é para acessar os metodos da classe Gestor
             Gestor *gestor = Gestor::getGestorById(usuarioLogado->getId()); // Busca o gestor na lista de usuarios carregados
-            if (gestor) {
+            if (gestor)
+            {
                 menuGestor(gestor); // Acessa o menu de gestor
-            } else {
+            }
+            else
+            {
                 std::cerr << "ERRO CRÍTICO: Não foi possível encontrar os dados do gestor logado." << std::endl;
             }
         }
@@ -385,6 +388,7 @@ int main()
     }
 
     // Limpa todos os laboratórios alocados dinamicamente
+    Gestor::limparUsuarios();
     Laboratorio::limparLaboratorios();
 
     return 0;

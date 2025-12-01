@@ -31,7 +31,9 @@ Gestor::Gestor(std::string nome, std::string email, std::string senha, int nivel
 }
 
 // Destrutor
-Gestor::~Gestor() {}
+Gestor::~Gestor()
+{
+}
 
 // Getters
 // Retorna o laboratório que o gestor está alocado
@@ -158,17 +160,32 @@ Gestor *Gestor::getGestorById(int id)
     }
     return nullptr;
 }
-// função que carrega os usuários do banco de dados para o array dinâmico
-void Gestor::carregarUsuarios(Schema *db)
-{
 
+void Gestor::limparUsuarios()
+{
+    for (int i = 0; i < usuariosCarregados.size(); i++)
+    {
+        if (usuariosCarregados[i] != nullptr)
+            delete usuariosCarregados[i];
+    }
     usuariosCarregados.clear();
     gestores.clear();
     estudantes.clear();
     posGraduandos.clear();
+}
+
+// função que carrega os usuários do banco de dados para o array dinâmico
+
+void Gestor::carregarUsuarios(Schema *db)
+
+{
 
     try
+
     {
+
+        limparUsuarios();
+
         Table usuarioTable = db->getTable("Usuario");
 
         RowResult usuarios = usuarioTable
@@ -387,7 +404,6 @@ void Gestor::deletarUsuario()
                     }
                 }
 
-                delete gestores[i];
                 gestores.erase(gestores.begin() + i);
 
                 std::cout << "Gestor deletado!\n";
@@ -430,7 +446,6 @@ void Gestor::deletarUsuario()
                     }
                 }
 
-                delete estudantes[i];
                 estudantes.erase(estudantes.begin() + i);
 
                 std::cout << "Estudante deletado!\n";
@@ -473,7 +488,6 @@ void Gestor::deletarUsuario()
                     }
                 }
 
-                delete posGraduandos[i];
                 posGraduandos.erase(posGraduandos.begin() + i);
 
                 std::cout << "Pós-Graduando deletado!\n";
@@ -651,13 +665,15 @@ void Gestor::cadastrarReagente()
         return;
     }
 
+    std::cin.ignore();
     // Variaveis para guardar os dados da tabela base Reagente
     std::string nome, dataValidade, local, unidade, marca, codRef;
     int quantidade, quantidadeCritica, nivelAcesso;
-
     std::cout << "Cadastro de Novo Reagente \n";
     std::cout << "Nome: ";
-    std::cin.ignore(); // Ignora o 'Enter' anterior
+    std::cin.ignore(
+        
+    ); // Ignora o 'Enter' anterior
     std::getline(std::cin, nome);
     std::cout << "Data de Validade (AAAA-MM-DD): ";
     std::cin >> dataValidade;
@@ -666,14 +682,14 @@ void Gestor::cadastrarReagente()
     std::cout << "Quantidade Critica: ";
     std::cin >> quantidadeCritica;
     std::cout << "Local de Armazenamento: ";
-    std::cin.ignore();
+    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
     std::getline(std::cin, local);
     std::cout << "Nivel de Acesso:\n 1 - Restrito (Apenas Gestores)\n 2 - Livre (Graduação)\n 3 - Pós-Graduação\nDigite a opção: ";
     std::cin >> nivelAcesso;
     std::cout << "Unidade de Medida (ex: 'ml', 'g'): ";
     std::cin >> unidade;
     std::cout << "Marca: ";
-    std::cin.ignore();
+    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
     std::getline(std::cin, marca);
     std::cout << "Codigo de Referencia: ";
     std::cin >> codRef;

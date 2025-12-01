@@ -4,7 +4,8 @@
 #include <string>
 #include <vector>
 
-class Reagente {
+class Reagente
+{
 private:
     std::string nome;
     std::string dataValidade;
@@ -18,14 +19,14 @@ private:
     int id;
 
 public:
-    //Construtor
+    // Construtor
     Reagente(int id, std::string nome, std::string dataValidade, int quantidade,
              int quantidadeCritica, std::string localArmazenamento, int nivelAcesso,
              std::string unidadeMedida, std::string marca, std::string codigoReferencia);
 
     Reagente();
 
-    //Destrutor virtual, garante que o destrutor da classe filha seja chamado primeiro
+    // Destrutor virtual, garante que o destrutor da classe filha seja chamado primeiro
     virtual ~Reagente();
 
     // Gets
@@ -40,7 +41,7 @@ public:
     std::string getCodigoReferencia();
     int getId();
 
-    //Sets
+    // Sets
     void setNome(std::string nome);
     void setDataValidade(std::string dataValidade);
     void setQuantidade(int quantidade);
@@ -51,12 +52,10 @@ public:
     void setMarca(std::string marca);
     void setCodigoReferencia(std::string codigoReferencia);
 
-
-    //Outros metodos
+    // Outros metodos
     bool estaVencido();
     void acionarAlerta(unsigned int tipo);
     bool verificarNivelCritico();
-
 };
 
 #endif

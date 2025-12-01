@@ -34,12 +34,20 @@ Laboratorio::~Laboratorio()
     // Libera todas as retiradas
     for (size_t i = 0; i < retiradas.size(); i++)
     {
-        delete retiradas[i]; // delete para ponteiros alocados com new
+        if (retiradas[i] != nullptr)
+            delete retiradas[i]; // delete para ponteiros alocados com new
     }
     // Libera todos os reagentes
     for (size_t i = 0; i < reagentes.size(); i++)
     {
-        delete reagentes[i];
+        if (reagentes[i] != nullptr)
+            delete reagentes[i];
+    }
+    // Libera todos os alertas
+    for (int i = 0; i < alertas.size(); i++)
+    {
+        if (alertas[i] != nullptr)
+            delete alertas[i];
     }
 }
 
@@ -62,48 +70,44 @@ void Laboratorio::carregarReagentesDoDB()
         {
             Row row = res.fetchOne();
             Reagente *novoReagente = nullptr;
-            int cols = row.colCount();
-            for (int i = 0; i < cols; i++)
+
+            std::string validade = "Desconhecida";
+
+            int id = row[0].get<int>();
+            std::string nome = row[2].get<std::string>();
+            int qtd = row[3].get<int>();
+            int qtdCritica = row[4].get<double>();
+            std::string codRef = row[5].get<std::string>();
+            std::string marca = row[6].get<std::string>();
+            std::string local = row[7].get<std::string>();
+            int nivelAcesso = row[8].get<int>();
+            std::string unidade = row[9].get<std::string>();
+            // a validade formatada vem na ultima linha
+            if (!(row[row.colCount() - 1].isNull()))
             {
-
-                std::string validade = "Desconhecida";
-
-                int id = row[0].get<int>();
-                std::string nome = row[2].get<std::string>();
-                int qtd = row[3].get<int>();
-                int qtdCritica = row[4].get<double>();
-                std::string codRef = row[5].get<std::string>();
-                std::string marca = row[6].get<std::string>();
-                std::string local = row[7].get<std::string>();
-                int nivelAcesso = row[8].get<int>();
-                std::string unidade = row[9].get<std::string>();
-                // a validade formatada vem na ultima linha
-                if (!(row[row.colCount() - 1].isNull()))
-                {
-                    validade = row[row.colCount() - 1].get<std::string>();
-                }
-                else
-                {
-                    validade = "Desconhecida";
-                }
-                // Verifica se e Liquido (checa se a coluna do JOIN nao e nula)
-                if (!(row[12].isNull()))
-                {
-                    double densidade = row[13].get<double>();
-                    double volume = row[14].get<double>();
-                    novoReagente = new ReagenteLiquido(id, nome, validade, qtd, qtdCritica, local,
-                                                       nivelAcesso, unidade, marca, codRef,
-                                                       densidade, volume); //
-                }
-                // Verifica se e Solido
-                else if (!(row[15].isNull()))
-                {
-                    double massa = row[16].get<double>();
-                    std::string estado = row[17].get<std::string>();
-                    novoReagente = new ReagenteSolido(id, nome, validade, qtd, qtdCritica, local,
-                                                      nivelAcesso, unidade, marca, codRef,
-                                                      massa, estado); //
-                }
+                validade = row[row.colCount() - 1].get<std::string>();
+            }
+            else
+            {
+                validade = "Desconhecida";
+            }
+            // Verifica se e Liquido (checa se a coluna do JOIN nao e nula)
+            if (!(row[12].isNull()))
+            {
+                double densidade = row[13].get<double>();
+                double volume = row[14].get<double>();
+                novoReagente = new ReagenteLiquido(id, nome, validade, qtd, qtdCritica, local,
+                                                   nivelAcesso, unidade, marca, codRef,
+                                                   densidade, volume); //
+            }
+            // Verifica se e Solido
+            else if (!(row[15].isNull()))
+            {
+                double massa = row[16].get<double>();
+                std::string estado = row[17].get<std::string>();
+                novoReagente = new ReagenteSolido(id, nome, validade, qtd, qtdCritica, local,
+                                                  nivelAcesso, unidade, marca, codRef,
+                                                  massa, estado); //
             }
             if (novoReagente)
             {
@@ -255,7 +259,7 @@ std::vector<Reagente *> Laboratorio::getReagentesVencidos()
 // Carrega todos os laboratórios do banco para a memória
 std::vector<Laboratorio *> Laboratorio::listarLaboratorios(Schema *db)
 {
-    Laboratorio::laboratorios.clear(); // Limpa lista atual
+    limparLaboratorios();
     Table table = db->getTable("Laboratorio");
     RowResult result = table.select("id", "nome", "departamento").execute();
 
@@ -318,7 +322,7 @@ void Laboratorio::carregarAlertasDB()
 
             for (int j = 0; j < reagentes.size(); j++)
             {
-                if (reagentes.at(j)->getId() == id)
+                if (reagentes.at(j)->getId() == reagente_id)
                     reagenteEmAlerta = reagentes.at(j);
             }
 
@@ -424,7 +428,11 @@ void Laboratorio::removerReagenteDaMemoria(int idReagente)
 
 void Laboratorio::limparLaboratorios()
 {
-    // Implementar limpeza de memória de todos os laboratórios
+    for (int i = 0; i < laboratorios.size(); i++)
+    {
+        delete laboratorios[i];
+    }
+    Laboratorio::laboratorios.clear(); // Limpa lista atual
     return;
 }
 
