@@ -222,29 +222,44 @@ void Gestor::cadastrarUsuario()
         }
     }
 }
-
+// Busca um gestor pelo ID dentro do vetor de gestores
 Gestor *Gestor::getGestorById(int id)
 {
     for (auto *g : gestores)
     {
         if (g->getId() == id)
-            return g;
+            return g;// retorna o gestor encontrado
     }
-    return nullptr;
+    return nullptr;// se não encontrar, retorna nulo
 }
-// função que carrega os usuários do banco de dados para o array dinâmico
-void Gestor::carregarUsuarios(Schema *db)
-{
 
-    usuariosCarregados.clear();
-    gestores.clear();
-    estudantes.clear();
-    posGraduandos.clear();
+// Libera memória e limpa os vetores de usuários
+void Gestor::limparUsuarios()
+{
+    for (int i = 0; i < usuariosCarregados.size(); i++)
+    {
+        if (usuariosCarregados[i] != nullptr)
+            delete usuariosCarregados[i]; // desaloca memória
+    }
+    usuariosCarregados.clear();// limpa vetor geral
+    gestores.clear();// limpa gestores
+    estudantes.clear(); // limpa estudantes
+    posGraduandos.clear(); // limpa pos graduandos
+}
+
+// função que carrega os usuários do banco de dados para o array dinâmico
+
+void Gestor::carregarUsuarios(Schema *db)
+
+{
 
     try
     {
-        Table usuarioTable = db->getTable("Usuario");
 
+        limparUsuarios(); // Limpa usuários antes de carregar novamente
+
+        Table usuarioTable = db->getTable("Usuario");
+        // Seleciona todos os usuários
         RowResult usuarios = usuarioTable
                                  .select("id", "nome", "email", "senha", "nivelAcesso")
                                  .execute();
@@ -260,12 +275,12 @@ void Gestor::carregarUsuarios(Schema *db)
             std::string senha = row[3].get<std::string>();
             int nivel = row[4].get<int>();
 
-            if (nivel == 1)
+            if (nivel == 1)// nível 1 = gestor
             {
                 Gestor *g = new Gestor(nome, email, senha, nivel, db);
                 g->setId(id);
-                gestores.push_back(g);
-                usuariosCarregados.push_back(g);
+                gestores.push_back(g);// adiciona ao vetor de gestores
+                usuariosCarregados.push_back(g);// adiciona ao vetor geral de usuários
             }
         }
 
@@ -394,13 +409,19 @@ void Gestor::listarUsuarios()
               << std::setw(15) << "Tipo"
               << "\n";
     std::cout << std::string(65, '-') << "\n";
-    //laco que percorre o vetor de usuarios do laboratorio
-    for (Usuario* u : Gestor::usuariosCarregados) {
-        std::string tipo;
-        if (u->getNivelAcesso() == 1) tipo = "Gestor";
-        else if (u->getNivelAcesso() == 2) tipo = "Pos-Graduação";
-        else if (u->getNivelAcesso() == 3) tipo = "Graduação";
-        else tipo = "Desconhecido";
+    // laco que percorre o vetor de usuarios do laboratorio
+    for (Usuario *u : Gestor::usuariosCarregados)
+    {
+        std::string tipo; // armazena o tipo do usuário
+        if (u->getNivelAcesso() == 1)
+            tipo = "Gestor";
+        else if (u->getNivelAcesso() == 2)
+            tipo = "Pos-Graduação";
+        else if (u->getNivelAcesso() == 3)
+            tipo = "Graduação";
+        else
+            tipo = "Desconhecido";
+        //imprimi os dados formatados
         std::cout << std::left
                   << std::setw(5) << u->getId()
                   << std::setw(20) << u->getNome()
@@ -411,6 +432,7 @@ void Gestor::listarUsuarios()
     std::cout << std::string(65, '-') << "\n";
 }
 
+// Função responsável por deletar um usuário do sistema
 void Gestor::deletarUsuario()
 {
     // Pede o email dentro da função
@@ -421,39 +443,39 @@ void Gestor::deletarUsuario()
         // Verifica Gestores
         for (size_t i = 0; i < gestores.size(); ++i)
         {
-            if (gestores[i]->getEmail() == email)
+            if (gestores[i]->getEmail() == email)// compara email
             {
+                // Confirmação antes de excluir
                 if (!confirmacao())
                 {
                     std::cout << "Operação cancelada.\n";
                     return;
                 }
 
-                int id = gestores[i]->getId();
-
+                int id = gestores[i]->getId();// pega o id do gestor
+                // Remove da tabela Gestor
                 db->getTable("Gestor")
                     .remove()
                     .where("id = :id")
                     .bind("id", id)
                     .execute();
-
+                // Remove da tabela Usuario
                 db->getTable("Usuario")
                     .remove()
                     .where("id = :id")
                     .bind("id", id)
                     .execute();
-
+                // Remove do vetor geral de usuários
                 for (size_t j = 0; j < usuariosCarregados.size(); ++j)
                 {
                     if (usuariosCarregados[j]->getEmail() == email)
                     {
-                        delete usuariosCarregados[j];
+                        delete usuariosCarregados[j]; // desaloca memória
                         usuariosCarregados.erase(usuariosCarregados.begin() + j);
                         break;
                     }
                 }
-
-                delete gestores[i];
+                // Remove do vetor específico de gestores
                 gestores.erase(gestores.begin() + i);
 
                 std::cout << "Gestor deletado!\n";
@@ -473,19 +495,19 @@ void Gestor::deletarUsuario()
                 }
 
                 int id = estudantes[i]->getId();
-
+                // Remove da tabela Estudante
                 db->getTable("Estudante")
                     .remove()
                     .where("id = :id")
                     .bind("id", id)
                     .execute();
-
+                // Remove da tabela Usuario
                 db->getTable("Usuario")
                     .remove()
                     .where("id = :id")
                     .bind("id", id)
                     .execute();
-
+                // Remove do vetor geral de usuários
                 for (size_t j = 0; j < usuariosCarregados.size(); ++j)
                 {
                     if (usuariosCarregados[j]->getEmail() == email)
@@ -495,8 +517,7 @@ void Gestor::deletarUsuario()
                         break;
                     }
                 }
-
-                delete estudantes[i];
+                // Remove do vetor específico de estudantes
                 estudantes.erase(estudantes.begin() + i);
 
                 std::cout << "Estudante deletado!\n";
@@ -517,18 +538,19 @@ void Gestor::deletarUsuario()
 
                 int id = posGraduandos[i]->getId();
 
+                //remove da tabela PosGraduacao
                 db->getTable("PosGraduacao")
                     .remove()
                     .where("id = :id")
                     .bind("id", id)
                     .execute();
-
+                // Remove da tabela Usuario
                 db->getTable("Usuario")
                     .remove()
                     .where("id = :id")
                     .bind("id", id)
                     .execute();
-
+                // Remove do vetor geral de usuários
                 for (size_t j = 0; j < usuariosCarregados.size(); ++j)
                 {
                     if (usuariosCarregados[j]->getEmail() == email)
@@ -539,7 +561,7 @@ void Gestor::deletarUsuario()
                     }
                 }
 
-                delete posGraduandos[i];
+                // Remove do vetor específico de pós-graduandos
                 posGraduandos.erase(posGraduandos.begin() + i);
 
                 std::cout << "Pós-Graduando deletado!\n";
@@ -547,11 +569,11 @@ void Gestor::deletarUsuario()
             }
         }
 
-        std::cout << "Usuário com email '" << email << "' não encontrado.\n";
+        std::cout << "Usuário com email '" << email << "' não encontrado.\n"; // Se não encontrar nenhum usuário com o email informado
     }
     catch (const mysqlx::Error &err)
     {
-        std::cerr << "Erro ao deletar usuário: " << err.what() << std::endl;
+        std::cerr << "Erro ao deletar usuário: " << err.what() << std::endl; // Mensagem de erro
     }
 }
 
@@ -661,7 +683,56 @@ void Gestor::associarLaboratorio()
               << std::endl;
 }
 
+//Funcao para associar estudante a um laboratorio
 void Gestor::associarEstudanteAoLaboratorio(Estudante *estudante, int idLaboratorio, const std::string &papel)
+{
+    Laboratorio *escolhido = nullptr;
+    //Procura o laboratório pelo ID dentro do vetor estático de laboratórios
+    for (int i = 0; i < (int)Laboratorio::laboratorios.size(); i++)
+    {
+        if (Laboratorio::laboratorios[i]->getId() == idLaboratorio)
+        {
+            escolhido = Laboratorio::laboratorios[i]; // guarda o laboratório encontrado
+            break;
+        }
+    }
+    // Caso não encontre o laboratório, informa e encerra a função
+    if (!escolhido)
+    {
+        std::cout << "Laboratório com ID " << idLaboratorio << " não encontrado.\n";
+        return;
+    }
+    
+    // Acessa a tabela de associação no banco de dados
+    Table tableAssociado = this->db->getTable("Associado");
+    
+    // Verifica se já existe associação entre o estudante e o laboratório
+    RowResult result = tableAssociado.select("*")
+                           .where("estudante_id = :e_id AND laboratorio_id = :l_id")
+                           .bind("e_id", estudante->getId())
+                           .bind("l_id", idLaboratorio)
+                           .execute();
+
+    // Se já existir associação, informa e encerra a função                     
+    if (!result.fetchOne().isNull())
+    {
+        std::cout << "Estudante ID " << estudante->getId()
+                  << " já está associado a este laboratório.\n";
+        return;
+    }
+    
+    // Caso contrário, insere a nova associação no banco
+    tableAssociado.insert("estudante_id", "laboratorio_id", "papel")
+        .values(estudante->getId(), idLaboratorio, papel)
+        .execute();
+    // Atualiza a relação em memória (objetos)
+    estudante->adicionarLaboratorio(escolhido, papel);
+    escolhido->adicionarEstudante(estudante);
+}
+// Metodo para cadastrar reagente
+void Gestor::cadastrarReagente()
+{
+    // Verifica se o gestor esta vinculado a um laboratoriovoid Gestor::associarEstudanteAoLaboratorio(Estudante *estudante, int idLaboratorio, const std::string &papel)
 {
     Laboratorio *escolhido = nullptr;
     for (int i = 0; i < (int)Laboratorio::laboratorios.size(); i++)
@@ -700,10 +771,6 @@ void Gestor::associarEstudanteAoLaboratorio(Estudante *estudante, int idLaborato
     estudante->adicionarLaboratorio(escolhido, papel);
     escolhido->adicionarEstudante(estudante);
 }
-// Metodo para cadastrar reagente
-void Gestor::cadastrarReagente()
-{
-    // Verifica se o gestor esta vinculado a um laboratorio
     if (this->laboratorio == nullptr)
     {
         std::cerr << "ERRO: O Gestor nao esta vinculado a um laboratorio." << std::endl;
@@ -962,12 +1029,13 @@ void Gestor::listarReagentesRestritos()
     }
 }
 
+// Função que exibe o menu de reagentes restritos e permite operações sobre eles
 void Gestor::menuReagentesRestritos()
 {
-    int opcao = 0;
+    int opcao = 0;// variável para armazenar a opção escolhida pelo usuário
     do
     {
-
+        // Exibe o menu de opções
         std::cout << "===== Menu Reagentes Restritos =====\n";
         std::cout << "1. Listar reagentes restritos\n";
         std::cout << "2. Retirar reagente\n";
@@ -975,6 +1043,8 @@ void Gestor::menuReagentesRestritos()
         std::cout << "0. Sair do sistema\n";
         std::cout << "Escolha uma opção: ";
         std::cin >> opcao;
+        
+        // Estrutura de decisão para tratar cada opção
         switch (opcao)
         {
         case 1:
@@ -991,36 +1061,37 @@ void Gestor::menuReagentesRestritos()
             std::getline(std::cin, nomeBuscado);
             std::cout << "Digite a quantidade retirada: \n";
             std::cin >> quantidadeRetirada;
-            if (confirmacao())
+            if (confirmacao())//Confirmação antes de registrar a retirada
             {
-                this->laboratorio->registrarRetirada(this, nomeBuscado, quantidadeRetirada);
+                this->laboratorio->registrarRetirada(this, nomeBuscado, quantidadeRetirada); // chama função do laboratório para registrar retirada
             }
             else
                 std::cout << "Ação cancelada pelo usuário\n";
             break;
         }
-        case 3:
+        case 3: // registrar novo reagente
+        {
         {
             this->cadastrarReagente();
             break;
         }
-        case 0:
+        case 0: // sair do menu
         {
             std::cout << "Saindo...\n";
             break;
         }
-        default:
+        default: // opcao inválida
         {
             std::cout << "Opção inválida! Tente novamente.\n";
         }
         }
 
-    } while (opcao != 0);
+    } while (opcao != 0); // repete até o usuário escolher sair
 }
 
-bool Gestor::estaAssociado() const
+bool Gestor::estaAssociado() const // Função que verifica se o gestor está associado a algum laboratório
 {
-    return laboratorio != nullptr;
+    return laboratorio != nullptr; // retorna true se houver laboratório associado
 }
 
 void Gestor::listarReagentesDoLaboratorio()
@@ -1230,6 +1301,7 @@ void Gestor::editarReagente()
     }
 }
 
+// Função responsável por excluir um reagente do sistema
 void Gestor::excluirReagente()
 {
     std::cout << "\n Excluir Reagente \n";
@@ -1238,14 +1310,15 @@ void Gestor::excluirReagente()
     std::cin.ignore();
     std::getline(std::cin, nomeBusca);
 
-    Reagente *reagente = laboratorio->buscarReagente(nomeBusca);
-
-    if (reagente == nullptr)
+    Reagente *reagente = laboratorio->buscarReagente(nomeBusca); // Busca o reagente no laboratório
+     
+    if (reagente == nullptr)// Caso não encontre, informa e encerra
     {
         std::cout << "Reagente não encontrado.\n";
         return;
     }
-
+    
+    // Confirmação antes de excluir
     std::cout << "ATENÇÃO: Você está prestes a excluir: " << reagente->getNome() << "\n";
     if (!confirmacao())
     {
@@ -1253,6 +1326,7 @@ void Gestor::excluirReagente()
         return;
     }
 
+    // Obtém o ID do reagente para exclusão
     int idParaRemover = reagente->getId();
 
     try
@@ -1267,7 +1341,7 @@ void Gestor::excluirReagente()
         // 3-Remove da memoria do laboratorio
         laboratorio->removerReagenteDaMemoria(idParaRemover);
 
-        std::cout << "Reagente excluído com sucesso do banco e da memória.\n";
+        std::cout << "Reagente excluído com sucesso do banco e da memória.\n";// Confirmação para o usuário
     }
     catch (const mysqlx::Error &err)
     {
@@ -1275,8 +1349,10 @@ void Gestor::excluirReagente()
     }
 }
 
+// Função que permite filtrar reagentes por categoria (sólido/líquido) ou por restrição (restrito/livre)
 void Gestor::filtrarReagentes()
 {
+    // Exibe menu de opções de filtro
     std::cout << "\nFiltrar Reagentes\n";
     std::cout << "1. Por Categoria (Sólido/Líquido)\n";
     std::cout << "2. Por Restrição (Restritos/Livres)\n";
@@ -1349,7 +1425,7 @@ void Gestor::filtrarReagentes()
             }
         }
     }
-
+    // Caso nenhum reagente tenha sido encontrado pelo filtro
     if (!encontrouAlgum)
     {
         std::cout << "Nenhum reagente encontrado com este filtro.\n";
@@ -1360,6 +1436,7 @@ void Gestor::filtrarReagentes()
 // gerenciarLaboratorio
 void Gestor::gerenciarLaboratorio()
 {
+    // Verifica se o gestor está associado a algum laboratório
     if (this->laboratorio == nullptr)
     {
         std::cout << "Erro: Gestor não está vinculado a nenhum laboratório.\n";
@@ -1368,7 +1445,8 @@ void Gestor::gerenciarLaboratorio()
 
     int opcao = 0;
     do
-    {
+    {   
+        // Exibe menu de gerenciamento
         std::cout << "\n=== GERENCIAMENTO DO LABORATÓRIO ===\n";
         std::cout << "Laboratório: " << laboratorio->getNome() << "\n";
         std::cout << "1. Cadastrar Reagente\n";
@@ -1425,6 +1503,7 @@ void Gestor::gerenciarLaboratorio()
 // retirarReagente
 void Gestor::retirarReagente()
 {
+    // Verifica se gestor está associado a laboratório
     if (this->laboratorio == nullptr)
     {
         std::cout << "Este gestor não está associado a nenhum laboratório.\n";
@@ -1440,7 +1519,8 @@ void Gestor::retirarReagente()
         std::cout << "Nenhum reagente cadastrado no laboratório.\n";
         return;
     }
-
+    
+    // Exibe reagentes com detalhes
     std::cout << "Reagentes disponíveis:\n";
     for (size_t i = 0; i < reagentes.size(); i++)
     {
@@ -1451,11 +1531,13 @@ void Gestor::retirarReagente()
                   << " - Local: " << reagentes[i]->getLocalArmazenamento() << std::endl;
     }
 
+    // Escolha do reagente
     int escolha;
     double quantidade;
     std::cout << "\nEscolha o número do reagente: ";
     std::cin >> escolha;
 
+    // Valida escolha
     if (escolha < 1 || escolha > static_cast<int>(reagentes.size()))
     {
         std::cout << "Escolha inválida.\n";
@@ -1470,7 +1552,7 @@ void Gestor::retirarReagente()
         std::cout << "Este reagente está com estoque zerado.\n";
         return;
     }
-
+    // Solicita quantidade a retirar
     std::cout << "Quantidade a retirar (" << reagenteEscolhido->getUnidadeMedida()
               << ") - Disponível: " << reagenteEscolhido->getQuantidade() << ": ";
     std::cin >> quantidade;
@@ -1543,20 +1625,22 @@ void Gestor::retirarReagente()
     }
 }
 
+// Função que permite ao gestor sair do laboratório associado
 void Gestor::sairLaboratorio()
 {
-    if (this->laboratorio == nullptr)
+    if (this->laboratorio == nullptr)// Verifica se o gestor está associado a algum laboratório
     {
         std::cout << "Este gestor não está associado a nenhum laboratório.\n";
         return;
     }
-
+    
+    // Exibe informações do laboratório atual
     std::cout << "\n=== SAIR DO LABORATÓRIO ===\n";
     std::cout << "Laboratório atual: " << laboratorio->getNome() << std::endl;
     std::cout << "Departamento: " << laboratorio->getDepartamento() << std::endl;
     std::cout << "Gestor: " << this->getNome() << std::endl;
 
-    if (!confirmacao())
+    if (!confirmacao()) // Solicita confirmação antes de sair
     {
         std::cout << "Operação cancelada.\n";
         return;
@@ -1567,21 +1651,22 @@ void Gestor::sairLaboratorio()
         // Atualizar no banco de dados - remover associação
         Table gestorTable = db->getTable("Gestor");
         gestorTable.update()
-            .set("laboratorio_id", mysqlx::nullvalue)
+            .set("laboratorio_id", mysqlx::nullvalue) // define laboratório como nulo
             .where("id = :id")
             .bind("id", this->getId())
             .execute();
 
-        this->laboratorio = nullptr;
+        this->laboratorio = nullptr;// Remove associação na memória
 
         std::cout << "Gestor removido do laboratório com sucesso!\n";
     }
     catch (const mysqlx::Error &err)
     {
-        std::cerr << "Erro ao sair do laboratório: " << err.what() << std::endl;
+        std::cerr << "Erro ao sair do laboratório: " << err.what() << std::endl;// Tratamento de erro caso falhe a operação no banco
     }
 }
 
+// Função que exibe o histórico de retiradas de reagentes do laboratório
 void Gestor::historicoRetiradas()
 {
     if (this->laboratorio == nullptr)
@@ -1594,13 +1679,14 @@ void Gestor::historicoRetiradas()
 
     try
     {
-        std::vector<int> idsReagentes = laboratorio->getIdsReagentesDoLaboratorio();
+        std::vector<int> idsReagentes = laboratorio->getIdsReagentesDoLaboratorio();  // Obtém os IDs dos reagentes do laboratório
 
         if (idsReagentes.empty())
         {
             std::cout << "Nenhum reagente encontrado neste laboratório.\n";
             return;
         }
+        // Monta filtro SQL para buscar retiradas apenas dos reagentes do laboratório
         std::string filtro = "";
         for (int i = 0; i < idsReagentes.size(); i++)
         {
@@ -1608,7 +1694,7 @@ void Gestor::historicoRetiradas()
             if (i < idsReagentes.size() - 1)
                 filtro += " OR ";
         }
-
+        // Consulta a tabela de retiradas
         Table retiradaTable = db->getTable("Retirada");
         RowResult res = retiradaTable
                             .select("reagente_id", "usuario_id", "quantidadeRetirada", "dataHoraRetirada")
@@ -1616,6 +1702,7 @@ void Gestor::historicoRetiradas()
                             .orderBy("dataHoraRetirada DESC")
                             .execute();
 
+        // Cabeçalho da tabela
         std::cout << std::left
                   << std::setw(25) << "Reagente"
                   << std::setw(20) << "Usuário"
@@ -1623,7 +1710,8 @@ void Gestor::historicoRetiradas()
                   << std::setw(20) << "Data/Hora"
                   << "\n";
         std::cout << std::string(77, '-') << "\n";
-
+        
+        // Percorre cada retirada encontrada
         for (Row row : res)
         {
             int idReagente = row[0].get<int>();
