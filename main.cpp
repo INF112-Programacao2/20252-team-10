@@ -48,17 +48,16 @@ void menuGestor(Gestor *gestor)
         // Se for associado, imprime um menu especifico para este acso
         if (associado)
         {
-            std::cout << "1. Gerenciar laboratório\n";                   // Acessa o submenu de gestão do laboratório: dados, estatísticas, reagentes (cadastrar, editar, excluir)
-            std::cout << "2. Listar estudantes do laboratório\n";        // Mostra todos os estudantes atualmente associados ao laboratório
-            std::cout << "3. Acessar reagentes em alerta\n";             // Mostra reagentes próximos da validade ou com quantidade crítica
-            std::cout << "4. Acessar reagentes restritos\n";             // Acessa reagentes restritos que exigem autorização especial
-            std::cout << "5. Retirar reagente\n";                        // Retirar reagentes do laboratório (pede confirmação e registra retirada)
-            std::cout << "6. Histórico de retiradas (últimos 7 dias)\n"; // Mostra o histórico de retiradas recentes do laboratório
-            std::cout << "7. Cadastrar usuário\n";                       // Adiciona novo usuário (Gestor, Pós-graduação, Graduação)
-
-            std::cout << "9. Deletar usuário\n";             // Remove usuário do sistema completamente (pede confirmação)
-            std::cout << "10. Sair do laboratório\n";        // Sai da gestão do laboratório (não desassocia automaticamente)
-            std::cout << "12. Listar usuários do sistema\n"; // Lista todos os usuários cadastrados (gestores e estudantes)
+            std::cout << "1. Cadastrar usuário\n";                       // Adiciona novo usuário (Gestor, Pós-graduação, Graduação)
+            std::cout << "2. Gerenciar laboratório\n";                   // Acessa o submenu de gestão do laboratório: dados, estatísticas, reagentes (cadastrar, editar, excluir)
+            std::cout << "3. Listar estudantes do laboratório\n";        // Mostra todos os estudantes atualmente associados ao laboratório
+            std::cout << "4. Acessar reagentes em alerta\n";             // Mostra reagentes próximos da validade ou com quantidade crítica
+            std::cout << "5. Acessar reagentes restritos\n";             // Acessa reagentes restritos que exigem autorização especial
+            std::cout << "6. Retirar reagente\n";                        // Retirar reagentes do laboratório (pede confirmação e registra retirada)
+            std::cout << "7. Histórico de retiradas (últimos 7 dias)\n"; // Mostra o histórico de retiradas recentes do laboratório
+            std::cout << "8. Deletar usuário\n";                         // Remove usuário do sistema completamente (pede confirmação)
+            std::cout << "9. Sair do laboratório\n";                     // Sai da gestão do laboratório (não desassocia automaticamente)
+            std::cout << "10. Listar usuários do sistema\n";             // Lista todos os usuários cadastrados (gestores e estudantes)
         }
         else
         { // Se nao estiver associado, imprime um menu para quem não é associaod a nada
@@ -74,42 +73,39 @@ void menuGestor(Gestor *gestor)
         switch (opcao)
         {
         case 1:
+            gestor->cadastrarUsuario();
+
+            break;
+        case 2:
             if (associado)
                 gestor->gerenciarLaboratorio();
             else
                 gestor->associarLaboratorio();
             break;
-        case 2:
-            if (associado)
-                gestor->getLaboratorio()->listarEstudantes();
-            else
-                gestor->cadastrarUsuario();
-            break;
         case 3:
             if (associado)
-                gestor->acessarReagentesAlerta();
+                gestor->getLaboratorio()->listarEstudantes();
             else
                 gestor->listarUsuarios();
             break;
         case 4:
             if (associado)
-                gestor->menuReagentesRestritos();
+                gestor->acessarReagentesAlerta();
+
             else
                 gestor->deletarUsuario();
             break;
         case 5:
             if (associado)
                 gestor->menuReagentesRestritos();
-            else
-                gestor->deletarUsuario();
             break;
         case 6:
             if (associado)
-                gestor->menuReagentesRestritos();
+                gestor->retirarReagente();
             break;
         case 7:
             if (associado)
-                gestor->retirarReagente();
+                gestor->historicoRetiradas();
             break;
         case 8:
             if (associado)
@@ -117,16 +113,13 @@ void menuGestor(Gestor *gestor)
             break;
         case 9:
             if (associado)
-                gestor->historicoRetiradas();
+                gestor->sairLaboratorio();
             break;
-        case 12:
+        case 10:
             if (associado)
                 gestor->listarUsuarios();
             break;
-        case 13:
-            if (associado)
-                gestor->sairLaboratorio();
-            break;
+
         case 0:
             std::cout << "Saindo...\n";
             break;
@@ -387,7 +380,6 @@ int main()
     }
 
     // Limpa todos os laboratórios alocados dinamicamente
-    Gestor::limparUsuarios();
     Laboratorio::limparLaboratorios();
 
     return 0;

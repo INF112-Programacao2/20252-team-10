@@ -92,7 +92,7 @@ public:
 
     // Remove um reagente do vetor em memória pelo ID
     void removerReagenteDaMemoria(int idReagente);
-
+    
     // Getters
     //  Retorna um vetor de ponterio com todos ussuarios fazendo um upcasting
     std::vector<Usuario *> getUsuarios();
@@ -130,5 +130,7 @@ public:
     void menuDesassociarEstudante();
     void menuAssociarEstudante();
     std::vector<int> getIdsReagentesDoLaboratorio() const;
+    bool estaAssociado(Estudante *estudante);
+
 };
 #endif

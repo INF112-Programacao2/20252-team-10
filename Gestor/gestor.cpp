@@ -31,8 +31,8 @@ Gestor::Gestor(std::string nome, std::string email, std::string senha, int nivel
 }
 
 // Destrutor
-Gestor::~Gestor()
-{
+Gestor::~Gestor() {
+    
 }
 
 // Getters
@@ -49,23 +49,20 @@ void Gestor::cadastrarUsuario()
     std::cout << "\nQual tipo de usuario deseja cadastrar:\n";
     std::cout << "1. Gestor\n2. Pos-Graduando\n3. Aluno de Graduacao\n";
     int nivelAcesso; // Nivel de acesso aos Reagentes, 1 = Gestor, 2 = Graduacao e 3 = pos Graduacao
-    // Loop para verificar se o numero é aceito
-
-    while (true)
-    {
+    //Loop para verificar se o numero é aceito
+    
+    while (true) {
         std::cout << "Digite o tipo numérico do usuário (1 a 3): ";
         std::cin >> nivelAcesso;
         // Verifica se entrada é inválida (letra, símbolo, etc.)
-        if (std::cin.fail())
-        {
+        if (std::cin.fail()) {
             std::cin.clear(); // limpa erro
-            std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+            std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n'); 
             std::cout << "Entrada inválida! Digite apenas números entre 1 e 3.\n";
             continue; // Roda o loop novamente
         }
         // Verifica se está no intervalo
-        if (nivelAcesso >= 1 && nivelAcesso <= 3)
-        {
+        if (nivelAcesso >= 1 && nivelAcesso <= 3) {
             break; // sai do loop
         }
         std::cout << "Valor fora do intervalo! Digite apenas 1, 2 ou 3.\n";
@@ -80,56 +77,46 @@ void Gestor::cadastrarUsuario()
 
     // Solicita os dados do usuario
     // Solicita o nome
-    while (true)
-    {
+    while (true) {
         std::cout << "\nDigite o nome do usuário: ";
         std::getline(std::cin, nome);
         // Se estiver vazio, retorna o erro
-        if (nome.empty())
-        {
+        if (nome.empty()) {
             std::cout << "O nome não pode estar vazio. Tente novamente.\n";
             continue;
         }
-        break; // Nome válido
+        break;  // Nome válido
     }
 
     // Solicita o email e valida
-    while (true)
-    {
+    while (true) {
         std::cout << "Digite o email do usuário: ";
         std::getline(std::cin, email);
-        try
-        {
-            Usuario::validarEmail(email); // Pode lançar exceção
-            break;                        // Email válido
+        try {
+            Usuario::validarEmail(email);  // Pode lançar exceção
+            break; // Email válido
         }
-        catch (const std::exception &e)
-        {
+        catch (const std::exception& e) {
             std::cout << "Email inválido: " << e.what() << "\nTente novamente.\n";
         }
     }
 
     // Solicita a senha e valida
-    while (true)
-    {
+    while (true) {
         std::cout << "Digite a senha do usuário: ";
         std::getline(std::cin, senha);
-        try
-        {
-            Usuario::validarSenha(senha); // Pode lançar exceção
-            break;                        // Senha válida
+        try {
+            Usuario::validarSenha(senha);  // Pode lançar exceção
+            break;  // Senha válida
         }
-        catch (const std::exception &e)
-        {
+        catch (const std::exception& e) {
             std::cout << "Senha inválida: " << e.what() << "\nTente novamente.\n";
         }
     }
-    if (nivelAcesso == 2 || nivelAcesso == 3)
-    {
+    if (nivelAcesso == 2 || nivelAcesso == 3) {
         std::cout << "Digite a matricula do usuário " << nome << " :";
         std::getline(std::cin, matricula);
-        while (matricula.empty())
-        {
+        while (matricula.empty()) {
             std::cout << "A matrícula não pode estar vazia. Digite novamente: ";
             std::getline(std::cin, matricula);
         }
@@ -137,16 +124,13 @@ void Gestor::cadastrarUsuario()
         std::cout << "Digite o curso do usuário " << nome << " :";
         std::getline(std::cin, curso);
 
-        while (curso.empty())
-        {
+        while (curso.empty()) {
             std::cout << "O curso não pode estar vazio. Digite novamente: ";
             std::getline(std::cin, curso);
         }
 
-        if (nivelAcesso == 2)
-        {
-            while (true)
-            {
+        if(nivelAcesso == 2){
+            while(true){
                 std::cout << "Informe o nivel de formação:\n";
                 std::cout << "1 - Mestrado\n";
                 std::cout << "2 - Doutorado\n";
@@ -155,28 +139,20 @@ void Gestor::cadastrarUsuario()
                 std::cin >> nivelInt;
 
                 // Verifica erro de entrada (quando não é número)
-                if (std::cin.fail())
-                {
+                if (std::cin.fail()) {
                     std::cout << "Entrada invalida! Digite apenas numeros.\n\n";
-                    std::cin.clear();                                                   // limpa o erro
+                    std::cin.clear(); // limpa o erro
                     std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n'); // descarta lixo
                     continue;
                 }
 
-                switch (nivelInt)
-                {
-                case 1:
-                    nivel = "Mestrado";
-                    break;
-                case 2:
-                    nivel = "Doutorado";
-                    break;
-                case 3:
-                    nivel = "PosDoutorado";
-                    break;
-                default:
-                    std::cout << "Opção inválida! Tente novamente\n\n";
-                    continue; // volta para o loop
+                switch(nivelInt){
+                    case 1: nivel = "Mestrado"; break;
+                    case 2: nivel = "Doutorado"; break;
+                    case 3: nivel = "PosDoutorado"; break;
+                    default: 
+                        std::cout << "Opção inválida! Tente novamente\n\n";
+                        continue; // volta para o loop
                 }
                 break; // se é valido, sai do loop
             }
@@ -256,32 +232,17 @@ Gestor *Gestor::getGestorById(int id)
     }
     return nullptr;
 }
-
-void Gestor::limparUsuarios()
+// função que carrega os usuários do banco de dados para o array dinâmico
+void Gestor::carregarUsuarios(Schema *db)
 {
-    for (int i = 0; i < usuariosCarregados.size(); i++)
-    {
-        if (usuariosCarregados[i] != nullptr)
-            delete usuariosCarregados[i];
-    }
+
     usuariosCarregados.clear();
     gestores.clear();
     estudantes.clear();
     posGraduandos.clear();
-}
-
-// função que carrega os usuários do banco de dados para o array dinâmico
-
-void Gestor::carregarUsuarios(Schema *db)
-
-{
 
     try
-
     {
-
-        limparUsuarios();
-
         Table usuarioTable = db->getTable("Usuario");
 
         RowResult usuarios = usuarioTable
@@ -433,23 +394,18 @@ void Gestor::listarUsuarios()
               << std::setw(15) << "Tipo"
               << "\n";
     std::cout << std::string(65, '-') << "\n";
-    // laco que percorre o vetor de usuarios do laboratorio
-    for (Usuario *u : Gestor::usuariosCarregados)
-    {
+    //laco que percorre o vetor de usuarios do laboratorio
+    for (Usuario* u : Gestor::usuariosCarregados) {
         std::string tipo;
-        if (u->getNivelAcesso() == 1)
-            tipo = "Gestor";
-        else if (u->getNivelAcesso() == 2)
-            tipo = "Pos-Graduação";
-        else if (u->getNivelAcesso() == 3)
-            tipo = "Graduação";
-        else
-            tipo = "Desconhecido";
+        if (u->getNivelAcesso() == 1) tipo = "Gestor";
+        else if (u->getNivelAcesso() == 2) tipo = "Pos-Graduação";
+        else if (u->getNivelAcesso() == 3) tipo = "Graduação";
+        else tipo = "Desconhecido";
         std::cout << std::left
                   << std::setw(5) << u->getId()
                   << std::setw(20) << u->getNome()
                   << std::setw(25) << u->getEmail()
-                  << std::setw(15) << tipo
+                  << std::setw(15) << tipo 
                   << "\n";
     }
     std::cout << std::string(65, '-') << "\n";
@@ -461,8 +417,7 @@ void Gestor::deletarUsuario()
     std::string email;
     std::cout << "Digite o email do usuário a ser deletado: ";
     std::getline(std::cin, email);
-    try
-    {
+    try {
         // Verifica Gestores
         for (size_t i = 0; i < gestores.size(); ++i)
         {
@@ -498,6 +453,7 @@ void Gestor::deletarUsuario()
                     }
                 }
 
+                delete gestores[i];
                 gestores.erase(gestores.begin() + i);
 
                 std::cout << "Gestor deletado!\n";
@@ -540,6 +496,7 @@ void Gestor::deletarUsuario()
                     }
                 }
 
+                delete estudantes[i];
                 estudantes.erase(estudantes.begin() + i);
 
                 std::cout << "Estudante deletado!\n";
@@ -582,6 +539,7 @@ void Gestor::deletarUsuario()
                     }
                 }
 
+                delete posGraduandos[i];
                 posGraduandos.erase(posGraduandos.begin() + i);
 
                 std::cout << "Pós-Graduando deletado!\n";
@@ -759,12 +717,13 @@ void Gestor::cadastrarReagente()
         return;
     }
 
-    std::cin.ignore();
     // Variaveis para guardar os dados da tabela base Reagente
     std::string nome, dataValidade, local, unidade, marca, codRef;
     int quantidade, quantidadeCritica, nivelAcesso;
+
     std::cout << "Cadastro de Novo Reagente \n";
-    std::cout << "Nome: "; // Ignora o 'Enter' anterior
+    std::cout << "Nome: ";
+    std::cin.ignore(); // Ignora o 'Enter' anterior
     std::getline(std::cin, nome);
     std::cout << "Data de Validade (AAAA-MM-DD): ";
     std::cin >> dataValidade;
@@ -773,14 +732,14 @@ void Gestor::cadastrarReagente()
     std::cout << "Quantidade Critica: ";
     std::cin >> quantidadeCritica;
     std::cout << "Local de Armazenamento: ";
-    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+    std::cin.ignore();
     std::getline(std::cin, local);
     std::cout << "Nivel de Acesso:\n 1 - Restrito (Apenas Gestores)\n 2 - Livre (Graduação)\n 3 - Pós-Graduação\nDigite a opção: ";
     std::cin >> nivelAcesso;
     std::cout << "Unidade de Medida (ex: 'ml', 'g'): ";
     std::cin >> unidade;
     std::cout << "Marca: ";
-    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+    std::cin.ignore();
     std::getline(std::cin, marca);
     std::cout << "Codigo de Referencia: ";
     std::cin >> codRef;
@@ -984,7 +943,6 @@ void Gestor::listarReagentesRestritos()
         int size = res.count();
         for (int i = 0; i < size; i++)
         {
-            std::cout << res.count() << std::endl;
             // Pega os detalhes
             Row row = res.fetchOne();
 
