@@ -438,13 +438,13 @@ void Estudante::retirarReagente() {
     for (int i = 0; i < laboratorios.size(); i++) {
         std::cout << i + 1 << ". " << laboratorios[i].first->getNome() << "\n";
     }
+   int opLab;
     std::cout << "Opção: ";
-    int opLab;
-    std::cin >> opLab;
-
-    if (opLab < 1 || opLab > (int)laboratorios.size()) {
-        std::cout << "Opção inválida.\n";
-        return;
+    // Loop de validacao simples para o menu do laboratorio
+    while (!(std::cin >> opLab) || opLab < 1 || opLab > (int)laboratorios.size()) {
+        std::cout << "Opção inválida. Tente novamente: ";
+        std::cin.clear(); // Limpa a flag de erro
+        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n'); // Limpa o buffer
     }
     Laboratorio* labEscolhido = laboratorios[opLab - 1].first;
 
