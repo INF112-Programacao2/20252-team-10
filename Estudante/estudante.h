@@ -17,10 +17,6 @@ class Estudante : public Usuario{
         // Array de laboratório em que os etudnate esta associado
 
     public:
-        //Array de estudantes de graduacao
-        static std::vector<Estudante*> estudantesGraduacao;
-        //Array de estudantes de Pos Graduacao
-        static std::vector<PosGraduacao*> estudantesPosGraduacao;
         // Construtor
         Estudante(std::string nome, std::string email, std::string senha, int nivelAcesso, Schema *db,
                     std::string matricula, std::string curso, std::string nivel);
@@ -44,7 +40,7 @@ class Estudante : public Usuario{
         // Remove o objeto no laboratorio no objeto estudante
         void removerLaboratorioObjeto(Laboratorio* laboratorio);
         // Remover laboratorio do estduante
-        void removerLaboratorio(Laboratorio* laboratorio, Schema* db);
+        void removerLaboratorio(Laboratorio* laboratorio);
         // Associa estudante ao laboratorio
         void associarLaboratorio(Laboratorio* laboratorio, const std::string& papel);
 

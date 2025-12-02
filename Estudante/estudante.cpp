@@ -88,10 +88,10 @@ void Estudante::removerLaboratorioObjeto(Laboratorio *laboratorio)
 }
 
 // Remover laboratorio do estduante
-void Estudante::removerLaboratorio(Laboratorio* laboratorio, Schema* db) {
+void Estudante::removerLaboratorio(Laboratorio* laboratorio) {
     // Verifica se o ponteiro do laboratorio e db são inválidos
-    if (!laboratorio || !db) {
-        std::cerr << "[Erro] Parâmetros do laboratorio são nulos." << std::endl;
+    if (!laboratorio) {
+        std::cerr << "[Erro] Parametros do laboratorio são nulos." << std::endl;
         return;
     }
     // Acessa a tabela associado

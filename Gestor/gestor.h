@@ -27,6 +27,7 @@ public:
 
     // Getters
     Laboratorio *getLaboratorio();
+    
 
     // Demais funções
     void cadastrarUsuario();
