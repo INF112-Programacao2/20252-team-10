@@ -120,6 +120,8 @@ public:
 
     // Métodos para adicionar/remover pessoas
     void adicionarGestor(Gestor *gestor);
+    void removerGestor(int id);
+    void menuRemoverGestor();
     void adicionarEstudante(Estudante *estudante);
     void removerEstudante(Estudante *estudante);
     void imprimirEstudantes(const std::vector<Estudante *> &estudantes);

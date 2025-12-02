@@ -1026,16 +1026,9 @@ void Gestor::menuReagentesRestritos()
         }
         case 2:
         {
-            std::cout << "Digite o nome do reagente: (Encontra nome parcial)\n";
-            std::string nomeBuscado;
-            float quantidadeRetirada;
-            std::cin.ignore();
-            std::getline(std::cin, nomeBuscado);
-            std::cout << "Digite a quantidade retirada: \n";
-            std::cin >> quantidadeRetirada;
             if (confirmacao())
             {
-                this->laboratorio->registrarRetirada(this, nomeBuscado, quantidadeRetirada);
+                this->retirarReagente();
             }
             else
                 std::cout << "Ação cancelada pelo usuário\n";
@@ -1495,8 +1488,14 @@ void Gestor::retirarReagente()
 
     int escolha;
     double quantidade;
-    std::cout << "\nEscolha o número do reagente: ";
+    std::cout << "\nEscolha o número do reagente (0 para cancelar): ";
     std::cin >> escolha;
+
+    if (escolha == 0)
+    {
+        std::cout << "Retirada cancelada.\n";
+        return;
+    }
 
     if (escolha < 1 || escolha > static_cast<int>(reagentes.size()))
     {
@@ -1559,9 +1558,15 @@ void Gestor::retirarReagente()
         // Atualizar na memória
         reagenteEscolhido->setQuantidade(novaQuantidade);
 
-        time_t *agora;
-        time(agora);
-        std::string hora = ctime(agora);
+        time_t agora;
+        time(&agora);
+
+        struct tm *_tempoInfo = localtime(&agora);
+
+        char buff[20];
+        strftime(buff, sizeof(buff), "%Y-%m-%d %H:%M:%S", _tempoInfo);
+
+        std::string hora = std::string(buff);
 
         // Registrar a retirada (se a tabela existir)
         try
@@ -1571,9 +1576,9 @@ void Gestor::retirarReagente()
                 .values(reagenteEscolhido->getId(), this->getId(), quantidade, hora)
                 .execute();
         }
-        catch (...)
+        catch (mysqlx::Error &e)
         {
-            // Tabela Retirada pode não existir, continuar normalmente
+            std::cout << "Erro ao registrar retirada no banco " << e.what() << std::endl;
         }
 
         std::cout << "Retirada registrada com sucesso!\n";

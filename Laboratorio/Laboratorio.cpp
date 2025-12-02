@@ -187,6 +187,15 @@ std::string Laboratorio::registrarRetirada(Usuario *usuario, const std::string &
     // Se deu certo (não tem "Erro:" na mensagem)
     std::cout << reagente->getQuantidade() << std::endl;
     std::cout << reagente->getId() << std::endl;
+    time_t agora;
+    time(&agora);
+
+    struct tm *_tempoInfo = localtime(&agora);
+
+    char buff[20];
+    strftime(buff, sizeof(buff), "%Y-%m-%d %H:%M:%S", _tempoInfo);
+
+    std::string hora = std::string(buff);
     if (resultado.find("Erro:") == std::string::npos)
     {
         try
@@ -200,6 +209,8 @@ std::string Laboratorio::registrarRetirada(Usuario *usuario, const std::string &
 
             std::cout << "Banco de dados atualizado para a retirada." << std::endl;
             retiradas.push_back(novaRetirada); // Adiciona no histórico
+
+            db->getTable("Retirada").insert("reagente_id", "usuario_id", "quantidadeRetirada", "dataHoraRetirada").values(reagenteId, usuario->getId(), quantidade, hora).execute();
         }
         catch (const mysqlx::Error &err)
         {
@@ -440,6 +451,63 @@ void Laboratorio::adicionarGestor(Gestor *gestor)
 {
     // Implementar adição de gestor
     return;
+}
+
+void Laboratorio::removerGestor(int id)
+{
+    for (int i = 0; i < gestores.size(); i++)
+    {
+        if (gestores[i]->getId() == id)
+        {
+            try
+            {
+                gestores.erase(gestores.begin() + i);
+            }
+            catch (std::exception &e)
+            {
+                std::cout << e.what() << std::endl;
+            }
+        }
+    }
+}
+
+void Laboratorio::menuRemoverGestor()
+{
+    int id;
+    char op;
+    std::cout << "Id do gestor removido: ";
+    std::cin >> id;
+    std::cout << "Tem certeza que quer remover o gestor de id = " << id << "? (S/N): ";
+    std::cin >> op;
+    if (op == 'N')
+    {
+        std::cout << "Remoção cancelada\n";
+        return;
+    }
+    else if (op == 'S')
+    {
+        for (int i = 0; i < gestores.size(); i++)
+        {
+            if (gestores[i]->getId() == id)
+            {
+                try
+                {
+                    gestores.erase(gestores.begin() + i);
+                    std::cout << "Gestor removido do Laboratório\n";
+                    return;
+                }
+                catch (std::exception &e)
+                {
+                    std::cout << e.what();
+                }
+            }
+        }
+    }
+    else
+    {
+        std::cout << "Opção inválida\n";
+        return;
+    }
 }
 
 // Retorna um vetor de ponterio com todos ussuarios fazendo um upcasting
