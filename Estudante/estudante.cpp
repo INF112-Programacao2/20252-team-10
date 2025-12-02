@@ -91,7 +91,7 @@ void Estudante::removerLaboratorioObjeto(Laboratorio *laboratorio)
 void Estudante::removerLaboratorio(Laboratorio* laboratorio, Schema* db) {
     // Verifica se o ponteiro do laboratorio e db são inválidos
     if (!laboratorio || !db) {
-        std::cerr << "[Erro] Parametros do laboratorio são nulos." << std::endl;
+        std::cerr << "[Erro] Parâmetros do laboratorio são nulos." << std::endl;
         return;
     }
     // Acessa a tabela associado
@@ -448,24 +448,65 @@ void Estudante::retirarReagente() {
     }
     Laboratorio* labEscolhido = laboratorios[opLab - 1].first;
 
+    // limpa o buffer antes de ler o nome do reagente
+    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+
     // Escolher o Reagente (Busca por nome)
     std::cout << "Digite o nome do reagente: ";
     std::string nomeReagente;
-    std::cin.ignore();
     std::getline(std::cin, nomeReagente);
 
-    // Escolher a Quantidade
-    std::cout << "Digite a quantidade a retirar: ";
-    float qtd;
-    std::cin >> qtd;
+    // Busca o reagente na lista do laboratório para validar se existe e pegar a unidade
+    std::vector<Reagente*> estoque = labEscolhido->listarReagentes("");
+    Reagente* reagenteAlvo = nullptr;
 
-    // Validar quantidade
-    if (qtd <= 0) {
-        std::cout << "Quantidade deve ser maior que zero.\n";
-        return;
+    for (Reagente* r : estoque) {
+        if (r->getNome() == nomeReagente) {
+            reagenteAlvo = r; //reagente alvo encontrado
+            break;
+        }
     }
 
-    // Processar Retirada (O Laboratório faz as verificações de estoque e validade)
+    if (reagenteAlvo == nullptr) {
+        std::cout << "ERRO: Reagente '" << nomeReagente << "' não encontrado neste laboratório.\n";
+        return; // Sai da função se nao achar
+    }
+
+    // Mostra para o usuario que o reagente foi achado
+    std::cout << "-> Reagente encontrado: " << reagenteAlvo->getNome() << "\n";
+    
+    // Mostra o quanto tem disponivel no estoque e a unidade (ml, g, etc)
+    std::cout << "-> Disponível: " << reagenteAlvo->getQuantidade() << " " << reagenteAlvo->getUnidadeMedida() << "\n";
+
+    float qtd = 0;
+    bool entradaValida = false; // Variavel para controlar o loop de validacao
+
+    // Loop continua enquanto a entrada nao for valida
+    while (!entradaValida) {
+        // Pede a quantidade indicando a unidade de medida correta
+        std::cout << "Digite a quantidade a retirar (em " << reagenteAlvo->getUnidadeMedida() << "): ";
+        std::cin >> qtd;
+
+        // Verifica se a entrada falhou (ex: usuario digitou letras em vez de numeros)
+        if (std::cin.fail()) {
+            std::cout << "Erro: Entrada inválida. Por favor, digite um número.\n";
+            std::cin.clear(); // Limpa a flag de erro do cin
+            std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n'); // Limpa o buffer do teclado
+        } 
+        // Verifica se a quantidade e menor ou igual a zero
+        else if (qtd <= 0) {
+            std::cout << "Erro: A quantidade deve ser maior que zero.\n";
+        }
+        // Verifica se a quantidade pedida e maior que o que tem no estoque
+        else if (qtd > reagenteAlvo->getQuantidade()) {
+            std::cout << "Erro: Quantidade solicitada maior que o estoque disponível (" 
+                      << reagenteAlvo->getQuantidade() << " " << reagenteAlvo->getUnidadeMedida() << ").\n";
+        }
+        else {
+            entradaValida = true; // Se passou por tudo, a entrada e valida e sai do loop
+        }
+    }
+    // O Laboratório faz o registro final e baixa no bancoo
     std::string resultado = labEscolhido->registrarRetirada(this, nomeReagente, qtd);
 
     std::cout << "\nResultado: " << resultado << "\n";
