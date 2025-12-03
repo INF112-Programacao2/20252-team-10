@@ -399,15 +399,10 @@ void Gestor::carregarUsuarios(Schema *db)
     }
 }
 
-// lista os usuários do laboratório gerenciado por este gestor
+// lista os usuários do sistema
 void Gestor::listarUsuarios()
 {
-    // verifica se o gestor está vinculado a um laboratorio
-    if (laboratorio == nullptr)
-    {
-        std::cout << "Este Gestor não está vinculado a um laboratorio." << std::endl;
-        return;
-    }
+
 
     // cabeçalho da tabela
     std::cout << "\n=============== USUÁRIOS ===============" << std::endl;
@@ -444,6 +439,7 @@ void Gestor::deletarUsuario()
 {
     // Pede o email dentro da função
     std::string email;
+    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n'); // Limpa o buffer
     std::cout << "Digite o email do usuário a ser deletado: ";
     std::getline(std::cin, email);
     try

@@ -915,6 +915,7 @@ void Laboratorio::menuAssociarEstudante()
 
     // 4. Solicitar ID para associação
     int id;
+    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n'); // Limpa o buffer
     std::cout << "\nDigite o ID do estudante para associar (0 para cancelar): ";
     std::cin >> id;
 
