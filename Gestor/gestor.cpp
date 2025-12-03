@@ -1081,7 +1081,7 @@ void Gestor::cadastrarReagente()
 
     // Bloco de Insercao no Banco de Dados protegido por try catch
     try
-    {sud
+    {
         // Obtem a tabela Reagente do banco
         Table reagenteTable = db->getTable("Reagente");
 
@@ -1325,169 +1325,427 @@ void Gestor::listarReagentesDoLaboratorio()
 void Gestor::editarReagente()
 {
     std::cout << "\n Editar Reagente \n";
-    std::cout << "Digite o nome do reagente que deseja editar: ";
-    std::string nomeBusca; // variavel local para guardar temporariamente o nome do reagente
-    std::cin.ignore();     // Limpa buffer antes de ler string
-    std::getline(std::cin, nomeBusca);
+    std::string nomeBusca;
+    
+    // Limpa o buffer de entrada para evitar pular a leitura do nome
+    std::cin.ignore();
+    
+    // Inicio do loop para validacao do nome de busca
+    while(true) {
+        std::cout << "Digite o nome do reagente que deseja editar: ";
+        // Le a linha inteira digitada pelo usuario
+        std::getline(std::cin, nomeBusca);
+        // Verifica se a string nao esta vazia
+        if(!nomeBusca.empty()) break;
+        std::cout << "Nome invalido\n";
+    }
 
-    // Busca no laboratorio
+    // Busca o reagente na memoria do laboratorio usando o nome fornecido
     Reagente *reagente = laboratorio->buscarReagente(nomeBusca);
 
+    // Verifica se o reagente foi encontrado ou se retornou nulo
     if (reagente == nullptr)
     {
-        std::cout << "Reagente não encontrado.\n";
+        std::cout << "Reagente nao encontrado\n";
         return;
     }
 
-    // Mostra dados atuais
+    // Exibe os dados atuais do reagente encontrado para o usuario conferir
     std::cout << "Reagente encontrado: " << reagente->getNome() << " (ID: " << reagente->getId() << ")\n";
     std::cout << "O que deseja alterar?\n";
     std::cout << "1. Quantidade (Atual: " << reagente->getQuantidade() << ")\n";
     std::cout << "2. Local de Armazenamento (Atual: " << reagente->getLocalArmazenamento() << ")\n";
     std::cout << "3. Data de Validade (Atual: " << reagente->getDataValidade() << ")\n";
     std::cout << "4. Corrigir Nome (Atual: " << reagente->getNome() << ")\n";
-    std::cout << "5. Corrigir Nível de Acesso (Atual: " << reagente->getNivelAcesso() << ")\n";
-    std::cout << "6. Corrigir Dados Específicos (Densidade/Volume ou Massa/Estado)\n";
+    std::cout << "5. Corrigir Nivel de Acesso (Atual: " << reagente->getNivelAcesso() << ")\n";
+    std::cout << "6. Corrigir Dados Especificos (Tipo/Densidade/Massa)\n";
     std::cout << "0. Cancelar\n";
-    std::cout << "Opção: ";
+    std::cout << "Opcao: ";
 
     int subOpcao;
-    std::cin >> subOpcao;
+    // Inicio do loop para validacao da opcao do menu
+    while(true) {
+        std::cin >> subOpcao;
+        
+        // Verifica se a entrada falhou caso digite letras
+        if(!std::cin.fail()) break;
+        
+        // Limpa o estado de erro do cin
+        std::cin.clear();
+        // Limpa o buffer de entrada simples
+        std::cin.ignore();
+        std::cout << "Entrada invalida Digite um numero\n";
+    }
 
-    if (subOpcao == 0)
-        return;
+    // Se escolheu 0 cancela a operacao e sai da funcao imediatamente
+    if (subOpcao == 0) return;
 
+    // Bloco try catch para tratamento de erros de banco de dados
     try
     {
+        // Obtem a referencia da tabela Reagente no banco
         Table table = db->getTable("Reagente");
 
-        if (subOpcao == 1)
-        { // Quantidade
+        // Opcao 1 Editar Quantidade
+        if (subOpcao == 1) 
+        { 
             int novaQtd;
-            std::cout << "Nova Quantidade: ";
-            std::cin >> novaQtd;
+            // Loop de validacao para garantir numero positivo
+            while(true) {
+                std::cout << "Nova Quantidade: ";
+                std::cin >> novaQtd;
+                
+                // Verifica erro de input e se valor e maior ou igual a zero
+                if(!std::cin.fail() && novaQtd >= 0) break;
+                
+                std::cin.clear(); 
+                std::cin.ignore();
+                std::cout << "Quantidade invalida Digite numero maior ou igual a 0\n";
+            }
 
-            if (!confirmacao())
-                return;
+            // Pede confirmacao antes de salvar as alteracoes
+            if (!confirmacao()) return;
 
+            // Atualiza no banco de dados filtrando pelo ID
             table.update().set("quantidade", novaQtd).where("id = :id").bind("id", reagente->getId()).execute();
+            // Atualiza na memoria RAM para manter consistencia
             reagente->setQuantidade(novaQtd);
-            std::cout << "Quantidade atualizada com sucesso!\n";
+            std::cout << "Quantidade atualizada com sucesso\n";
         }
-        else if (subOpcao == 2)
-        { // Local
+        // Opcao 2 Editar Local de Armazenamento
+        else if (subOpcao == 2) 
+        { 
             std::string novoLocal;
-            std::cout << "Novo Local: ";
+            // Limpa buffer obrigatorio antes de ler string com getline
             std::cin.ignore();
-            std::getline(std::cin, novoLocal);
+            
+            // Loop de validacao de string nao vazia
+            while(true) {
+                std::cout << "Novo Local: ";
+                std::getline(std::cin, novoLocal);
+                if(!novoLocal.empty()) break;
+                std::cout << "Local nao pode ser vazio\n";
+            }
 
-            if (!confirmacao())
-                return;
+            if (!confirmacao()) return;
 
+            // Atualiza banco e memoria
             table.update().set("localArmazenamento", novoLocal).where("id = :id").bind("id", reagente->getId()).execute();
             reagente->setLocalArmazenamento(novoLocal);
-            std::cout << "Local atualizado com sucesso!\n";
+            std::cout << "Local atualizado com sucesso\n";
         }
-        else if (subOpcao == 3)
-        { // Validade
+        // Opcao 3 Editar Data de Validade
+        else if (subOpcao == 3) 
+        {
+            int ano, mes, dia;
+            char sep1, sep2; 
             std::string novaValidade;
-            std::cout << "Nova Validade (AAAA-MM-DD): ";
-            std::cin >> novaValidade;
 
-            if (!confirmacao())
-                return;
+            // Loop de validacao robusta da data igual ao cadastro
+            while (true)
+            {
+                std::cout << "Nova Validade (AAAA-MM-DD): ";
+                // Tenta ler no formato exato Numero Char Numero Char Numero
+                std::cin >> ano >> sep1 >> mes >> sep2 >> dia;
 
+                // Verifica erro de leitura se digitou texto onde era numero
+                if (std::cin.fail()) 
+                {
+                    std::cout << "Erro Digite apenas numeros\n";
+                    std::cin.clear(); 
+                    std::cin.ignore(); 
+                    continue; 
+                }
+
+                // Verifica se usou hifens como separador
+                if (sep1 != '-' || sep2 != '-')
+                {
+                    std::cout << "Erro Formato incorreto Use hifens\n";
+                    std::cin.ignore();
+                    continue;
+                }
+
+                // Verifica limites logicos de ano mes e dia
+                if (ano < 1900 || ano > 2100) { std::cout << "Ano invalido\n"; continue; }
+                if (mes < 1 || mes > 12) { std::cout << "Mes invalido\n"; continue; }
+                if (dia < 1 || dia > 31) { std::cout << "Dia invalido\n"; continue; }
+
+                // Verificacao especifica para Fevereiro e ano bissexto
+                if (mes == 2) {
+                    bool bissexto = (ano % 4 == 0 && (ano % 100 != 0 || ano % 400 == 0));
+                    int limite = bissexto ? 29 : 28;
+                    if (dia > limite) { std::cout << "Dia invalido para Fevereiro\n"; continue; }
+                }
+                // Verificacao para meses com 30 dias
+                else if (mes == 4 || mes == 6 || mes == 9 || mes == 11) {
+                    if (dia > 30) { std::cout << "Mes tem apenas 30 dias\n"; continue; }
+                }
+
+                // Conversao segura dos numeros para string
+                std::string sMes = std::to_string(mes);
+                std::string sDia = std::to_string(dia);
+                
+                // Adiciona zero a esquerda se necessario para manter formato
+                if (mes < 10) sMes = "0" + sMes;
+                if (dia < 10) sDia = "0" + sDia;
+                
+                // Monta a string final da data
+                novaValidade = std::to_string(ano) + "-" + sMes + "-" + sDia;
+                break; 
+            }
+
+            if (!confirmacao()) return;
+
+            // Atualiza banco e memoria
             table.update().set("dataValidade", novaValidade).where("id = :id").bind("id", reagente->getId()).execute();
             reagente->setDataValidade(novaValidade);
-            std::cout << "Validade atualizada com sucesso!\n";
+            std::cout << "Validade atualizada com sucesso\n";
         }
-        else if (subOpcao == 4)
-        { // Nome
+        // Opcao 4 Editar Nome
+        else if (subOpcao == 4) 
+        { 
             std::string novoNome;
-            std::cout << "Novo Nome Correto: ";
-            std::cin.ignore();
-            std::getline(std::cin, novoNome);
-
-            if (!confirmacao())
-                return;
-
+            std::cin.ignore(); // Limpa buffer
+            while(true) {
+                std::cout << "Novo Nome Correto: ";
+                std::getline(std::cin, novoNome);
+                if(!novoNome.empty()) break;
+                std::cout << "Nome invalido\n";
+            }
+            if (!confirmacao()) return;
+            
             table.update().set("nome", novoNome).where("id = :id").bind("id", reagente->getId()).execute();
             reagente->setNome(novoNome);
-            std::cout << "Nome corrigido com sucesso!\n";
+            std::cout << "Nome corrigido com sucesso\n";
         }
-        else if (subOpcao == 5)
-        { // Nivel
+        // Opcao 5 Editar Nivel de Acesso
+        else if (subOpcao == 5) 
+        { 
             int novoNivel;
-            std::cout << "Novo Nível (1-Restrito, 2-Livre, 3-Pós): ";
-            std::cin >> novoNivel;
-
-            if (!confirmacao())
-                return;
-
+            while(true) {
+                std::cout << "Novo Nivel (1-3): ";
+                std::cin >> novoNivel;
+                // Valida se e numero e se esta entre 1 e 3
+                if(!std::cin.fail() && novoNivel >= 1 && novoNivel <= 3) break;
+                std::cin.clear(); 
+                std::cin.ignore();
+                std::cout << "Nivel invalido\n";
+            }
+            if (!confirmacao()) return;
+            
             table.update().set("nivelAcesso", novoNivel).where("id = :id").bind("id", reagente->getId()).execute();
             reagente->setNivelAcesso(novoNivel);
-            std::cout << "Nível de acesso atualizado com sucesso!\n";
+            std::cout << "Nivel atualizado\n";
         }
+        // Opcao 6 Editar Dados Especificos
+        // Aqui verificamos se o tipo informado bate com o tipo no banco
+        // Se nao bater permitimos a conversao do tipo deletando a tabela antiga e criando na nova
         else if (subOpcao == 6)
         {
-            std::cout << "Qual o tipo deste reagente?\n";
-            std::cout << "1. Líquido\n";
-            std::cout << "2. Sólido\n";
-            std::cout << "Escolha: ";
             int tipoEscolhido;
-            std::cin >> tipoEscolhido;
+            bool precisaConverter = false;
 
-            if (tipoEscolhido == 1)
+            // Loop para validar o tipo de reagente desejado
+            while (true)
             {
-                // Converte manualmente o ponteiro para Liquido
-                ReagenteLiquido *liq = static_cast<ReagenteLiquido *>(reagente);
+                std::cout << "Qual o tipo deste reagente (1-Liquido 2-Solido): ";
+                std::cin >> tipoEscolhido;
 
+                // Verifica erro de entrada
+                if (std::cin.fail()) {
+                    std::cin.clear();
+                    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+                    std::cout << "Entrada invalida\n";
+                    continue;
+                }
+                
+                // Verifica intervalo
+                if (tipoEscolhido != 1 && tipoEscolhido != 2) {
+                    std::cout << "Tipo invalido\n";
+                    continue;
+                }
+
+                // Verifica consistencia com o objeto atual em memoria
+                if (tipoEscolhido == 1) {
+                    // Tenta converter o ponteiro para liquido
+                    // Se falhar retorna null o que significa que e solido
+                    ReagenteLiquido *testeLiq = dynamic_cast<ReagenteLiquido *>(reagente);
+                    if (testeLiq == nullptr) {
+                        std::cout << "\nAVISO O reagente cadastrado atualmente e SOLIDO\n";
+                        std::cout << "Deseja converter para LIQUIDO? (S/N): ";
+                        char resp;
+                        std::cin >> resp;
+                        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+                        
+                        if (resp == 'S' || resp == 's') {
+                            precisaConverter = true;
+                            break; 
+                        } else {
+                            continue; 
+                        }
+                    }
+                }
+                else if (tipoEscolhido == 2) {
+                    // Tenta converter o ponteiro para solido
+                    // Se falhar retorna null o que significa que e liquido
+                    ReagenteSolido *testeSol = dynamic_cast<ReagenteSolido *>(reagente);
+                    if (testeSol == nullptr) {
+                        std::cout << "\nAVISO O reagente cadastrado atualmente e LIQUIDO\n";
+                        std::cout << "Deseja converter para SOLIDO? (S/N): ";
+                        char resp;
+                        std::cin >> resp;
+                        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+
+                        if (resp == 'S' || resp == 's') {
+                            precisaConverter = true;
+                            break; 
+                        } else {
+                            continue; 
+                        }
+                    }
+                }
+                break;
+            }
+
+            // CASO 1 CONVERSAO DE TIPO Troca de tabelas
+            if (precisaConverter)
+            {
+                int idOriginal = reagente->getId();
+                std::string nome = reagente->getNome();
+
+                if (tipoEscolhido == 1) // Converter para Liquido
+                {
+                    double dens, vol;
+                    // Coleta novos dados
+                    while(true) { 
+                        std::cout << "Nova Densidade: "; std::cin >> dens; 
+                        if(!std::cin.fail() && dens > 0) break; 
+                        std::cin.clear(); std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n'); std::cout << "Invalido\n"; 
+                    }
+                    while(true) { 
+                        std::cout << "Novo Volume: "; std::cin >> vol; 
+                        if(!std::cin.fail() && vol > 0) break; 
+                        std::cin.clear(); std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n'); std::cout << "Invalido\n"; 
+                    }
+
+                    // 1 Insere na tabela nova Liquido
+                    // Se der erro aqui o catch captura e nada e perdido pois a antiga ainda existe
+                    db->getTable("ReagenteLiquido").insert("id", "densidade", "volume").values(idOriginal, dens, vol).execute();
+
+                    // 2 Se deu certo remove da tabela antiga Solido
+                    db->getTable("ReagenteSolido").remove().where("id = :id").bind("id", idOriginal).execute();
+
+                    // Atualiza Memoria Remove o objeto antigo e cria um novo do tipo certo
+                    laboratorio->removerReagenteDaMemoria(idOriginal);
+                    laboratorio->cadastrarNovoReagente(
+                        idOriginal, nome, reagente->getDataValidade(), reagente->getQuantidade(), 
+                        reagente->getQuantidadeCritica(), reagente->getLocalArmazenamento(), 
+                        reagente->getNivelAcesso(), reagente->getUnidadeMedida(), 
+                        reagente->getMarca(), reagente->getCodigoReferencia(), 
+                        1, dens, vol, 0.0, ""
+                    );
+                    std::cout << "Convertido para Liquido com sucesso\n";
+                }
+                else // Converter para Solido
+                {
+                    double mass;
+                    std::string est;
+                    // Coleta novos dados
+                    while(true) { 
+                        std::cout << "Nova Massa: "; std::cin >> mass; 
+                        if(!std::cin.fail() && mass > 0) break; 
+                        std::cin.clear(); std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n'); std::cout << "Invalido\n"; 
+                    }
+                    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+                    while(true) { 
+                        std::cout << "Novo Estado Fisico: "; std::getline(std::cin, est); 
+                        if(!est.empty()) break; std::cout << "Vazio\n"; 
+                    }
+
+                    // 1 Insere na tabela nova Solido
+                    // Se der erro aqui o catch captura e nada e perdido pois a antiga ainda existe
+                    db->getTable("ReagenteSolido").insert("id", "massa", "estadoFisico").values(idOriginal, mass, est).execute();
+
+                    // 2 Se deu certo remove da tabela antiga Liquido
+                    db->getTable("ReagenteLiquido").remove().where("id = :id").bind("id", idOriginal).execute();
+
+                    // Atualiza Memoria Remove antigo e recria novo
+                    laboratorio->removerReagenteDaMemoria(idOriginal);
+                    laboratorio->cadastrarNovoReagente(
+                        idOriginal, nome, reagente->getDataValidade(), reagente->getQuantidade(), 
+                        reagente->getQuantidadeCritica(), reagente->getLocalArmazenamento(), 
+                        reagente->getNivelAcesso(), reagente->getUnidadeMedida(), 
+                        reagente->getMarca(), reagente->getCodigoReferencia(), 
+                        2, 0.0, 0.0, mass, est
+                    );
+                    std::cout << "Convertido para Solido com sucesso\n";
+                }
+                return; // Sai da funcao pois o ponteiro antigo agora e invalido
+            }
+
+            // CASO 2 EDICAO NORMAL Mesmo tipo apenas atualiza valores
+            if (tipoEscolhido == 1) // Liquido
+            {
+                // Cast manual ja que validamos o tipo antes
+                ReagenteLiquido *liq = (ReagenteLiquido*) reagente;
                 double novaDensidade, novoVolume;
-                std::cout << "Editando Líquido\n";
-                std::cout << "Nova Densidade (Atual: " << liq->getDensidade() << "): ";
-                std::cin >> novaDensidade;
-                std::cout << "Novo Volume (Atual: " << liq->getVolume() << "): ";
-                std::cin >> novoVolume;
+                
+                while(true) {
+                    std::cout << "Nova Densidade: "; std::cin >> novaDensidade;
+                    if(!std::cin.fail() && novaDensidade > 0) break;
+                    std::cin.clear(); std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n'); std::cout << "Invalido\n";
+                }
+                while(true) {
+                    std::cout << "Novo Volume: "; std::cin >> novoVolume;
+                    if(!std::cin.fail() && novoVolume > 0) break;
+                    std::cin.clear(); std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n'); std::cout << "Invalido\n";
+                }
 
-                if (!confirmacao())
-                    return;
+                if (!confirmacao()) return;
 
-                db->getTable("ReagenteLiquido").update().set("densidade", novaDensidade).set("volume", novoVolume).where("id = :id").bind("id", reagente->getId()).execute();
+                // Atualiza tabela
+                db->getTable("ReagenteLiquido").update()
+                    .set("densidade", novaDensidade)
+                    .set("volume", novoVolume)
+                    .where("id = :id").bind("id", reagente->getId()).execute();
 
+                // Atualiza objeto
                 liq->setDensidade(novaDensidade);
                 liq->setVolume(novoVolume);
-                std::cout << "Dados do líquido atualizados!\n";
+                std::cout << "Atualizado com sucesso\n";
             }
-            else if (tipoEscolhido == 2)
+            else // Solido
             {
-                // Converte manualmente o ponteiro para Solido
-                ReagenteSolido *sol = static_cast<ReagenteSolido *>(reagente);
-
+                // Cast manual ja que validamos o tipo antes
+                ReagenteSolido *sol = (ReagenteSolido*) reagente;
                 double novaMassa;
                 std::string novoEstado;
 
-                std::cout << "Editando Sólido \n";
-                std::cout << "Nova Massa (Atual: " << sol->getMassa() << "): ";
-                std::cin >> novaMassa;
-                std::cout << "Novo Estado Físico (Atual: " << sol->getEstadoFisico() << "): ";
-                std::cin.ignore();
-                std::getline(std::cin, novoEstado);
+                while(true) {
+                    std::cout << "Nova Massa: "; std::cin >> novaMassa;
+                    if(!std::cin.fail() && novaMassa > 0) break;
+                    std::cin.clear(); std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n'); std::cout << "Invalido\n";
+                }
+                std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+                while(true) {
+                    std::cout << "Novo Estado Fisico: "; std::getline(std::cin, novoEstado);
+                    if(!novoEstado.empty()) break; std::cout << "Vazio\n";
+                }
 
-                if (!confirmacao())
-                    return;
+                if (!confirmacao()) return;
 
-                db->getTable("ReagenteSolido").update().set("massa", novaMassa).set("estadoFisico", novoEstado).where("id = :id").bind("id", reagente->getId()).execute();
+                // Atualiza tabela
+                db->getTable("ReagenteSolido").update()
+                    .set("massa", novaMassa)
+                    .set("estadoFisico", novoEstado)
+                    .where("id = :id").bind("id", reagente->getId()).execute();
 
+                // Atualiza objeto
                 sol->setMassa(novaMassa);
                 sol->setEstadoFisico(novoEstado);
-                std::cout << "Dados do sólido atualizados!\n";
-            }
-            else
-            {
-                std::cout << "Tipo inválido selecionado.\n";
+                std::cout << "Atualizado com sucesso\n";
             }
         }
-    }
     catch (const mysqlx::Error &err)
     {
         std::cerr << "Erro ao atualizar reagente no banco: " << err.what() << std::endl;
