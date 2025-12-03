@@ -733,148 +733,390 @@ void Gestor::associarEstudanteAoLaboratorio(Estudante *estudante, int idLaborato
 // Metodo para cadastrar reagente
 void Gestor::cadastrarReagente()
 {
-    // Verifica se o gestor esta vinculado a um laboratorio
+    // Verifica se o ponteiro de laboratorio nao e nulo
+    // Isso garante que o gestor esteja vinculado a um laboratorio antes de cadastrar
     if (this->laboratorio == nullptr)
     {
-        std::cerr << "ERRO: O Gestor nao esta vinculado a um laboratorio." << std::endl;
+        std::cerr << "ERRO Gestor sem laboratorio associado" << std::endl;
         return;
     }
 
-    // Verifica se tem conexao com o banco
+    // Verifica se o ponteiro do banco de dados nao e nulo
     if (this->db == nullptr)
     {
-        std::cerr << "ERRO: Gestor nao esta conectado ao banco de dados." << std::endl;
+        std::cerr << "ERRO Sem conexao com banco de dados" << std::endl;
         return;
     }
 
-    // Variaveis para guardar os dados da tabela base Reagente
+    // Declaracao das variaveis locais que irao armazenar os dados do reagente
     std::string nome, dataValidade, local, unidade, marca, codRef;
     int quantidade, quantidadeCritica, nivelAcesso;
 
-    std::cout << "Cadastro de Novo Reagente \n";
-    std::cout << "Nome: ";
-    std::cin.ignore(); // Ignora o 'Enter' anterior
-    std::getline(std::cin, nome);
-    std::cout << "Data de Validade (AAAA-MM-DD): ";
-    std::cin >> dataValidade;
-    std::cout << "Quantidade: ";
-    std::cin >> quantidade;
-    std::cout << "Quantidade Critica: ";
-    std::cin >> quantidadeCritica;
-    std::cout << "Local de Armazenamento: ";
-    std::cin.ignore();
-    std::getline(std::cin, local);
-    std::cout << "Nivel de Acesso:\n 1 - Restrito (Apenas Gestores)\n 2 - Livre (Graduação)\n 3 - Pós-Graduação\nDigite a opção: ";
-    std::cin >> nivelAcesso;
-    std::cout << "Unidade de Medida (ex: 'ml', 'g'): ";
-    std::cin >> unidade;
-    std::cout << "Marca: ";
-    std::cin.ignore();
-    std::getline(std::cin, marca);
-    std::cout << "Codigo de Referencia: ";
-    std::cin >> codRef;
+    std::cout << "\n Cadastro de Novo Reagente \n";
 
-    int tipo;
-    // verificação de entrada valida
+    // Limpa o buffer de entrada removendo o enter anterior
+    std::cin.ignore();
+
+    // Inicio do loop para validacao do Nome
+    // O loop continua indefinidamente ate que um nome valido seja inserido
     while (true)
     {
-        try
+        std::cout << "Nome: ";
+        // Le a linha inteira digitada pelo usuario inclusive espacos
+        std::getline(std::cin, nome);
+        
+        // Verifica se a string nao esta vazia
+        // Se contiver texto sai do loop com break
+        if (!nome.empty()) 
         {
-            std::cout << "Digite o tipo (1 = Liquido, 2 = Solido): ";
-
-            if (!(std::cin >> tipo))
-            {
-                // cin falhou → jogamos uma exceção manualmente
-                throw std::invalid_argument("Entrada invalida");
-            }
-
-            if (tipo != 1 && tipo != 2)
-            {
-                throw std::out_of_range("Tipo deve ser 1 ou 2");
-            }
-
-            break; // entrada correta → sai do while
+            break; 
         }
-        catch (const std::exception &e)
+        // Se estiver vazia exibe mensagem de erro e repete o loop
+        std::cout << "O nome nao pode ser vazio Tente novamente\n";
+    }
+
+    // Declaracao de variaveis para a validacao da data
+    int ano, mes, dia;
+    char sep1, sep2; // Variaveis para capturar os caracteres separadores hifens
+
+    // Inicio do loop para validacao da Data de Validade
+    while (true)
+    {
+        std::cout << "Escreva a data de Validade (AAAA-MM-DD), na ordem ano-mês-dia: ";
+        
+        // Tenta ler a entrada no formato exato inteiro char inteiro char inteiro
+        std::cin >> ano >> sep1 >> mes >> sep2 >> dia;
+
+        // Verifica se houve falha na leitura dos numeros, exemplo o usuario digitar letras 
+        if (std::cin.fail()) 
         {
-            std::cerr << e.what() << "\n";
+            std::cout << "Erro Digite apenas numeros para ano mes e dia\n";
+            std::cin.clear(); // Limpa o estado de erro do cin
+            std::cin.ignore(); // Limpa o buffer
+            continue; // Retorna ao inicio do loop
+        }
 
-            // limpa erro do cin
-            std::cin.clear();
+        // Verifica se os caracteres separadores sao hifens
+        if (sep1 != '-' || sep2 != '-')
+        {
+            std::cout << "Erro formato incorreto use hifens ex 2025-12-31\n";
+            // Limpa o resto da linha caso tenha sobrado lixo no buffer
+            std::cin.ignore(); 
+            continue;
+        }
 
-            // descarta o lixo do buffer
-            std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+        // Verifica os limites logicos do Ano e do Mes
+        if (ano < 1900 || ano > 2100) 
+        {
+            std::cout << "Erro Ano deve ser entre 1900 e 2100\n";
+            continue;
+        }
+        if (mes < 1 || mes > 12) 
+        {
+            std::cout << "Erro Mes deve ser entre 1 e 12\n";
+            continue;
+        }
+        
+        // Verifica limite minimo dos Dias
+        if (dia < 1) 
+        {
+            std::cout << "Erro Dia invalido\n";
+            continue;
+        }
+
+        // Logica especifica para verificar dias do mes de Fevereiro
+        if (mes == 2) 
+        {
+            // Calcula se o ano e bissexto regra divisivel por 4 e nao por 100 ou divisivel por 400 (prog 1)
+            bool bissexto = (ano % 4 == 0 && (ano % 100 != 0 || ano % 400 == 0));
+            // Define o limite de dias com base no ano bissexto
+            int limite = bissexto ? 29 : 28;
+            
+            if (dia > limite) 
+            {
+                std::cout << "Erro Dia invalido para Fevereiro neste ano\n";
+                continue;
+            }
+        }
+        // Verifica limites para meses com 30 dias Abril Junho Setembro Novembro
+        else if (mes == 4 || mes == 6 || mes == 9 || mes == 11) 
+        {
+            if (dia > 30) 
+            {
+                std::cout << "Erro Este mes tem apenas 30 dias\n";
+                continue;
+            }
+        }
+        // Verifica limites para os demais meses que tem 31 dias
+        else 
+        {
+            if (dia > 31) 
+            {
+                std::cout << "Erro Dia invalido Maximo 31\n";
+                continue;
+            }
+        }
+
+    
+        // Reconstrutroi a string Data para salvar no banco de dados posteriormente
+        // Converte os numeros para texto
+        std::string sMes = std::to_string(mes);
+        std::string sDia = std::to_string(dia);
+
+        // Se o mes for menor que 10 ex 5 adiciona um 0 antes vira 05
+        if (mes < 10) 
+        {
+            sMes = "0" + sMes;
+        }
+
+        // Se o dia for menor que 10 ex 9 adiciona um 0 antes vira 09
+        if (dia < 10) 
+        {
+            sDia = "0" + sDia;
+        }
+        
+        // Junta tudo no formato final AAAA-MM-DD
+        dataValidade = std::to_string(ano) + "-" + sMes + "-" + sDia;
+        // Adiciona as partes na variavel final
+        dataValidade = std::to_string(ano) + "-" + sMes + "-" + sDia;
+        
+        break; // Sai do loop pois a data esta correta
+    }
+
+    // Inicio do loop para validacao da Quantidade
+    while (true)
+    {
+        std::cout << "Quantidade (numero inteiro maior que 0): ";
+        std::cin >> quantidade;
+        
+        // Verifica se a ultima tentativa de leitura do cin falhou
+        if (std::cin.fail()) {
+            
+            // Reseta os estados de erro internos do cin 
+            std::cin.clear(); 
+            
+            std::cin.ignore(); // Limpa sobra de lixo 
+            
+            // Informa ao usuario que o dado digitado nao e valido
+            std::cout << "Entrada invalida Digite apenas numeros\n";
+        }
+        // Verifica se o valor e positivo
+        else if (quantidade <= 0) {
+            std::cout << "A quantidade deve ser maior que zero\n";
+        }
+        else {
+            break; // Entrada valida
         }
     }
 
-    // Declara as variaveis de tipo
-    // densidade e volume so serao usadas se tipo == 1
-    // massa e estadoFisico so serao usadas se tipo == 2
+    // Inicio do loop para validacao da Quantidade Critica
+    while (true)
+    {
+        std::cout << "Quantidade Critica (aviso de estoque baixo): ";
+        std::cin >> quantidadeCritica;
+
+        // Verifica erro de entrada
+        if (std::cin.fail()) {
+            std::cin.clear();
+            std::cin.ignore();  
+            std::cout << "Entrada invalida Digite apenas numeros\n";
+        } 
+        // Verifica se o valor e positivo
+        else if (quantidadeCritica <= 0) {
+             std::cout << "A quantidade critica deve ser maior que zero\n";
+        }
+        else {
+            break; // Entrada valida
+        }
+    }
+
+    
+    std::cin.ignore(); // Limpa sobra de lixo
+
+    // Inicio do loop para validacao do Local de Armazenamento
+    while (true)
+    {
+        std::cout << "Local de Armazenamento: ";
+        std::getline(std::cin, local);
+        // Verifica se string nao esta vazia
+        if (!local.empty()) break;
+        std::cout << "O local nao pode ser vazio\n";
+    }
+
+    // Inicio do loop para validacao do Nivel de Acesso
+    while (true)
+    {
+        std::cout << "Nivel de Acesso (1-Restrito 2-Livre 3-Pos): ";
+        std::cin >> nivelAcesso;
+
+        // Verifica erro de entrada nao numerica
+        if (std::cin.fail()) {
+            std::cin.clear();
+            std::cin.ignore();
+            std::cout << "Entrada invalida Digite um numero\n";
+        }
+        // Verifica se esta dentro das opcoes validas 1 2 ou 3
+        else if (nivelAcesso < 1 || nivelAcesso > 3) {
+            std::cout << "Opcao invalida Digite 1 2 ou 3\n";
+        }
+        else {
+            break; // Entrada valida
+        }
+    }
+    
+    // Limpa buffer apos leitura de inteiro
+   std::cin.ignore();
+
+    // Validacao da Unidade de Medida
+    while(true) {
+        std::cout << "Unidade de Medida (ex ml g): ";
+        std::getline(std::cin, unidade);
+        if(!unidade.empty()) break;
+        std::cout << "Unidade nao pode ser vazia\n";
+    }
+
+    // Validacao da Marca
+    while(true) {
+        std::cout << "Marca: ";
+        std::getline(std::cin, marca);
+        if(!marca.empty()) break;
+        std::cout << "Marca nao pode ser vazia\n";
+    }
+
+    // Validacao do Codigo de Referencia
+    while(true) {
+        std::cout << "Codigo de Referencia: ";
+        std::getline(std::cin, codRef);
+        if(!codRef.empty()) break;
+        std::cout << "Codigo nao pode ser vazio\n";
+    }
+
+    // Inicio do loop para validacao do Tipo do reagente
+    int tipo;
+    while (true)
+    {
+        std::cout << "Digite o tipo (1 = Liquido  2 = Solido): ";
+        std::cin >> tipo;
+
+        // Verifica entrada invalida
+        if (std::cin.fail()) {
+             std::cin.clear();
+             std::cin.ignore();
+             std::cout << "Entrada invalida\n";
+        }
+        // Verifica se a opcao digitada e 1 ou 2
+        else if (tipo != 1 && tipo != 2) {
+             std::cout << "Tipo invalido Digite 1 ou 2\n";
+        }
+        else {
+            break; // Entrada valida
+        }
+    }
+
+    // Variaveis especificas que serao preenchidas dependendo do tipo
     double densidade = 0.0;
     double volume = 0.0;
     double massa = 0.0;
     std::string estadoFisico;
 
-    if (tipo == 1)
-    { // Liquido
-        std::cout << "Densidade: ";
-        std::cin >> densidade;
-        std::cout << "Volume: ";
-        std::cin >> volume;
+    // Bloco logico para Reagente Liquido
+    if (tipo == 1) 
+    { 
+        // Validacao da Densidade
+        while (true)
+        {
+            std::cout << "Densidade: ";
+            std::cin >> densidade;
+            // Verifica entrada e valor positivo
+            if (!std::cin.fail() && densidade > 0) break;
+            
+            // Tratamento de erro
+            std::cin.clear(); 
+            std::cin.ignore();
+            std::cout << "Densidade invalida Digite numero maior que 0\n";
+        }
+        // Validacao do Volume
+        while (true)
+        {
+            std::cout << "Volume: ";
+            std::cin >> volume;
+            // Verifica entrada e valor positivo
+            if (!std::cin.fail() && volume > 0) break;
+            
+            // Tratamento de erro
+            std::cin.clear(); 
+            std::cin.ignore();
+            std::cout << "Volume invalido Digite numero maior que 0\n";
+        }
     }
-    else if (tipo == 2)
-    { // Solido
-        std::cout << "Massa: ";
-        std::cin >> massa;
+    // Bloco logico para Reagente Solido
+    else if (tipo == 2) 
+    { 
+        // Validacao da Massa
+        while (true)
+        {
+            std::cout << "Massa: ";
+            std::cin >> massa;
+            // Verifica entrada e valor positivo
+            if (!std::cin.fail() && massa > 0) break;
+            
+            // Tratamento de erro
+            std::cin.clear(); 
+            std::cin.ignore();
+            std::cout << "Massa invalida Digite numero maior que 0\n";
+        }
+        
+        // Limpa buffer antes de ler string
+        std::cin.ignore(); 
+        
+        // Validacao do Estado Fisico
+        while (true)
+        {
+            std::cout << "Estado Fisico (ex po cristal): ";
+            std::getline(std::cin, estadoFisico);
+            if (!estadoFisico.empty()) break;
+            std::cout << "Estado fisico nao pode ser vazio\n";
+        }
+    }
 
-        // Pergunta o estado fisico que é um atributo da classe ReagenteSolido
-        std::cout << "Estado Fisico (ex: 'po', 'cristal'): ";
-        std::cin.ignore(); // Ignora o 'Enter' da leitura da massa
-        std::getline(std::cin, estadoFisico);
-    }
-    // Salva no Banco de Dados
+    // Bloco de Insercao no Banco de Dados protegido por try catch
     try
-    {
-        // Insere na tabela base "Reagente"
-        // O 'db' e herdado de Usuario e esta disponivel aqui
+    {sud
+        // Obtem a tabela Reagente do banco
         Table reagenteTable = db->getTable("Reagente");
 
-        // Insere dados comuns
+        // Executa a insercao dos dados comuns na tabela pai
         Result res = reagenteTable.insert(
                                       "nome", "validade", "quantidade", "quantidadeCritica",
                                       "localArmazenamento", "nivelAcesso", "unidadeMedida", "marca", "referencia", "laboratorio_id")
-                         .values(nome, dataValidade, quantidade, quantidadeCritica,
-                                 local, nivelAcesso, unidade, marca, codRef, this->laboratorio->getId())
-                         .execute(); // Executa a insercao no DB
+                                      .values(nome, dataValidade, quantidade, quantidadeCritica,
+                                      local, nivelAcesso, unidade, marca, codRef, this->laboratorio->getId())
+                                      .execute();
 
-        // Pega o ID do reagente que acabou de ser criado
-        // (Precisamos desse ID para ligar com a tabela Liquido/Solido)
+        // Recupera o ID gerado automaticamente pelo banco para o novo reagente
         int reagenteId = res.getAutoIncrementValue();
 
-        // Insere nas tabelas especializadas (Liquido ou Solido)
+        // Insere nas tabelas filhas especificas conforme o tipo
         if (tipo == 1)
         {
-            // Se for liquido, insere na tabela 'ReagenteLiquido'
+            // Insercao na tabela de Liquidos
             db->getTable("ReagenteLiquido")
                 .insert("id", "densidade", "volume")
                 .values(reagenteId, densidade, volume)
                 .execute();
-            // Imprime a confirmacao para o usuario
-            std::cout << "Reagente Liquido '" << nome << "' cadastrado com sucesso!\n";
+            std::cout << "Reagente Liquido cadastrado com sucesso\n";
         }
         else if (tipo == 2)
         {
-            // Se for solido, insere na tabela 'ReagenteSolido'
+            // Insercao na tabela de Solidos
             db->getTable("ReagenteSolido")
                 .insert("id", "massa", "estadoFisico")
                 .values(reagenteId, massa, estadoFisico)
                 .execute();
-            // Imprime a confirmacao para o usuario
-            std::cout << "Reagente Solido '" << nome << "' cadastrado com sucesso!\n";
+            std::cout << "Reagente Solido cadastrado com sucesso\n";
         }
 
-        // Atualiza memoria do laboratorio
-        // Delega a tarefa de cadastrar regaente para o laboratorio
+        // Atualiza a memoria do sistema instanciando o objeto e adicionando ao vetor
         laboratorio->cadastrarNovoReagente(
             reagenteId, nome, dataValidade, quantidade, quantidadeCritica,
             local, nivelAcesso, unidade, marca, codRef, tipo,
@@ -882,9 +1124,8 @@ void Gestor::cadastrarReagente()
     }
     catch (const mysqlx::Error &err)
     {
-        // Se qualquer operacao do 'try' falhar, captura o erro
-        // (Ex: se o banco estiver offline ou a tabela nao existir)
-        std::cerr << "Erro ao cadastrar reagente: " << err.what() << std::endl;
+        // Captura excecoes do MySQL e exibe mensagem de erro
+        std::cerr << "Erro ao cadastrar reagente no banco " << err.what() << std::endl;
     }
 }
 
