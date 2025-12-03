@@ -1742,6 +1742,7 @@ void Gestor::editarReagente()
                 std::cout << "Atualizado com sucesso\n";
             }
         }
+    }
     catch (const mysqlx::Error &err)
     {
         std::cerr << "Erro ao atualizar reagente no banco: " << err.what() << std::endl;
