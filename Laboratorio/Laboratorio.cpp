@@ -530,10 +530,18 @@ void Laboratorio::limparLaboratorios()
     return;
 }
 
-void Laboratorio::adicionarGestor(Gestor *gestor)
-{
-    // Implementar adição de gestor
-    return;
+void Laboratorio::adicionarGestor(Gestor *gestor) {
+    if (gestor == nullptr) return;
+    
+    // Verificar se o gestor já está na lista
+    for (Gestor* g : gestores) {
+        if (g->getId() == gestor->getId()) {
+            return; // Já está na lista
+        }
+    }
+    
+    // Adicionar à lista
+    gestores.push_back(gestor);
 }
 
 void Laboratorio::removerGestor(int id)

@@ -2573,6 +2573,8 @@ void Gestor::carregarAssociacoes(Schema *db)
                     {
                         g->setLaboratorio(lab);
                         break;
+                        lab->adicionarGestor(g);  // Adiciona gestor ao laboratório
+                        break;
                     }
                 }
             }
