@@ -53,7 +53,7 @@ void Gestor::cadastrarUsuario()
 
     while (true)
     {
-        std::cout << "Digite o tipo numérico do usuário (1 a 3): ";
+        std::cout << "Digite o tipo numérico do usuário (1 a 3, ou 0 para cancelar): ";
         std::cin >> nivelAcesso;
         // Verifica se entrada é inválida (letra, símbolo, etc.)
         if (std::cin.fail())
@@ -62,6 +62,10 @@ void Gestor::cadastrarUsuario()
             std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
             std::cout << "Entrada inválida! Digite apenas números entre 1 e 3.\n";
             continue; // Roda o loop novamente
+        }
+        if(nivelAcesso == 0){
+            std::cout << "Operação de cadastro cancelada.\n";
+            return;
         }
         // Verifica se está no intervalo
         if (nivelAcesso >= 1 && nivelAcesso <= 3)

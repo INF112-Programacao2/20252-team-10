@@ -62,8 +62,8 @@ void menuGestor(Gestor *gestor)
         else
         { // Se nao estiver associado, imprime um menu para quem não é associaod a nada
             // Menu quando o gestor não está associado a nenhum laboratório
-            std::cout << "1. Associar laboratório\n";       // Associa o gestor a um laboratório disponível (pede confirmação)
-            std::cout << "2. Cadastrar usuário\n";          // Cria um novo usuario no sistema (sem associação inicial)
+            std::cout << "1. Cadastrar usuário\n";       // Associa o gestor a um laboratório disponível (pede confirmação)
+            std::cout << "2. Associar laboratório\n";          // Cria um novo usuario no sistema (sem associação inicial)
             std::cout << "3. Listar usuários do sistema\n"; // Mostra todos os usuários cadastrados
             std::cout << "4. Deletar usuário\n";            // Exclui um usuário do sistema (pede confirmação)
         }
