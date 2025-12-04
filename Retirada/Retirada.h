@@ -21,15 +21,18 @@ private:
     bool confirmada;            // Status de confirmação da retirada
 
 public:
-    // Construtor
+    // Construtores
     Retirada(int id, Usuario* usuario, Reagente* reagente, float quantidade);
+    Retirada(int id, Usuario* usuario, Reagente* reagente, float quantidade, const std::string& dataHora);
 
     // Métodos principais
     std::string confirmarRetirada();  // Valida e executa a retirada, atualizando estoque
     std::string cancelarRetirada();   // Cancela retirada e restaura estoque
     std::string getInfo();            // Retorna string formatada com informações da retirada
 
-    // Getters
+    // Setters e Getters
+    void setDataHora(const std::string& dataHora) { this->dataHora = dataHora; }
+    
     bool estaConfirmada() const { return confirmada; }
     int getId() const { return id; }
     Usuario* getUsuario() const { return usuario; }
