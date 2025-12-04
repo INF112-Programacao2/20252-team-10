@@ -326,10 +326,7 @@ void Gestor::carregarUsuarios(Schema *db)
                 if (gestorObj)
                     gestorObj->setCadastradoPor(gestorCriador);
             }
-            // if (!(gestor[1].isNull()))
-            // {
-            //     gestorObj->associarLaboratorio();
-            // }
+            
         }
 
         // -------------------------------------------------------
