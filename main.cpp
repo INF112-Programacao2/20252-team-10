@@ -59,6 +59,7 @@ void menuGestor(Gestor *gestor)
             std::cout << "9. Listar usuários do sistema\n";       // Lista todos os usuários cadastrados (gestores e estudantes)
             std::cout << "10. Editar laboratório\n";              // Editar dados do laboratório
             std::cout << "11. Estatísticas do laboratório\n";     // Estatísticas gerais
+            std::cout << "12. Histórico de retiradas\n";          // Acessar histórico de retiradas
         }
         else
         { // Se nao estiver associado, imprime um menu para quem não é associaod a nada
@@ -139,6 +140,12 @@ void menuGestor(Gestor *gestor)
             if (associado)
                 gestor->acessarEstatisticas();
             break;
+
+        case 12:
+            if (associado)
+                gestor->historicoRetiradas();
+            break;
+       
 
         case 0:
             std::cout << "Saindo...\n";

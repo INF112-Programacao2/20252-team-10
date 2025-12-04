@@ -2682,3 +2682,53 @@ Estudante *Gestor::getEstudanteById(int id)
             return p;
     return nullptr;
 }
+
+void Gestor::historicoRetiradas() {
+    if (this->laboratorio == nullptr) {
+        std::cout << "Erro: Gestor não está associado a um laboratório.\n";
+        return;
+    }
+
+    std::cout << "\n=== HISTÓRICO DE RETIRADAS (ÚLTIMOS 7 DIAS) ===\n";
+
+    // Usar a função do Laboratorio para obter retiradas dos últimos 7 dias
+    std::vector<Retirada*> retiradasRecentes = laboratorio->getRetiradasUltimos7Dias();
+    
+    if (retiradasRecentes.empty()) {
+        std::cout << "Nenhuma retirada registrada nos últimos 7 dias.\n";
+        return;
+    }
+
+    // Cabeçalho da tabela
+    std::cout << "\n";
+    std::cout << std::left << std::setw(30) << "REAGENTE"
+              << std::setw(20) << "USUÁRIO"
+              << std::setw(15) << "QUANTIDADE"
+              << std::setw(20) << "DATA/HORA" << "\n";
+    std::cout << std::string(85, '-') << "\n";
+
+    // Mostrar cada retirada
+    for (Retirada* retirada : retiradasRecentes) {
+        if (retirada && retirada->getReagente() && retirada->getUsuario()) {
+            std::string reagenteNome = retirada->getReagente()->getNome();
+            std::string usuarioNome = retirada->getUsuario()->getNome();
+            float quantidade = retirada->getQuantidade();
+            std::string unidade = retirada->getReagente()->getUnidadeMedida();
+            std::string dataHora = retirada->getDataHora();
+
+            std::cout << std::left 
+                      << std::setw(30) << (reagenteNome.length() > 29 ? reagenteNome.substr(0, 27) + ".." : reagenteNome)
+                      << std::setw(20) << (usuarioNome.length() > 19 ? usuarioNome.substr(0, 17) + ".." : usuarioNome)
+                      << std::setw(15) << (std::to_string(quantidade) + " " + unidade)
+                      << std::setw(20) << dataHora << "\n";
+        }
+    }
+
+    std::cout << std::string(85, '-') << "\n";
+    std::cout << "Total: " << retiradasRecentes.size() << " retiradas encontradas.\n";
+    
+    // Limpar memória dos objetos Retirada criados
+    for (Retirada* retirada : retiradasRecentes) {
+        delete retirada;
+    }
+}
