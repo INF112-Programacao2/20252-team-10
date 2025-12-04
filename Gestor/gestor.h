@@ -73,6 +73,7 @@ public:
 
     void acessarEstatisticas();  // Exibe estatísticas do laboratório
     void menuPrincipal() override;      // Menu principal do gestor
+    void historicoRetiradas();   // Exibe histórico de retiradas do laboratório
 };
 
 #endif
