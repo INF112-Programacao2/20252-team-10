@@ -4,9 +4,11 @@
 #include <string>
 #include <vector>
 
+// Classe que representa um Reagente quimico no sistema
 class Reagente
 {
 private:
+    // Atributos privados da classe
     std::string nome;
     std::string dataValidade;
     int quantidade;
@@ -19,17 +21,17 @@ private:
     int id;
 
 public:
-    // Construtor
+    // Construtor: Inicializa o objeto com todos os atributos informados
     Reagente(int id, std::string nome, std::string dataValidade, int quantidade,
              int quantidadeCritica, std::string localArmazenamento, int nivelAcesso,
              std::string unidadeMedida, std::string marca, std::string codigoReferencia);
-
+    // Construtor vazio: Utilizado para criar o objeto buscando dados do banco
     Reagente();
 
     // Destrutor virtual, garante que o destrutor da classe filha seja chamado primeiro
     virtual ~Reagente();
 
-    // Gets
+    // Gets - Retornam os valores atuais dos atributos
     std::string getNome();
     std::string getDataValidade();
     int getQuantidade();
@@ -42,6 +44,7 @@ public:
     int getId();
 
     // Sets
+    // Alteram os valores dos atributos
     void setNome(std::string nome);
     void setDataValidade(std::string dataValidade);
     void setQuantidade(int quantidade);

@@ -6,12 +6,12 @@
 #include <iomanip>
 #include <sstream>
 
-//Construtor
+//Construtor que inicializa o objeto com todos os parametros fornecidos
 Reagente::Reagente(int id, std::string nome, std::string dataValidade, int quantidade,
     int quantidadeCritica, std::string localArmazenamento, int nivelAcesso,
     std::string unidadeMedida, std::string marca, std::string codigoReferencia)
     {
-
+        // Atribui os valores passados aos atributos da classe
         this->id = id;
         this->nome = nome;
         this->dataValidade = dataValidade;
@@ -42,21 +42,26 @@ Reagente::Reagente(int id, std::string nome, std::string dataValidade, int quant
             }} catch(std::runtime_error &e){
                 e.what();
             }
+            // Acessa a tabela Reagente
             Table reagentesTabela = db->getTable("Reagente");
 
             std::cout << "Use o código de referência para encontrar reagente no banco de dados: " << std::endl;
             std::string cod;
+
+            // Limpa o buffer e le o codigo digitado pelo usuario
             std::cin.ignore(1);
             std::getline(std::cin, cod);
 
 
-
+            // Executa a query SQL buscando pelo codigo de referencia
+            // A funcao DATE_FORMAT garante que a data venha no padrao AAAA-MM-DD
             SqlResult result = session->sql(
                 "SELECT *, DATE_FORMAT(validade, '%Y-%m-%d') as data_formatada FROM LabUFV.Reagente WHERE referencia = ?").bind(cod).execute(); // busca o reagente pela referencia, e deixa a validade em formato legivel
 
                 if (result.count() > 0) { // se a referencia for encontrada no banco
                     Row row = result.fetchOne();
-
+                    
+                    // Preenche os atributos do objeto com os dados da linha retornada
                     this->id = row[0].get<int>();
                     this->nome = row[2].get<std::string>();
                     this->quantidade = row[3].get<int>();
@@ -66,7 +71,8 @@ Reagente::Reagente(int id, std::string nome, std::string dataValidade, int quant
                     this->localArmazenamento = row[7].get<std::string>();
                     this->nivelAcesso = row[8].get<int>();
                     this->unidadeMedida = row[9].get<std::string>();
-                    // a validade formatada vem na ultima linha
+                   
+                    // A validade formatada vem na ultima coluna da consulta verifica se o campo nao e nulo antes de atribuir
                     if(!(row[row.colCount() - 1].isNull())){
                     this->dataValidade = row[row.colCount() - 1].get<std::string>();
                     std::cout << "Data de Validade: " << this->dataValidade << std::endl;
