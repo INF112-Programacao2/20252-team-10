@@ -63,7 +63,6 @@ public:
     void excluirReagente();                          // Remove reagente do sistema
     void filtrarReagentes();                         // Filtra reagentes por categoria/restrição
     void retirarReagente();                          // Realiza retirada de reagente
-    void historicoRetiradas();                       // Exibe histórico de retiradas recentes
 
     // Controle de acesso a reagentes restritos
     void acessarReagentesAlerta();                          // Exibe reagentes em alerta (crítico/vencido)

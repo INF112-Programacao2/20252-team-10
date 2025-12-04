@@ -45,7 +45,6 @@ As funcionalidades abaixo representam o escopo total previsto. Atualmente, o pro
 - Cadastrar e remover membros.
 - Adicionar, repor e excluir reagentes.
 - Receber alertas de estoque e validade.
-- Supervisionar retiradas.
 - Consultar relatórios e histórico.
 
 ---

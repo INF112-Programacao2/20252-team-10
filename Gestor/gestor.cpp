@@ -2188,9 +2188,8 @@ void Gestor::gerenciarLaboratorio()
         std::cout << "4. Excluir Reagente\n";
         std::cout << "5. Filtrar Reagentes (Categoria/nivel)\n";
         std::cout << "6. Retirar Reagente\n";
-        std::cout << "7. Histórico de Retiradas\n";
-        std::cout << "8. Desassociar Estudante\n";
-        std::cout << "9. Sair do Laboratório\n";
+        std::cout << "7. Desassociar Estudante\n";
+        std::cout << "8. Sair do Laboratório\n";
         std::cout << "0. Voltar ao menu anterior\n";
         std::cout << "Escolha uma opcao: ";
         std::cin >> opcao;
@@ -2225,12 +2224,9 @@ void Gestor::gerenciarLaboratorio()
             this->retirarReagente();
             break;
         case 7:
-            this->historicoRetiradas();
+            this->desassociarEstudantes(); 
             break;
         case 8:
-            this->desassociarEstudantes();
-            break;
-        case 9:
             this->sairLaboratorio();
             break;
         case 0:
@@ -2444,78 +2440,6 @@ void Gestor::sairLaboratorio()
     }
 }
 
-void Gestor::historicoRetiradas() {
-    if (this->laboratorio == nullptr) {
-        std::cout << "Erro: Gestor não está associado a um laboratório.\n";
-        return;
-    }
-
-    std::cout << "\n=== HISTÓRICO DE RETIRADAS ===\n";
-
-    try {
-        // Pega o ID do laboratório
-        int idLab = laboratorio->getId();
-        
-        // Consulta SQL usando JOIN
-        std::string sql = 
-            "SELECT R.nome as reagente, U.nome as usuario, "
-            "RT.quantidadeRetirada, RT.dataHoraRetirada "
-            "FROM Retirada RT "
-            "JOIN Reagente R ON RT.reagente_id = R.id "
-            "JOIN Usuario U ON RT.usuario_id = U.id "
-            "WHERE R.laboratorio_id = :lab_id "
-            "ORDER BY RT.dataHoraRetirada DESC "
-            "LIMIT 20";  // Mostra só as 20 últimas
-
-        // Executa a consulta
-        SqlResult res = db->getSession()
-            .sql(sql)
-            .bind("lab_id", idLab)
-            .execute();
-
-        if (res.count() == 0) {
-            std::cout << "Nenhuma retirada registrada.\n";
-            return;
-        }
-
-        // Cabeçalho da tabela
-        std::cout << "\n";
-        std::cout << std::left << std::setw(30) << "REAGENTE"
-                  << std::setw(20) << "USUÁRIO"
-                  << std::setw(15) << "QUANTIDADE"
-                  << std::setw(20) << "DATA/HORA" << "\n";
-        std::cout << std::string(85, '-') << "\n";
-
-        // Mostra cada retirada
-        for (int i = 0; i < res.count(); i++) {
-            Row row = res.fetchOne();
-            
-            std::string reagente = row[0].get<std::string>();
-            std::string usuario = row[1].get<std::string>();
-            double quantidade = row[2].get<double>();
-            std::string dataHora = row[3].get<std::string>();
-
-            // Formata a data (remove segundos)
-            if (dataHora.length() > 16) {
-                dataHora = dataHora.substr(0, 16); // "YYYY-MM-DD HH:MM"
-            }
-
-            std::cout << std::left 
-                      << std::setw(30) << reagente.substr(0, 29)
-                      << std::setw(20) << usuario.substr(0, 19)
-                      << std::setw(15) << std::to_string(quantidade).substr(0, 6)
-                      << std::setw(20) << dataHora << "\n";
-        }
-
-        std::cout << std::string(85, '-') << "\n";
-        std::cout << "Total: " << res.count() << " retiradas encontradas.\n";
-
-    } catch (const mysqlx::Error &err) {
-        std::cerr << "Erro no banco: " << err.what() << "\n";
-        std::cout << "Não foi possível carregar o histórico.\n";
-    }
-}
-
 // desassociarEstudantes
 void Gestor::desassociarEstudantes()
 {
@@ -2662,7 +2586,7 @@ void Gestor::carregarAssociacoes(Schema *db)
                     {
                         g->setLaboratorio(lab);
                         break;
-                        lab->adicionarGestor(g);  // Adiciona gestor ao laboratório
+                        lab->adicionarGestor(g); // Adiciona gestor ao laboratório
                         break;
                     }
                 }
