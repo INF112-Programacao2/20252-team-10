@@ -1267,8 +1267,16 @@ bool Laboratorio::editarLaboratorio(const std::string& novoNome, const std::stri
         if (resRetiradas.count() > 0) {
             Row row = resRetiradas.fetchOne();
             int totalRetiradas = row[0].get<int>();
-            estatisticas << "Total de retiradas registradas: " << totalRetiradas << "\n";
-            
+           
+            estatisticas << "Total de retiradas registradas: ";
+
+            if (this->retiradas.empty()) {
+             estatisticas << "Nenhuma retirada registrada nesta sessão";
+            } else {
+            estatisticas << this->retiradas.size();
+            }
+            estatisticas << "\n";
+
             // Última retirada
             RowResult ultimaRetirada = retiradaTable
                 .select("dataHoraRetirada")
