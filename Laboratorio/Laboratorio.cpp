@@ -1035,3 +1035,112 @@ void Laboratorio::adicionarEstudante(Estudante *estudante)
     // -------------------------------
     std::cout << "Nível desconhecido: " << nivel << "\n";
 }
+
+// criarLaboratorio: Cria um novo laboratório no banco de dados e na memória
+Laboratorio* Laboratorio::criarLaboratorio(Schema* db, const std::string& nome, const std::string& departamento) {
+    if (!db) {
+        std::cerr << "Erro: Conexão com banco de dados inválida.\n";
+        return nullptr;
+    }
+
+    if (nome.empty()) {
+        std::cerr << "Erro: Nome do laboratório não pode ser vazio.\n";
+        return nullptr;
+    }
+
+    try {
+        // Verificar se já existe laboratório com mesmo nome
+        Table laboratorioTable = db->getTable("Laboratorio");
+        RowResult resExistente = laboratorioTable.select("id")
+                                      .where("nome = :nome")
+                                      .bind("nome", nome)
+                                      .execute();
+        
+        if (resExistente.count() > 0) {
+            std::cout << "Já existe um laboratório com o nome '" << nome << "'.\n";
+            return nullptr;
+        }
+
+        // Inserir no banco de dados
+        std::string dept = departamento.empty() ? "Não informado" : departamento;
+        Result res = laboratorioTable.insert("nome", "departamento")
+                         .values(nome, dept)
+                         .execute();
+
+        // Obter o ID gerado
+        int novoId = res.getAutoIncrementValue();
+
+        // Criar objeto em memória
+        Laboratorio* novoLab = new Laboratorio(novoId, nome, dept, db);
+        
+        // Adicionar à lista estática de laboratórios
+        laboratorios.push_back(novoLab);
+
+        std::cout << "\nLaboratório criado com sucesso!\n";
+        std::cout << "ID: " << novoId << "\n";
+        std::cout << "Nome: " << nome << "\n";
+        std::cout << "Departamento: " << dept << "\n";
+        
+        return novoLab;
+    } catch (const mysqlx::Error &err) {
+        std::cerr << "Erro MySQL ao criar laboratório: " << err.what() << "\n";
+        return nullptr;
+    } catch (const std::exception &ex) {
+        std::cerr << "Erro ao criar laboratório: " << ex.what() << "\n";
+        return nullptr;
+    }
+}
+
+// editarLaboratorio
+bool Laboratorio::editarLaboratorio(const std::string& novoNome, const std::string& novoDepartamento) {
+    if (!db) {
+        std::cerr << "Erro: Laboratório não está conectado ao banco.\n";
+        return false;
+    }
+
+    if (novoNome.empty()) {
+        std::cerr << "Erro: Novo nome não pode ser vazio.\n";
+        return false;
+    }
+
+    try {
+        // Verificar se já existe outro laboratório com o novo nome
+        Table laboratorioTable = db->getTable("Laboratorio");
+        RowResult resExistente = laboratorioTable.select("id")
+                                      .where("nome = :nome AND id != :id")
+                                      .bind("nome", novoNome)
+                                      .bind("id", this->id)
+                                      .execute();
+        
+        if (resExistente.count() > 0) {
+            std::cout << "Já existe outro laboratório com o nome '" << novoNome << "'.\n";
+            return false;
+        }
+
+        // Atualizar no banco de dados
+        std::string dept = novoDepartamento.empty() ? "Não informado" : novoDepartamento;
+        laboratorioTable.update()
+            .set("nome", novoNome)
+            .set("departamento", dept)
+            .where("id = :id")
+            .bind("id", this->id)
+            .execute();
+
+        // Atualizar em memória
+        this->nome = novoNome;
+        this->departamento = dept;
+
+        std::cout << "\nLaboratório atualizado com sucesso!\n";
+        std::cout << "ID: " << this->id << "\n";
+        std::cout << "Novo nome: " << novoNome << "\n";
+        std::cout << "Novo departamento: " << dept << "\n";
+        
+        return true;
+    } catch (const mysqlx::Error &err) {
+        std::cerr << "Erro MySQL ao editar laboratório: " << err.what() << "\n";
+        return false;
+    } catch (const std::exception &ex) {
+        std::cerr << "Erro ao editar laboratório: " << ex.what() << "\n";
+        return false;
+    }
+}

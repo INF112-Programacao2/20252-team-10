@@ -686,6 +686,123 @@ void Gestor::associarLaboratorio()
               << std::endl;
 }
 
+// criarLaboratorio
+void Gestor::criarLaboratorio() {
+    std::cout << "\n=== CRIAR NOVO LABORATÓRIO ===\n";
+    
+    std::string nome, departamento;
+    
+    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+    
+    while (true) {
+        std::cout << "Nome do laboratório: ";
+        std::getline(std::cin, nome);
+        
+        if (!nome.empty()) break;
+        std::cout << "Erro: Nome não pode ser vazio.\n";
+    }
+    
+    std::cout << "Departamento (Enter para pular): ";
+    std::getline(std::cin, departamento);
+    
+    std::cout << "\n--- CONFIRMAÇÃO ---\n";
+    std::cout << "Nome: " << nome << "\n";
+    std::cout << "Departamento: " << (departamento.empty() ? "Não informado" : departamento) << "\n";
+    
+    if (!confirmacao()) {
+        std::cout << "Criação cancelada.\n";
+        return;
+    }
+    
+    Laboratorio* novoLab = Laboratorio::criarLaboratorio(this->db, nome, departamento);
+    
+    if (novoLab) {
+        if (this->laboratorio == nullptr) {
+            std::cout << "\nDeseja associar-se a este laboratório? (S/N): ";
+            char resposta;
+            std::cin >> resposta;
+            
+            if (resposta == 'S' || resposta == 's') {
+                this->laboratorio = novoLab;
+                novoLab->adicionarGestor(this);
+                
+                try {
+                    Table gestorTable = db->getTable("Gestor");
+                    gestorTable.update()
+                        .set("laboratorio_id", novoLab->getId())
+                        .where("id = :id")
+                        .bind("id", this->getId())
+                        .execute();
+                    
+                    std::cout << "Gestor associado ao novo laboratório.\n";
+                } catch (const mysqlx::Error &err) {
+                    std::cerr << "Erro ao associar gestor: " << err.what() << "\n";
+                }
+            }
+        }
+    }
+}
+
+// editarLaboratorio
+void Gestor::editarLaboratorio() {
+    if (this->laboratorio == nullptr) {
+        std::cout << "Erro: Você precisa estar associado a um laboratório para editá-lo.\n";
+        return;
+    }
+    
+    std::cout << "\n=== EDITAR LABORATÓRIO ===\n";
+    std::cout << "Laboratório atual:\n";
+    std::cout << "ID: " << laboratorio->getId() << "\n";
+    std::cout << "Nome: " << laboratorio->getNome() << "\n";
+    std::cout << "Departamento: " << laboratorio->getDepartamento() << "\n";
+    
+    std::string novoNome, novoDepartamento;
+    
+    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+    
+    while (true) {
+        std::cout << "\nNovo nome (Enter para manter atual): ";
+        std::getline(std::cin, novoNome);
+        
+        if (novoNome.empty()) {
+            novoNome = laboratorio->getNome();
+            break;
+        }
+        
+        if (!novoNome.empty()) break;
+        std::cout << "Erro: Nome não pode ser vazio.\n";
+    }
+    
+    std::cout << "Novo departamento (Enter para manter atual): ";
+    std::getline(std::cin, novoDepartamento);
+    
+    if (novoDepartamento.empty()) {
+        novoDepartamento = laboratorio->getDepartamento();
+    }
+    
+    if (novoNome == laboratorio->getNome() && novoDepartamento == laboratorio->getDepartamento()) {
+        std::cout << "Nenhuma alteração feita.\n";
+        return;
+    }
+    
+    std::cout << "\n--- CONFIRMAÇÃO ---\n";
+    std::cout << "Nome antigo: " << laboratorio->getNome() << "\n";
+    std::cout << "Nome novo: " << novoNome << "\n";
+    std::cout << "Departamento antigo: " << laboratorio->getDepartamento() << "\n";
+    std::cout << "Departamento novo: " << novoDepartamento << "\n";
+    
+    if (!confirmacao()) {
+        std::cout << "Edição cancelada.\n";
+        return;
+    }
+    
+    bool sucesso = laboratorio->editarLaboratorio(novoNome, novoDepartamento);
+    
+    if (sucesso) {
+        std::cout << "Laboratório editado com sucesso!\n";
+    }
+}
+
 void Gestor::associarEstudanteAoLaboratorio(Estudante *estudante, int idLaboratorio, const std::string &papel)
 {
     Laboratorio *escolhido = nullptr;

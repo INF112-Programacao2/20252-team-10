@@ -58,6 +58,7 @@ void menuGestor(Gestor *gestor)
             std::cout << "8. Deletar usuário\n";                         // Remove usuário do sistema completamente (pede confirmação)
             std::cout << "9. Sair do laboratório\n";                     // Sai da gestão do laboratório (não desassocia automaticamente)
             std::cout << "10. Listar usuários do sistema\n";             // Lista todos os usuários cadastrados (gestores e estudantes)
+            std::cout << "11. Editar laboratório\n";                     // Editar dados do laboratório
         }
         else
         { // Se nao estiver associado, imprime um menu para quem não é associaod a nada
@@ -66,69 +67,89 @@ void menuGestor(Gestor *gestor)
             std::cout << "2. Cadastrar usuário\n";          // Cria um novo usuario no sistema (sem associação inicial)
             std::cout << "3. Listar usuários do sistema\n"; // Mostra todos os usuários cadastrados
             std::cout << "4. Deletar usuário\n";            // Exclui um usuário do sistema (pede confirmação)
+            std::cout << "5. Criar laboratório\n";          // Criar novo laboratório
         }
         std::cout << "0. Sair do sistema\n"; // Encerra o menu principal
         std::cout << "Escolha uma opção: ";
         std::cin >> opcao;
         switch (opcao)
-        {
-        case 1:
+{
+    case 1:
+        if (associado)
             gestor->cadastrarUsuario();
+        else
+            gestor->associarLaboratorio();  
+        break;
+    
+    case 2:
+        if (associado)
+            gestor->gerenciarLaboratorio();
+        else
+            gestor->cadastrarUsuario();     
+        break;
+    
+    case 3:
+        if (associado)
+            gestor->getLaboratorio()->listarEstudantes();
+        else
+            gestor->listarUsuarios();       
+        break;
+    
+    case 4:
+        if (associado)
+            gestor->acessarReagentesAlerta();
+        else
+            gestor->deletarUsuario();       
+        break;
+    
+    case 5:
+        if (associado)
+            gestor->menuReagentesRestritos();
+        else
+             gestor->criarLaboratorio();      
+        break;
+    
+    case 6:
+        if (associado)
+             gestor->retirarReagente();     
+        break;
+    
+    case 7:
+        if (associado)
+             gestor->historicoRetiradas();   
+        break;
+    
+    case 8:
+         if (associado)
+             gestor->deletarUsuario();        
+        break;
+    
+    case 9:
+        if (associado)
+            gestor->sairLaboratorio();     
+        break;
+    
+    case 10:
+        if (associado)
+             gestor->listarUsuarios();      
+        break;
+    
+    case 11:
+        if (associado)
+             gestor->editarLaboratorio();  
+        break;
+    
+    case 0:
+        std::cout << "Saindo...\n";
+        break;
+    
+    default:
+        std::cout << "Opção inválida! Tente novamente.\n";
+    }
 
-            break;
-        case 2:
-            if (associado)
-                gestor->gerenciarLaboratorio();
-            else
-                gestor->associarLaboratorio();
-            break;
-        case 3:
-            if (associado)
-                gestor->getLaboratorio()->listarEstudantes();
-            else
-                gestor->listarUsuarios();
-            break;
-        case 4:
-            if (associado)
-                gestor->acessarReagentesAlerta();
-
-            else
-                gestor->deletarUsuario();
-            break;
-        case 5:
-            if (associado)
-                gestor->menuReagentesRestritos();
-            break;
-        case 6:
-            if (associado)
-                gestor->retirarReagente();
-            break;
-        case 7:
-            if (associado)
-                gestor->historicoRetiradas();
-            break;
-        case 8:
-            if (associado)
-                gestor->deletarUsuario();
-            break;
-        case 9:
-            if (associado)
-                gestor->sairLaboratorio();
-            break;
-        case 10:
-            if (associado)
-                gestor->listarUsuarios();
-            break;
-
-        case 0:
-            std::cout << "Saindo...\n";
-            break;
-        default:
-            std::cout << "Opção inválida! Tente novamente.\n";
-        }
-
-    } while (opcao != 0);
+        } while (opcao != 0);
 };
+
 void menuEstudante(Estudante *estudante)
 {
     int opcao = 0;
