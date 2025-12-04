@@ -63,7 +63,8 @@ void Gestor::cadastrarUsuario()
             std::cout << "Entrada inválida! Digite apenas números entre 1 e 3.\n";
             continue; // Roda o loop novamente
         }
-        if(nivelAcesso == 0){
+        if (nivelAcesso == 0)
+        {
             std::cout << "Operação de cadastro cancelada.\n";
             return;
         }
@@ -330,7 +331,6 @@ void Gestor::carregarUsuarios(Schema *db)
                 if (gestorObj)
                     gestorObj->setCadastradoPor(gestorCriador);
             }
-            
         }
 
         // -------------------------------------------------------
@@ -688,55 +688,65 @@ void Gestor::associarLaboratorio()
 }
 
 // criarLaboratorio
-void Gestor::criarLaboratorio() {
+void Gestor::criarLaboratorio()
+{
     std::cout << "\n=== CRIAR NOVO LABORATÓRIO ===\n";
-    
+
     std::string nome, departamento;
-    
+
     std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-    
-    while (true) {
+
+    while (true)
+    {
         std::cout << "Nome do laboratório: ";
         std::getline(std::cin, nome);
-        
-        if (!nome.empty()) break;
+
+        if (!nome.empty())
+            break;
         std::cout << "Erro: Nome não pode ser vazio.\n";
     }
-    
+
     std::cout << "Departamento (Enter para pular): ";
     std::getline(std::cin, departamento);
-    
+
     std::cout << "\n--- CONFIRMAÇÃO ---\n";
     std::cout << "Nome: " << nome << "\n";
     std::cout << "Departamento: " << (departamento.empty() ? "Não informado" : departamento) << "\n";
-    
-    if (!confirmacao()) {
+
+    if (!confirmacao())
+    {
         std::cout << "Criação cancelada.\n";
         return;
     }
-    
-    Laboratorio* novoLab = Laboratorio::criarLaboratorio(this->db, nome, departamento);
-    
-    if (novoLab) {
-        if (this->laboratorio == nullptr) {
+
+    Laboratorio *novoLab = Laboratorio::criarLaboratorio(this->db, nome, departamento);
+
+    if (novoLab)
+    {
+        if (this->laboratorio == nullptr)
+        {
             std::cout << "\nDeseja associar-se a este laboratório? (S/N): ";
             char resposta;
             std::cin >> resposta;
-            
-            if (resposta == 'S' || resposta == 's') {
+
+            if (resposta == 'S' || resposta == 's')
+            {
                 this->laboratorio = novoLab;
                 novoLab->adicionarGestor(this);
-                
-                try {
+
+                try
+                {
                     Table gestorTable = db->getTable("Gestor");
                     gestorTable.update()
                         .set("laboratorio_id", novoLab->getId())
                         .where("id = :id")
                         .bind("id", this->getId())
                         .execute();
-                    
+
                     std::cout << "Gestor associado ao novo laboratório.\n";
-                } catch (const mysqlx::Error &err) {
+                }
+                catch (const mysqlx::Error &err)
+                {
                     std::cerr << "Erro ao associar gestor: " << err.what() << "\n";
                 }
             }
@@ -745,72 +755,83 @@ void Gestor::criarLaboratorio() {
 }
 
 // editarLaboratorio
-void Gestor::editarLaboratorio() {
-    if (this->laboratorio == nullptr) {
+void Gestor::editarLaboratorio()
+{
+    if (this->laboratorio == nullptr)
+    {
         std::cout << "Erro: Você precisa estar associado a um laboratório para editá-lo.\n";
         return;
     }
-    
+
     std::cout << "\n=== EDITAR LABORATÓRIO ===\n";
     std::cout << "Laboratório atual:\n";
     std::cout << "ID: " << laboratorio->getId() << "\n";
     std::cout << "Nome: " << laboratorio->getNome() << "\n";
     std::cout << "Departamento: " << laboratorio->getDepartamento() << "\n";
-    
+
     std::string novoNome, novoDepartamento;
-    
+
     std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-    
-    while (true) {
+
+    while (true)
+    {
         std::cout << "\nNovo nome (Enter para manter atual): ";
         std::getline(std::cin, novoNome);
-        
-        if (novoNome.empty()) {
+
+        if (novoNome.empty())
+        {
             novoNome = laboratorio->getNome();
             break;
         }
-        
-        if (!novoNome.empty()) break;
+
+        if (!novoNome.empty())
+            break;
         std::cout << "Erro: Nome não pode ser vazio.\n";
     }
-    
+
     std::cout << "Novo departamento (Enter para manter atual): ";
     std::getline(std::cin, novoDepartamento);
-    
-    if (novoDepartamento.empty()) {
+
+    if (novoDepartamento.empty())
+    {
         novoDepartamento = laboratorio->getDepartamento();
     }
-    
-    if (novoNome == laboratorio->getNome() && novoDepartamento == laboratorio->getDepartamento()) {
+
+    if (novoNome == laboratorio->getNome() && novoDepartamento == laboratorio->getDepartamento())
+    {
         std::cout << "Nenhuma alteração feita.\n";
         return;
     }
-    
+
     std::cout << "\n--- CONFIRMAÇÃO ---\n";
     std::cout << "Nome antigo: " << laboratorio->getNome() << "\n";
     std::cout << "Nome novo: " << novoNome << "\n";
     std::cout << "Departamento antigo: " << laboratorio->getDepartamento() << "\n";
     std::cout << "Departamento novo: " << novoDepartamento << "\n";
-    
-    if (!confirmacao()) {
+
+    if (!confirmacao())
+    {
         std::cout << "Edição cancelada.\n";
         return;
     }
-    
+
     bool sucesso = laboratorio->editarLaboratorio(novoNome, novoDepartamento);
-    
-    if (sucesso) {
+
+    if (sucesso)
+    {
         std::cout << "Laboratório editado com sucesso!\n";
     }
 }
 
 // acessarEstatisticas: Exibe estatísticas do laboratório
-void Gestor::acessarEstatisticas() {
-    if (this->laboratorio == nullptr) {
+void Gestor::acessarEstatisticas()
+{
+    if (this->laboratorio == nullptr)
+    {
         std::cout << "Erro: Você precisa estar associado a um laboratório para ver estatísticas.\n";
         return;
     }
-    
+
     std::cout << laboratorio->getEstatisticas();
 }
 
@@ -1394,9 +1415,9 @@ void Gestor::menuReagentesRestritos()
         // Bloco de protecao contra letras no menu
         if (std::cin.fail())
         {
-            std::cin.clear(); // Limpa o estado de erro
+            std::cin.clear();  // Limpa o estado de erro
             std::cin.ignore(); // Ignora o caractere invalido
-            opcao = -1; // Forca cair no default
+            opcao = -1;        // Forca cair no default
             std::cout << "Entrada invalida Digite apenas numeros\n";
         }
         switch (opcao)
@@ -1454,23 +1475,22 @@ void Gestor::listarReagentesDoLaboratorio()
         return;
     }
 
-    std::cout << "\n Lista de Reagentes:";
     std::cout << std::left
               << std::setw(5) << "ID"
-              << std::setw(25) << "Nome"
-              << std::setw(15) << "Qtd/Unidade"
+              << std::setw(55) << "Nome"
+              << std::setw(20) << "Qtd"
               << std::setw(15) << "Validade"
-              << std::setw(10) << "Nível" << "\n";
+              << std::setw(15) << "Nível" << "\n";
     std::cout << std::string(70, '-') << "\n";
 
     for (Reagente *r : lista)
     {
         std::cout << std::left
                   << std::setw(5) << r->getId()
-                  << std::setw(25) << r->getNome()
-                  << std::setw(15) << (std::to_string(r->getQuantidade()) + " " + r->getUnidadeMedida())
+                  << std::setw(55) << r->getNome()
+                  << std::setw(20) << (std::to_string(r->getQuantidade()) + " " + r->getUnidadeMedida())
                   << std::setw(15) << r->getDataValidade()
-                  << std::setw(10) << r->getNivelAcesso() << "\n";
+                  << std::setw(15) << r->getNivelAcesso() << "\n";
     }
     std::cout << std::string(70, '-') << "\n";
 }
@@ -1479,17 +1499,19 @@ void Gestor::editarReagente()
 {
     std::cout << "\n Editar Reagente \n";
     std::string nomeBusca;
-    
+
     // Limpa o buffer de entrada para evitar pular a leitura do nome
     std::cin.ignore();
-    
+
     // Inicio do loop para validacao do nome de busca
-    while(true) {
+    while (true)
+    {
         std::cout << "Digite o nome do reagente que deseja editar: ";
         // Le a linha inteira digitada pelo usuario
         std::getline(std::cin, nomeBusca);
         // Verifica se a string nao esta vazia
-        if(!nomeBusca.empty()) break;
+        if (!nomeBusca.empty())
+            break;
         std::cout << "Nome invalido\n";
     }
 
@@ -1517,12 +1539,14 @@ void Gestor::editarReagente()
 
     int subOpcao;
     // Inicio do loop para validacao da opcao do menu
-    while(true) {
+    while (true)
+    {
         std::cin >> subOpcao;
-        
+
         // Verifica se a entrada falhou caso digite letras
-        if(!std::cin.fail()) break;
-        
+        if (!std::cin.fail())
+            break;
+
         // Limpa o estado de erro do cin
         std::cin.clear();
         // Limpa o buffer de entrada simples
@@ -1531,7 +1555,8 @@ void Gestor::editarReagente()
     }
 
     // Se escolheu 0 cancela a operacao e sai da funcao imediatamente
-    if (subOpcao == 0) return;
+    if (subOpcao == 0)
+        return;
 
     // Bloco try catch para tratamento de erros de banco de dados
     try
@@ -1540,24 +1565,27 @@ void Gestor::editarReagente()
         Table table = db->getTable("Reagente");
 
         // Opcao 1 Editar Quantidade
-        if (subOpcao == 1) 
-        { 
+        if (subOpcao == 1)
+        {
             int novaQtd;
             // Loop de validacao para garantir numero positivo
-            while(true) {
+            while (true)
+            {
                 std::cout << "Nova Quantidade: ";
                 std::cin >> novaQtd;
-                
+
                 // Verifica erro de input e se valor e maior ou igual a zero
-                if(!std::cin.fail() && novaQtd >= 0) break;
-                
-                std::cin.clear(); 
+                if (!std::cin.fail() && novaQtd >= 0)
+                    break;
+
+                std::cin.clear();
                 std::cin.ignore();
                 std::cout << "Quantidade invalida Digite numero maior ou igual a 0\n";
             }
 
             // Pede confirmacao antes de salvar as alteracoes
-            if (!confirmacao()) return;
+            if (!confirmacao())
+                return;
 
             // Atualiza no banco de dados filtrando pelo ID
             table.update().set("quantidade", novaQtd).where("id = :id").bind("id", reagente->getId()).execute();
@@ -1566,21 +1594,24 @@ void Gestor::editarReagente()
             std::cout << "Quantidade atualizada com sucesso\n";
         }
         // Opcao 2 Editar Local de Armazenamento
-        else if (subOpcao == 2) 
-        { 
+        else if (subOpcao == 2)
+        {
             std::string novoLocal;
             // Limpa buffer obrigatorio antes de ler string com getline
             std::cin.ignore();
-            
+
             // Loop de validacao de string nao vazia
-            while(true) {
+            while (true)
+            {
                 std::cout << "Novo Local: ";
                 std::getline(std::cin, novoLocal);
-                if(!novoLocal.empty()) break;
+                if (!novoLocal.empty())
+                    break;
                 std::cout << "Local nao pode ser vazio\n";
             }
 
-            if (!confirmacao()) return;
+            if (!confirmacao())
+                return;
 
             // Atualiza banco e memoria
             table.update().set("localArmazenamento", novoLocal).where("id = :id").bind("id", reagente->getId()).execute();
@@ -1588,10 +1619,10 @@ void Gestor::editarReagente()
             std::cout << "Local atualizado com sucesso\n";
         }
         // Opcao 3 Editar Data de Validade
-        else if (subOpcao == 3) 
+        else if (subOpcao == 3)
         {
             int ano, mes, dia;
-            char sep1, sep2; 
+            char sep1, sep2;
             std::string novaValidade;
 
             // Loop de validacao robusta da data igual ao cadastro
@@ -1602,12 +1633,12 @@ void Gestor::editarReagente()
                 std::cin >> ano >> sep1 >> mes >> sep2 >> dia;
 
                 // Verifica erro de leitura se digitou texto onde era numero
-                if (std::cin.fail()) 
+                if (std::cin.fail())
                 {
                     std::cout << "Erro Digite apenas numeros\n";
-                    std::cin.clear(); 
-                    std::cin.ignore(); 
-                    continue; 
+                    std::cin.clear();
+                    std::cin.ignore();
+                    continue;
                 }
 
                 // Verifica se usou hifens como separador
@@ -1619,35 +1650,60 @@ void Gestor::editarReagente()
                 }
 
                 // Verifica limites logicos de ano mes e dia
-                if (ano < 1900 || ano > 2100) { std::cout << "Ano invalido\n"; continue; }
-                if (mes < 1 || mes > 12) { std::cout << "Mes invalido\n"; continue; }
-                if (dia < 1 || dia > 31) { std::cout << "Dia invalido\n"; continue; }
+                if (ano < 1900 || ano > 2100)
+                {
+                    std::cout << "Ano invalido\n";
+                    continue;
+                }
+                if (mes < 1 || mes > 12)
+                {
+                    std::cout << "Mes invalido\n";
+                    continue;
+                }
+                if (dia < 1 || dia > 31)
+                {
+                    std::cout << "Dia invalido\n";
+                    continue;
+                }
 
                 // Verificacao especifica para Fevereiro e ano bissexto
-                if (mes == 2) {
+                if (mes == 2)
+                {
                     bool bissexto = (ano % 4 == 0 && (ano % 100 != 0 || ano % 400 == 0));
                     int limite = bissexto ? 29 : 28;
-                    if (dia > limite) { std::cout << "Dia invalido para Fevereiro\n"; continue; }
+                    if (dia > limite)
+                    {
+                        std::cout << "Dia invalido para Fevereiro\n";
+                        continue;
+                    }
                 }
                 // Verificacao para meses com 30 dias
-                else if (mes == 4 || mes == 6 || mes == 9 || mes == 11) {
-                    if (dia > 30) { std::cout << "Mes tem apenas 30 dias\n"; continue; }
+                else if (mes == 4 || mes == 6 || mes == 9 || mes == 11)
+                {
+                    if (dia > 30)
+                    {
+                        std::cout << "Mes tem apenas 30 dias\n";
+                        continue;
+                    }
                 }
 
                 // Conversao segura dos numeros para string
                 std::string sMes = std::to_string(mes);
                 std::string sDia = std::to_string(dia);
-                
+
                 // Adiciona zero a esquerda se necessario para manter formato
-                if (mes < 10) sMes = "0" + sMes;
-                if (dia < 10) sDia = "0" + sDia;
-                
+                if (mes < 10)
+                    sMes = "0" + sMes;
+                if (dia < 10)
+                    sDia = "0" + sDia;
+
                 // Monta a string final da data
                 novaValidade = std::to_string(ano) + "-" + sMes + "-" + sDia;
-                break; 
+                break;
             }
 
-            if (!confirmacao()) return;
+            if (!confirmacao())
+                return;
 
             // Atualiza banco e memoria
             table.update().set("dataValidade", novaValidade).where("id = :id").bind("id", reagente->getId()).execute();
@@ -1655,37 +1711,43 @@ void Gestor::editarReagente()
             std::cout << "Validade atualizada com sucesso\n";
         }
         // Opcao 4 Editar Nome
-        else if (subOpcao == 4) 
-        { 
+        else if (subOpcao == 4)
+        {
             std::string novoNome;
             std::cin.ignore(); // Limpa buffer
-            while(true) {
+            while (true)
+            {
                 std::cout << "Novo Nome Correto: ";
                 std::getline(std::cin, novoNome);
-                if(!novoNome.empty()) break;
+                if (!novoNome.empty())
+                    break;
                 std::cout << "Nome invalido\n";
             }
-            if (!confirmacao()) return;
-            
+            if (!confirmacao())
+                return;
+
             table.update().set("nome", novoNome).where("id = :id").bind("id", reagente->getId()).execute();
             reagente->setNome(novoNome);
             std::cout << "Nome corrigido com sucesso\n";
         }
         // Opcao 5 Editar Nivel de Acesso
-        else if (subOpcao == 5) 
-        { 
+        else if (subOpcao == 5)
+        {
             int novoNivel;
-            while(true) {
+            while (true)
+            {
                 std::cout << "Novo Nivel (1-3): ";
                 std::cin >> novoNivel;
                 // Valida se e numero e se esta entre 1 e 3
-                if(!std::cin.fail() && novoNivel >= 1 && novoNivel <= 3) break;
-                std::cin.clear(); 
+                if (!std::cin.fail() && novoNivel >= 1 && novoNivel <= 3)
+                    break;
+                std::cin.clear();
                 std::cin.ignore();
                 std::cout << "Nivel invalido\n";
             }
-            if (!confirmacao()) return;
-            
+            if (!confirmacao())
+                return;
+
             table.update().set("nivelAcesso", novoNivel).where("id = :id").bind("id", reagente->getId()).execute();
             reagente->setNivelAcesso(novoNivel);
             std::cout << "Nivel atualizado\n";
@@ -1705,55 +1767,67 @@ void Gestor::editarReagente()
                 std::cin >> tipoEscolhido;
 
                 // Verifica erro de entrada
-                if (std::cin.fail()) {
+                if (std::cin.fail())
+                {
                     std::cin.clear();
                     std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
                     std::cout << "Entrada invalida\n";
                     continue;
                 }
-                
+
                 // Verifica intervalo
-                if (tipoEscolhido != 1 && tipoEscolhido != 2) {
+                if (tipoEscolhido != 1 && tipoEscolhido != 2)
+                {
                     std::cout << "Tipo invalido\n";
                     continue;
                 }
 
                 // Verifica consistencia com o objeto atual em memoria
-                if (tipoEscolhido == 1) {
+                if (tipoEscolhido == 1)
+                {
                     // Tenta converter o ponteiro para liquido
                     // Se falhar retorna null o que significa que e solido
                     ReagenteLiquido *testeLiq = dynamic_cast<ReagenteLiquido *>(reagente);
-                    if (testeLiq == nullptr) {
+                    if (testeLiq == nullptr)
+                    {
                         std::cout << "\nAVISO O reagente cadastrado atualmente e SOLIDO\n";
                         std::cout << "Deseja converter para LIQUIDO? (S/N): ";
                         char resp;
                         std::cin >> resp;
                         std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-                        
-                        if (resp == 'S' || resp == 's') {
+
+                        if (resp == 'S' || resp == 's')
+                        {
                             precisaConverter = true;
-                            break; 
-                        } else {
-                            continue; 
+                            break;
+                        }
+                        else
+                        {
+                            continue;
                         }
                     }
                 }
-                else if (tipoEscolhido == 2) {
+                else if (tipoEscolhido == 2)
+                {
                     // Tenta converter o ponteiro para solido
                     // Se falhar retorna null o que significa que e liquido
                     ReagenteSolido *testeSol = dynamic_cast<ReagenteSolido *>(reagente);
-                    if (testeSol == nullptr) {
+                    if (testeSol == nullptr)
+                    {
                         std::cout << "\nAVISO O reagente cadastrado atualmente e LIQUIDO\n";
                         std::cout << "Deseja converter para SOLIDO? (S/N): ";
                         char resp;
                         std::cin >> resp;
                         std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
 
-                        if (resp == 'S' || resp == 's') {
+                        if (resp == 'S' || resp == 's')
+                        {
                             precisaConverter = true;
-                            break; 
-                        } else {
-                            continue; 
+                            break;
+                        }
+                        else
+                        {
+                            continue;
                         }
                     }
                 }
@@ -1770,15 +1844,25 @@ void Gestor::editarReagente()
                 {
                     double dens, vol;
                     // Coleta novos dados
-                    while(true) { 
-                        std::cout << "Nova Densidade: "; std::cin >> dens; 
-                        if(!std::cin.fail() && dens > 0) break; 
-                        std::cin.clear(); std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n'); std::cout << "Invalido\n"; 
+                    while (true)
+                    {
+                        std::cout << "Nova Densidade: ";
+                        std::cin >> dens;
+                        if (!std::cin.fail() && dens > 0)
+                            break;
+                        std::cin.clear();
+                        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+                        std::cout << "Invalido\n";
                     }
-                    while(true) { 
-                        std::cout << "Novo Volume: "; std::cin >> vol; 
-                        if(!std::cin.fail() && vol > 0) break; 
-                        std::cin.clear(); std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n'); std::cout << "Invalido\n"; 
+                    while (true)
+                    {
+                        std::cout << "Novo Volume: ";
+                        std::cin >> vol;
+                        if (!std::cin.fail() && vol > 0)
+                            break;
+                        std::cin.clear();
+                        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+                        std::cout << "Invalido\n";
                     }
 
                     // 1 Insere na tabela nova Liquido
@@ -1791,12 +1875,11 @@ void Gestor::editarReagente()
                     // Atualiza Memoria Remove o objeto antigo e cria um novo do tipo certo
                     laboratorio->removerReagenteDaMemoria(idOriginal);
                     laboratorio->cadastrarNovoReagente(
-                        idOriginal, nome, reagente->getDataValidade(), reagente->getQuantidade(), 
-                        reagente->getQuantidadeCritica(), reagente->getLocalArmazenamento(), 
-                        reagente->getNivelAcesso(), reagente->getUnidadeMedida(), 
-                        reagente->getMarca(), reagente->getCodigoReferencia(), 
-                        1, dens, vol, 0.0, ""
-                    );
+                        idOriginal, nome, reagente->getDataValidade(), reagente->getQuantidade(),
+                        reagente->getQuantidadeCritica(), reagente->getLocalArmazenamento(),
+                        reagente->getNivelAcesso(), reagente->getUnidadeMedida(),
+                        reagente->getMarca(), reagente->getCodigoReferencia(),
+                        1, dens, vol, 0.0, "");
                     std::cout << "Convertido para Liquido com sucesso\n";
                 }
                 else // Converter para Solido
@@ -1804,15 +1887,24 @@ void Gestor::editarReagente()
                     double mass;
                     std::string est;
                     // Coleta novos dados
-                    while(true) { 
-                        std::cout << "Nova Massa: "; std::cin >> mass; 
-                        if(!std::cin.fail() && mass > 0) break; 
-                        std::cin.clear(); std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n'); std::cout << "Invalido\n"; 
+                    while (true)
+                    {
+                        std::cout << "Nova Massa: ";
+                        std::cin >> mass;
+                        if (!std::cin.fail() && mass > 0)
+                            break;
+                        std::cin.clear();
+                        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+                        std::cout << "Invalido\n";
                     }
                     std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-                    while(true) { 
-                        std::cout << "Novo Estado Fisico: "; std::getline(std::cin, est); 
-                        if(!est.empty()) break; std::cout << "Vazio\n"; 
+                    while (true)
+                    {
+                        std::cout << "Novo Estado Fisico: ";
+                        std::getline(std::cin, est);
+                        if (!est.empty())
+                            break;
+                        std::cout << "Vazio\n";
                     }
 
                     // 1 Insere na tabela nova Solido
@@ -1825,12 +1917,11 @@ void Gestor::editarReagente()
                     // Atualiza Memoria Remove antigo e recria novo
                     laboratorio->removerReagenteDaMemoria(idOriginal);
                     laboratorio->cadastrarNovoReagente(
-                        idOriginal, nome, reagente->getDataValidade(), reagente->getQuantidade(), 
-                        reagente->getQuantidadeCritica(), reagente->getLocalArmazenamento(), 
-                        reagente->getNivelAcesso(), reagente->getUnidadeMedida(), 
-                        reagente->getMarca(), reagente->getCodigoReferencia(), 
-                        2, 0.0, 0.0, mass, est
-                    );
+                        idOriginal, nome, reagente->getDataValidade(), reagente->getQuantidade(),
+                        reagente->getQuantidadeCritica(), reagente->getLocalArmazenamento(),
+                        reagente->getNivelAcesso(), reagente->getUnidadeMedida(),
+                        reagente->getMarca(), reagente->getCodigoReferencia(),
+                        2, 0.0, 0.0, mass, est);
                     std::cout << "Convertido para Solido com sucesso\n";
                 }
                 return; // Sai da funcao pois o ponteiro antigo agora e invalido
@@ -1840,27 +1931,35 @@ void Gestor::editarReagente()
             if (tipoEscolhido == 1) // Liquido
             {
                 // Cast manual ja que validamos o tipo antes
-                ReagenteLiquido *liq = (ReagenteLiquido*) reagente;
+                ReagenteLiquido *liq = (ReagenteLiquido *)reagente;
                 double novaDensidade, novoVolume;
-                
-                while(true) {
-                    std::cout << "Nova Densidade: "; std::cin >> novaDensidade;
-                    if(!std::cin.fail() && novaDensidade > 0) break;
-                    std::cin.clear(); std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n'); std::cout << "Invalido\n";
+
+                while (true)
+                {
+                    std::cout << "Nova Densidade: ";
+                    std::cin >> novaDensidade;
+                    if (!std::cin.fail() && novaDensidade > 0)
+                        break;
+                    std::cin.clear();
+                    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+                    std::cout << "Invalido\n";
                 }
-                while(true) {
-                    std::cout << "Novo Volume: "; std::cin >> novoVolume;
-                    if(!std::cin.fail() && novoVolume > 0) break;
-                    std::cin.clear(); std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n'); std::cout << "Invalido\n";
+                while (true)
+                {
+                    std::cout << "Novo Volume: ";
+                    std::cin >> novoVolume;
+                    if (!std::cin.fail() && novoVolume > 0)
+                        break;
+                    std::cin.clear();
+                    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+                    std::cout << "Invalido\n";
                 }
 
-                if (!confirmacao()) return;
+                if (!confirmacao())
+                    return;
 
                 // Atualiza tabela
-                db->getTable("ReagenteLiquido").update()
-                    .set("densidade", novaDensidade)
-                    .set("volume", novoVolume)
-                    .where("id = :id").bind("id", reagente->getId()).execute();
+                db->getTable("ReagenteLiquido").update().set("densidade", novaDensidade).set("volume", novoVolume).where("id = :id").bind("id", reagente->getId()).execute();
 
                 // Atualiza objeto
                 liq->setDensidade(novaDensidade);
@@ -1870,28 +1969,35 @@ void Gestor::editarReagente()
             else // Solido
             {
                 // Cast manual ja que validamos o tipo antes
-                ReagenteSolido *sol = (ReagenteSolido*) reagente;
+                ReagenteSolido *sol = (ReagenteSolido *)reagente;
                 double novaMassa;
                 std::string novoEstado;
 
-                while(true) {
-                    std::cout << "Nova Massa: "; std::cin >> novaMassa;
-                    if(!std::cin.fail() && novaMassa > 0) break;
-                    std::cin.clear(); std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n'); std::cout << "Invalido\n";
+                while (true)
+                {
+                    std::cout << "Nova Massa: ";
+                    std::cin >> novaMassa;
+                    if (!std::cin.fail() && novaMassa > 0)
+                        break;
+                    std::cin.clear();
+                    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+                    std::cout << "Invalido\n";
                 }
                 std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-                while(true) {
-                    std::cout << "Novo Estado Fisico: "; std::getline(std::cin, novoEstado);
-                    if(!novoEstado.empty()) break; std::cout << "Vazio\n";
+                while (true)
+                {
+                    std::cout << "Novo Estado Fisico: ";
+                    std::getline(std::cin, novoEstado);
+                    if (!novoEstado.empty())
+                        break;
+                    std::cout << "Vazio\n";
                 }
 
-                if (!confirmacao()) return;
+                if (!confirmacao())
+                    return;
 
                 // Atualiza tabela
-                db->getTable("ReagenteSolido").update()
-                    .set("massa", novaMassa)
-                    .set("estadoFisico", novoEstado)
-                    .where("id = :id").bind("id", reagente->getId()).execute();
+                db->getTable("ReagenteSolido").update().set("massa", novaMassa).set("estadoFisico", novoEstado).where("id = :id").bind("id", reagente->getId()).execute();
 
                 // Atualiza objeto
                 sol->setMassa(novaMassa);
@@ -1956,22 +2062,22 @@ void Gestor::filtrarReagentes()
     std::cout << "\nFiltrar Reagentes\n";
     std::cout << "1. Por Categoria (Solido/Liquido)\n";
     std::cout << "2. Por Restricao (Restritos/Livres)\n";
-    
+
     int op;
-    
+
     // Validacao do menu de filtro
-    while (true) 
+    while (true)
     {
         std::cout << "Opcao: ";
         std::cin >> op;
 
-        if (std::cin.fail()) 
+        if (std::cin.fail())
         {
             std::cin.clear();
             std::cin.ignore();
             std::cout << "Entrada invalida Digite um numero\n";
-        } 
-        else 
+        }
+        else
         {
             break;
         }
@@ -2080,9 +2186,9 @@ void Gestor::gerenciarLaboratorio()
         // Bloco de protecao contra letras no menu
         if (std::cin.fail())
         {
-            std::cin.clear(); // Limpa o estado de erro
+            std::cin.clear();  // Limpa o estado de erro
             std::cin.ignore(); // Ignora o caractere invalido
-            opcao = -1; // Forca cair no default e repetir o loop
+            opcao = -1;        // Forca cair no default e repetir o loop
             std::cout << "Entrada invalida Digite apenas numeros\n";
         }
 
@@ -2164,7 +2270,7 @@ void Gestor::retirarReagente()
         // Verifica se digitou algo que nao e numero
         if (std::cin.fail())
         {
-            std::cin.clear(); // Limpa erro do cin
+            std::cin.clear();  // Limpa erro do cin
             std::cin.ignore(); // Limpa buffer
             std::cout << "Entrada invalida Digite apenas numeros\n";
         }
@@ -2665,12 +2771,12 @@ void Gestor::limparUsuarios()
     posGraduandos.clear();
 }
 
-Estudante* Gestor::getEstudanteById(int id)
+Estudante *Gestor::getEstudanteById(int id)
 {
-    for (Estudante* e : estudantes)
+    for (Estudante *e : estudantes)
         if (e->getId() == id)
             return e;
-    for (PosGraduacao* p : posGraduandos)
+    for (PosGraduacao *p : posGraduandos)
         if (p->getId() == id)
             return p;
     return nullptr;
