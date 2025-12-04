@@ -2456,7 +2456,7 @@ void Gestor::historicoRetiradas() {
         // Pega o ID do laboratório
         int idLab = laboratorio->getId();
         
-        // Consulta SQL simplificada usando JOIN
+        // Consulta SQL usando JOIN
         std::string sql = 
             "SELECT R.nome as reagente, U.nome as usuario, "
             "RT.quantidadeRetirada, RT.dataHoraRetirada "
@@ -2495,7 +2495,7 @@ void Gestor::historicoRetiradas() {
             double quantidade = row[2].get<double>();
             std::string dataHora = row[3].get<std::string>();
 
-            // Formata a data (remove segundos se quiser)
+            // Formata a data (remove segundos)
             if (dataHora.length() > 16) {
                 dataHora = dataHora.substr(0, 16); // "YYYY-MM-DD HH:MM"
             }
