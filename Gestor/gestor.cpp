@@ -1240,8 +1240,17 @@ void Gestor::menuReagentesRestritos()
         std::cout << "2. Retirar reagente\n";
         std::cout << "3. Registrar reagente\n";
         std::cout << "0. Sair do sistema\n";
-        std::cout << "Escolha uma opção: ";
+        std::cout << "Escolha uma opcao: ";
         std::cin >> opcao;
+
+        // Bloco de protecao contra letras no menu
+        if (std::cin.fail())
+        {
+            std::cin.clear(); // Limpa o estado de erro
+            std::cin.ignore(); // Ignora o caractere invalido
+            opcao = -1; // Forca cair no default
+            std::cout << "Entrada invalida Digite apenas numeros\n";
+        }
         switch (opcao)
         {
         case 1:
@@ -1797,11 +1806,28 @@ void Gestor::excluirReagente()
 void Gestor::filtrarReagentes()
 {
     std::cout << "\nFiltrar Reagentes\n";
-    std::cout << "1. Por Categoria (Sólido/Líquido)\n";
-    std::cout << "2. Por Restrição (Restritos/Livres)\n";
-    std::cout << "Opção: ";
+    std::cout << "1. Por Categoria (Solido/Liquido)\n";
+    std::cout << "2. Por Restricao (Restritos/Livres)\n";
+    
     int op;
-    std::cin >> op;
+    
+    // Validacao do menu de filtro
+    while (true) 
+    {
+        std::cout << "Opcao: ";
+        std::cin >> op;
+
+        if (std::cin.fail()) 
+        {
+            std::cin.clear();
+            std::cin.ignore();
+            std::cout << "Entrada invalida Digite um numero\n";
+        } 
+        else 
+        {
+            break;
+        }
+    }
 
     // Pega lista completa
     std::vector<Reagente *> todos = laboratorio->listarReagentes("");
@@ -1900,8 +1926,17 @@ void Gestor::gerenciarLaboratorio()
         std::cout << "8. Desassociar Estudante\n";
         std::cout << "9. Sair do Laboratório\n";
         std::cout << "0. Voltar ao menu anterior\n";
-        std::cout << "Escolha uma opção: ";
+        std::cout << "Escolha uma opcao: ";
         std::cin >> opcao;
+
+        // Bloco de protecao contra letras no menu
+        if (std::cin.fail())
+        {
+            std::cin.clear(); // Limpa o estado de erro
+            std::cin.ignore(); // Ignora o caractere invalido
+            opcao = -1; // Forca cair no default e repetir o loop
+            std::cout << "Entrada invalida Digite apenas numeros\n";
+        }
 
         switch (opcao)
         {
@@ -1972,8 +2007,24 @@ void Gestor::retirarReagente()
 
     int escolha;
     double quantidade;
-    std::cout << "\nEscolha o número do reagente (0 para cancelar): ";
-    std::cin >> escolha;
+    // Loop de validacao da escolha do reagente
+    while (true)
+    {
+        std::cout << "\nEscolha o numero do reagente (0 para cancelar): ";
+        std::cin >> escolha;
+
+        // Verifica se digitou algo que nao e numero
+        if (std::cin.fail())
+        {
+            std::cin.clear(); // Limpa erro do cin
+            std::cin.ignore(); // Limpa buffer
+            std::cout << "Entrada invalida Digite apenas numeros\n";
+        }
+        else
+        {
+            break; // Sai do loop se for numero valido
+        }
+    }
 
     if (escolha == 0)
     {
@@ -1996,15 +2047,29 @@ void Gestor::retirarReagente()
         return;
     }
 
-    std::cout << "Quantidade a retirar (" << reagenteEscolhido->getUnidadeMedida()
-              << ") - Disponível: " << reagenteEscolhido->getQuantidade() << ": ";
-    std::cin >> quantidade;
-
-    // Validar quantidade
-    if (quantidade <= 0)
+    // Loop de validacao da quantidade
+    while (true)
     {
-        std::cout << "Quantidade deve ser maior que zero.\n";
-        return;
+        std::cout << "Quantidade a retirar (" << reagenteEscolhido->getUnidadeMedida()
+                  << ") - Disponivel: " << reagenteEscolhido->getQuantidade() << ": ";
+        std::cin >> quantidade;
+
+        // Verifica erro de entrada nao numerica
+        if (std::cin.fail())
+        {
+            std::cin.clear();
+            std::cin.ignore();
+            std::cout << "Entrada invalida Digite apenas numeros\n";
+        }
+        // Verifica se quantidade e positiva
+        else if (quantidade <= 0)
+        {
+            std::cout << "Quantidade deve ser maior que zero\n";
+        }
+        else
+        {
+            break; // Entrada valida
+        }
     }
 
     if (quantidade > reagenteEscolhido->getQuantidade())
