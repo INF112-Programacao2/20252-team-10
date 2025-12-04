@@ -53,7 +53,7 @@ public:
     // Métodos para criação e edição de laboratórios
     static Laboratorio* criarLaboratorio(Schema* db, const std::string& nome, const std::string& departamento);
     bool editarLaboratorio(const std::string& novoNome, const std::string& novoDepartamento);
-    
+
     // Gerenciamento de reagentes
     void cadastrarNovoReagente(int id, std::string nome, std::string dataValidade, int quantidade,
                                int quantidadeCritica, std::string local, int nivelAcesso,
@@ -70,48 +70,9 @@ public:
     std::vector<Retirada *> listarRetiradasUsuario(Usuario *usuario);
     std::vector<Retirada *> getHistoricoRecente();
 
-<<<<<<< HEAD
     // Gerenciamento de usuários
     std::string adicionarUsuario(Usuario *usuario);
     std::string removerUsuario(Usuario *usuario);
-=======
-    // Métodos de alerta
-    void carregarAlertasDB();
-    std::vector<Reagente *> getReagentesCriticos(); // Estoque baixo
-    std::vector<Reagente *> getReagentesVencidos(); // Data de validade passada
-    void getAlertasGestor();                        // Relatório consolidado para gestores
-    std::string getEstatisticas();                  // Estatísticas do laboratório
-
-    // Remove um reagente do vetor em memória pelo ID
-    void removerReagenteDaMemoria(int idReagente);
-    
-    // Getters
-    //  Retorna um vetor de ponterio com todos ussuarios fazendo um upcasting
-    std::vector<Usuario *> getUsuarios();
-    int getId() const { return id; }
-    std::string getNome() { return nome; }
-    std::string getDepartamento() const { return departamento; }
-    int getTotalReagentes() const { return reagentes.size(); }
-    int getTotalGestores() const { return gestores.size(); }
-    int getTotalEstudanteGraduacao() const { return estudantesGraduacao.size(); }
-    int getTotalEstudantesPosGraducao() const { return estudantesPosGraduacao.size(); }
-    int getTotalEstudantes() const { return (estudantesPosGraduacao.size() + estudantesGraduacao.size()); }
-    int getTotalUsuarios() const { return getTotalGestores() + getTotalEstudantes(); }
-    int getTotalRetiradas() const { return retiradas.size(); }
-
-    // Representação em string do laboratório
-    std::string toString() const;
-
-    // lista de todos os laboratórios carregados
-    static std::vector<Laboratorio *> laboratorios;
-
-    // Métodos para gerenciar os laboratórios
-    static std::vector<Laboratorio *> listarLaboratorios(Schema *db); // Carrega do BD
-    static void imprimirLaboratorios();                               // Mostra lista formatada
-    static void limparLaboratorios();                                 // Libera memória de todos os labs
-
-    // Métodos para adicionar/remover pessoas
->>>>>>> a6a11f496ce95241ae2921c093c3f19909f84fd7
     void adicionarGestor(Gestor *gestor);
     void removerGestor(int id);
     void menuRemoverGestor();
