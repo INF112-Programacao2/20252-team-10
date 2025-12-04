@@ -500,6 +500,12 @@ void Gestor::deletarUsuario()
 
                 int id = estudantes[i]->getId();
 
+                db->getTable("Associado")
+                    .remove()
+                    .where("estudante_id = :id")
+                    .bind("id", id)
+                    .execute();
+
                 db->getTable("Estudante")
                     .remove()
                     .where("id = :id")
@@ -542,6 +548,12 @@ void Gestor::deletarUsuario()
                 }
 
                 int id = posGraduandos[i]->getId();
+
+                db->getTable("Associado")
+                    .remove()
+                    .where("estudante_id = :id")
+                    .bind("id", id)
+                    .execute();
 
                 db->getTable("PosGraduacao")
                     .remove()
@@ -2758,12 +2770,6 @@ void Gestor::limparUsuarios()
 {
     for (Usuario *u : usuariosCarregados)
         delete u;
-    for (Gestor *g : gestores)
-        delete g;
-    for (Estudante *e : estudantes)
-        delete e;
-    for (PosGraduacao *p : posGraduandos)
-        delete p;
 
     usuariosCarregados.clear();
     gestores.clear();

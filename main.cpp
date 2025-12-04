@@ -64,8 +64,8 @@ void menuGestor(Gestor *gestor)
         else
         { // Se nao estiver associado, imprime um menu para quem não é associaod a nada
             // Menu quando o gestor não está associado a nenhum laboratório
-            std::cout << "1. Cadastrar usuário\n";       // Associa o gestor a um laboratório disponível (pede confirmação)
-            std::cout << "2. Associar laboratório\n";          // Cria um novo usuario no sistema (sem associação inicial)
+            std::cout << "1. Cadastrar usuário\n";          // Associa o gestor a um laboratório disponível (pede confirmação)
+            std::cout << "2. Associar laboratório\n";       // Cria um novo usuario no sistema (sem associação inicial)
             std::cout << "3. Listar usuários do sistema\n"; // Mostra todos os usuários cadastrados
             std::cout << "4. Deletar usuário\n";            // Exclui um usuário do sistema (pede confirmação)
             std::cout << "5. Criar laboratório\n";          // Criar novo laboratório
@@ -74,86 +74,86 @@ void menuGestor(Gestor *gestor)
         std::cout << "Escolha uma opção: ";
         std::cin >> opcao;
         switch (opcao)
-{
-    case 1:
-        if (associado)
-            gestor->cadastrarUsuario();
-        else
-            gestor->associarLaboratorio();  
-        break;
-    
-    case 2:
-        if (associado)
-            gestor->gerenciarLaboratorio();
-        else
-            gestor->cadastrarUsuario();     
-        break;
-    
-    case 3:
-        if (associado)
-            gestor->getLaboratorio()->listarEstudantes();
-        else
-            gestor->listarUsuarios();       
-        break;
-    
-    case 4:
-        if (associado)
-            gestor->acessarReagentesAlerta();
-        else
-            gestor->deletarUsuario();       
-        break;
-    
-    case 5:
-        if (associado)
-            gestor->menuReagentesRestritos();
-        else
-             gestor->criarLaboratorio();      
-        break;
-    
-    case 6:
-        if (associado)
-             gestor->retirarReagente();     
-        break;
-    
-    case 7:
-        if (associado)
-             gestor->historicoRetiradas();   
-        break;
-    
-    case 8:
-         if (associado)
-             gestor->deletarUsuario();        
-        break;
-    
-    case 9:
-        if (associado)
-            gestor->sairLaboratorio();     
-        break;
-    
-    case 10:
-        if (associado)
-             gestor->listarUsuarios();      
-        break;
-    
-    case 11:
-        if (associado)
-             gestor->editarLaboratorio();  
-        break;
+        {
+        case 1:
+            if (associado)
+                gestor->cadastrarUsuario();
+            else
+                gestor->associarLaboratorio();
+            break;
 
-    case 12:
-        if (associado)
-            gestor->acessarEstatisticas();
-        break;
-    
-    case 0:
-        std::cout << "Saindo...\n";
-        break;
-    
-    default:
-        std::cout << "Opção inválida! Tente novamente.\n";
-    }
+        case 2:
+            if (associado)
+                gestor->gerenciarLaboratorio();
+            else
+                gestor->cadastrarUsuario();
+            break;
 
-        } while (opcao != 0);
+        case 3:
+            if (associado)
+                gestor->getLaboratorio()->listarEstudantes();
+            else
+                gestor->listarUsuarios();
+            break;
+
+        case 4:
+            if (associado)
+                gestor->acessarReagentesAlerta();
+            else
+                gestor->deletarUsuario();
+            break;
+
+        case 5:
+            if (associado)
+                gestor->menuReagentesRestritos();
+            else
+                gestor->criarLaboratorio();
+            break;
+
+        case 6:
+            if (associado)
+                gestor->retirarReagente();
+            break;
+
+        case 7:
+            if (associado)
+                gestor->historicoRetiradas();
+            break;
+
+        case 8:
+            if (associado)
+                gestor->deletarUsuario();
+            break;
+
+        case 9:
+            if (associado)
+                gestor->sairLaboratorio();
+            break;
+
+        case 10:
+            if (associado)
+                gestor->listarUsuarios();
+            break;
+
+        case 11:
+            if (associado)
+                gestor->editarLaboratorio();
+            break;
+
+        case 12:
+            if (associado)
+                gestor->acessarEstatisticas();
+            break;
+
+        case 0:
+            std::cout << "Saindo...\n";
+            break;
+
+        default:
+            std::cout << "Opção inválida! Tente novamente.\n";
+        }
+
+    } while (opcao != 0);
 };
 
 void menuEstudante(Estudante *estudante)
@@ -258,8 +258,10 @@ int main()
     }
     // ===================== Sistema =====================
     // ===================== Login =====================
-    std::cout << "======Sejam bem-vindo ao LabUFV!======\n"<< std::endl;
-    std::cout << "Para realizar qualquer atividade, é necessário fazer Login\n"<< std::endl;
+    std::cout << "======Sejam bem-vindo ao LabUFV!======\n"
+              << std::endl;
+    std::cout << "Para realizar qualquer atividade, é necessário fazer Login\n"
+              << std::endl;
     std::string email, senha;               // Variáveis para armazenar as credenciais de login
     std::unique_ptr<Usuario> usuarioLogado; // Ponteiro inteligente para o usuário logado
     Usuario usuarioTemp;                    // Objeto temporário para validação e login
@@ -380,7 +382,7 @@ int main()
         }
         if (usuarioLogado->getNivelAcesso() == 2 || usuarioLogado->getNivelAcesso() == 3)
         {
-            // Pegue o estudante carregado do banco 
+            // Pegue o estudante carregado do banco
             Estudante *estudanteReal = Gestor::getEstudanteById(usuarioLogado->getId());
 
             if (estudanteReal == nullptr)
@@ -396,6 +398,9 @@ int main()
     // ===================== Encerramento =====================
     // Limpa todos os laboratórios alocados dinamicamente
     Laboratorio::limparLaboratorios();
+
+    // Limpa todos os gestores alocados dinamicamente
+    Gestor::limparUsuarios();
 
     return 0;
 }
