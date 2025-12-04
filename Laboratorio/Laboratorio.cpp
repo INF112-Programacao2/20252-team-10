@@ -1164,7 +1164,6 @@ bool Laboratorio::editarLaboratorio(const std::string& novoNome, const std::stri
     
     // Estatísticas de usuários
     estatisticas << "--- USUÁRIOS ---\n";
-    estatisticas << "Total de gestores: " << this->gestores.size() << "\n";
     estatisticas << "Total de estudantes: " << this->getTotalEstudantes() << "\n";
     estatisticas << "  • Graduação: " << this->estudantesGraduacao.size() << "\n";
     estatisticas << "  • Pós-graduação: " << this->estudantesPosGraduacao.size() << "\n";
@@ -1250,59 +1249,6 @@ bool Laboratorio::editarLaboratorio(const std::string& novoNome, const std::stri
             estatisticas << "  • Erro ao consultar tipos de reagentes: " << err.what() << "\n";
         }
     }
-    
-    // Estatísticas de retiradas (do banco, não da memória)
-    estatisticas << "\n--- RETIRADAS ---\n";
-    try {
-        Table retiradaTable = db->getTable("Retirada");
-        Table reagenteTable = db->getTable("Reagente");
-        
-        // Contar retiradas deste laboratório
-        RowResult resRetiradas = retiradaTable
-            .select("COUNT(*) as total")
-            .where("reagente_id IN (SELECT id FROM Reagente WHERE laboratorio_id = :lab_id)")
-            .bind("lab_id", this->id)
-            .execute();
-        
-        if (resRetiradas.count() > 0) {
-            Row row = resRetiradas.fetchOne();
-            int totalRetiradas = row[0].get<int>();
-           
-            estatisticas << "Total de retiradas registradas: ";
-
-            if (this->retiradas.empty()) {
-             estatisticas << "Nenhuma retirada registrada nesta sessão";
-            } else {
-            estatisticas << this->retiradas.size();
-            }
-            estatisticas << "\n";
-
-            // Última retirada
-            RowResult ultimaRetirada = retiradaTable
-                .select("dataHoraRetirada")
-                .where("reagente_id IN (SELECT id FROM Reagente WHERE laboratorio_id = :lab_id)")
-                .orderBy("dataHoraRetirada DESC")
-                .limit(1)
-                .bind("lab_id", this->id)
-                .execute();
-            
-            if (ultimaRetirada.count() > 0) {
-                Row ultima = ultimaRetirada.fetchOne();
-                estatisticas << "Última retirada: " << ultima[0].get<std::string>() << "\n";
-            }
-        }
-    } catch (const mysqlx::Error &err) {
-        estatisticas << "Erro ao consultar retiradas: " << err.what() << "\n";
-    }
-    
-    // Estatísticas de alertas
-    estatisticas << "\n--- ALERTAS ---\n";
-    int alertasAtivos = 0;
-    for (Alerta* a : this->alertas) {
-        if (a->getSituacao()) alertasAtivos++;
-    }
-    estatisticas << "Alertas ativos: " << alertasAtivos << " de " << this->alertas.size() << "\n";
-    
     // Resumo de reagentes críticos
     std::vector<Reagente*> criticosLista = this->getReagentesCriticos();
     if (!criticosLista.empty()) {
