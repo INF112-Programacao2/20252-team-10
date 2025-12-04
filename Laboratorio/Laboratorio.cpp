@@ -709,6 +709,7 @@ std::string Laboratorio::associarEstudante(Estudante *estudante)
 
     // Ler papel
     std::string papel;
+    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n'); // Limpa o buffer do cin
     std::cout << "\nDigite o papel do estudante no laboratório: ";
     std::getline(std::cin, papel);
 
