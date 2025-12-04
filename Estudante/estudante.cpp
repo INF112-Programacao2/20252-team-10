@@ -253,9 +253,8 @@ void Estudante::acessarLaboratorios() {
         std::string papel = laboratorios[i].second;
 
         std::cout << "\n[" << i + 1 << "] " << lab->getNome() 
-                  << " (" << lab->getDepartamento() << ")\n";
+                  << " (Departamento: " << lab->getDepartamento() << ")\n";
         std::cout << "   Papel: " << papel << "\n";
-        std::cout << "   ID: " << lab->getId() << "\n";
     }
 
     // Opção para gerenciar um laboratório específico

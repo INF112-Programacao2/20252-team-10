@@ -300,7 +300,7 @@ int main()
                                                                        usuarioTemp.getSenha(), usuarioTemp.getNivelAcesso(), db,
                                                                        matricula, curso, nivel);
                         usuarioLogado->setId(usuarioTemp.getId());
-                        std::cout << "Login bem-suce2dido! Bem-vindo, Pós-Graduando " << usuarioLogado->getNome() << ".\n"
+                        std::cout << "Login bem-sucedido! Bem-vindo, Pós-Graduando " << usuarioLogado->getNome() << ".\n"
                                   << std::endl;
                         break;
                     }

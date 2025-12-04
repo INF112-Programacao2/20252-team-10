@@ -136,9 +136,6 @@ bool Usuario::validarSenha(const std::string& senha) {
         return true;
 }
 
-bool Usuario::verificarSenha(std::string senha) {
-    return this->senha == senha;
-}
 
 //Implementacao do metodo para consultar reagentes no DB.
 void Usuario::consultarReagente() {
