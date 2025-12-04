@@ -65,11 +65,34 @@ public:
     void retirarReagente();                          // Realiza retirada de reagente
     void historicoRetiradas();                       // Exibe histórico de retiradas recentes
 
+<<<<<<< HEAD
     // Controle de acesso a reagentes restritos
     void acessarReagentesAlerta();                          // Exibe reagentes em alerta (crítico/vencido)
     void listarReagentesRestritos();                        // Lista apenas reagentes restritos
     void menuReagentesRestritos();                          // Menu de gestão de reagentes restritos
     void acessarReagenteRestrito(int idReagente) override;  // Acesso total (sem verificação de nível)
+=======
+    // sets
+    void setLaboratorio(Laboratorio *lab);
+
+    // cadastra um novo reagente no laboratorio gerenciado por este gestor
+    void cadastrarReagente();
+
+    // O Gestor tem acesso total
+    void acessarReagentesAlerta();
+    void listarReagentesRestritos();
+    void menuReagentesRestritos();
+    void acessarReagenteRestrito(int idReagente) override;
+    // Verifica se o usuário está associado a algum laboratório
+    bool estaAssociado() const;
+    void listarEstudantes();
+    void associarEstudantes();
+    static Gestor *getGestorById(int id);
+    static Estudante* getEstudanteById(int id);
+    static void carregarAssociacoes(Schema *db);
+
+    static void limparUsuarios();
+>>>>>>> a6a11f496ce95241ae2921c093c3f19909f84fd7
 };
 
 #endif
