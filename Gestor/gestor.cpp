@@ -403,7 +403,6 @@ void Gestor::carregarUsuarios(Schema *db)
 void Gestor::listarUsuarios()
 {
 
-
     // cabeçalho da tabela
     std::cout << "\n=============== USUÁRIOS ===============" << std::endl;
     std::cout << std::left
@@ -760,12 +759,12 @@ void Gestor::cadastrarReagente()
         std::cout << "Nome: ";
         // Le a linha inteira digitada pelo usuario inclusive espacos
         std::getline(std::cin, nome);
-        
+
         // Verifica se a string nao esta vazia
         // Se contiver texto sai do loop com break
-        if (!nome.empty()) 
+        if (!nome.empty())
         {
-            break; 
+            break;
         }
         // Se estiver vazia exibe mensagem de erro e repete o loop
         std::cout << "O nome nao pode ser vazio Tente novamente\n";
@@ -779,17 +778,17 @@ void Gestor::cadastrarReagente()
     while (true)
     {
         std::cout << "Escreva a data de Validade (AAAA-MM-DD), na ordem ano-mês-dia: ";
-        
+
         // Tenta ler a entrada no formato exato inteiro char inteiro char inteiro
         std::cin >> ano >> sep1 >> mes >> sep2 >> dia;
 
-        // Verifica se houve falha na leitura dos numeros, exemplo o usuario digitar letras 
-        if (std::cin.fail()) 
+        // Verifica se houve falha na leitura dos numeros, exemplo o usuario digitar letras
+        if (std::cin.fail())
         {
             std::cout << "Erro Digite apenas numeros para ano mes e dia\n";
-            std::cin.clear(); // Limpa o estado de erro do cin
+            std::cin.clear();  // Limpa o estado de erro do cin
             std::cin.ignore(); // Limpa o buffer
-            continue; // Retorna ao inicio do loop
+            continue;          // Retorna ao inicio do loop
         }
 
         // Verifica se os caracteres separadores sao hifens
@@ -797,85 +796,84 @@ void Gestor::cadastrarReagente()
         {
             std::cout << "Erro formato incorreto use hifens ex 2025-12-31\n";
             // Limpa o resto da linha caso tenha sobrado lixo no buffer
-            std::cin.ignore(); 
+            std::cin.ignore();
             continue;
         }
 
         // Verifica os limites logicos do Ano e do Mes
-        if (ano < 1900 || ano > 2100) 
+        if (ano < 1900 || ano > 2100)
         {
             std::cout << "Erro Ano deve ser entre 1900 e 2100\n";
             continue;
         }
-        if (mes < 1 || mes > 12) 
+        if (mes < 1 || mes > 12)
         {
             std::cout << "Erro Mes deve ser entre 1 e 12\n";
             continue;
         }
-        
+
         // Verifica limite minimo dos Dias
-        if (dia < 1) 
+        if (dia < 1)
         {
             std::cout << "Erro Dia invalido\n";
             continue;
         }
 
         // Logica especifica para verificar dias do mes de Fevereiro
-        if (mes == 2) 
+        if (mes == 2)
         {
             // Calcula se o ano e bissexto regra divisivel por 4 e nao por 100 ou divisivel por 400 (prog 1)
             bool bissexto = (ano % 4 == 0 && (ano % 100 != 0 || ano % 400 == 0));
             // Define o limite de dias com base no ano bissexto
             int limite = bissexto ? 29 : 28;
-            
-            if (dia > limite) 
+
+            if (dia > limite)
             {
                 std::cout << "Erro Dia invalido para Fevereiro neste ano\n";
                 continue;
             }
         }
         // Verifica limites para meses com 30 dias Abril Junho Setembro Novembro
-        else if (mes == 4 || mes == 6 || mes == 9 || mes == 11) 
+        else if (mes == 4 || mes == 6 || mes == 9 || mes == 11)
         {
-            if (dia > 30) 
+            if (dia > 30)
             {
                 std::cout << "Erro Este mes tem apenas 30 dias\n";
                 continue;
             }
         }
         // Verifica limites para os demais meses que tem 31 dias
-        else 
+        else
         {
-            if (dia > 31) 
+            if (dia > 31)
             {
                 std::cout << "Erro Dia invalido Maximo 31\n";
                 continue;
             }
         }
 
-    
         // Reconstrutroi a string Data para salvar no banco de dados posteriormente
         // Converte os numeros para texto
         std::string sMes = std::to_string(mes);
         std::string sDia = std::to_string(dia);
 
         // Se o mes for menor que 10 ex 5 adiciona um 0 antes vira 05
-        if (mes < 10) 
+        if (mes < 10)
         {
             sMes = "0" + sMes;
         }
 
         // Se o dia for menor que 10 ex 9 adiciona um 0 antes vira 09
-        if (dia < 10) 
+        if (dia < 10)
         {
             sDia = "0" + sDia;
         }
-        
+
         // Junta tudo no formato final AAAA-MM-DD
         dataValidade = std::to_string(ano) + "-" + sMes + "-" + sDia;
         // Adiciona as partes na variavel final
         dataValidade = std::to_string(ano) + "-" + sMes + "-" + sDia;
-        
+
         break; // Sai do loop pois a data esta correta
     }
 
@@ -884,23 +882,26 @@ void Gestor::cadastrarReagente()
     {
         std::cout << "Quantidade (numero inteiro maior que 0): ";
         std::cin >> quantidade;
-        
+
         // Verifica se a ultima tentativa de leitura do cin falhou
-        if (std::cin.fail()) {
-            
-            // Reseta os estados de erro internos do cin 
-            std::cin.clear(); 
-            
-            std::cin.ignore(); // Limpa sobra de lixo 
-            
+        if (std::cin.fail())
+        {
+
+            // Reseta os estados de erro internos do cin
+            std::cin.clear();
+
+            std::cin.ignore(); // Limpa sobra de lixo
+
             // Informa ao usuario que o dado digitado nao e valido
             std::cout << "Entrada invalida Digite apenas numeros\n";
         }
         // Verifica se o valor e positivo
-        else if (quantidade <= 0) {
+        else if (quantidade <= 0)
+        {
             std::cout << "A quantidade deve ser maior que zero\n";
         }
-        else {
+        else
+        {
             break; // Entrada valida
         }
     }
@@ -912,21 +913,23 @@ void Gestor::cadastrarReagente()
         std::cin >> quantidadeCritica;
 
         // Verifica erro de entrada
-        if (std::cin.fail()) {
+        if (std::cin.fail())
+        {
             std::cin.clear();
-            std::cin.ignore();  
+            std::cin.ignore();
             std::cout << "Entrada invalida Digite apenas numeros\n";
-        } 
-        // Verifica se o valor e positivo
-        else if (quantidadeCritica <= 0) {
-             std::cout << "A quantidade critica deve ser maior que zero\n";
         }
-        else {
+        // Verifica se o valor e positivo
+        else if (quantidadeCritica <= 0)
+        {
+            std::cout << "A quantidade critica deve ser maior que zero\n";
+        }
+        else
+        {
             break; // Entrada valida
         }
     }
 
-    
     std::cin.ignore(); // Limpa sobra de lixo
 
     // Inicio do loop para validacao do Local de Armazenamento
@@ -935,7 +938,8 @@ void Gestor::cadastrarReagente()
         std::cout << "Local de Armazenamento: ";
         std::getline(std::cin, local);
         // Verifica se string nao esta vazia
-        if (!local.empty()) break;
+        if (!local.empty())
+            break;
         std::cout << "O local nao pode ser vazio\n";
     }
 
@@ -946,44 +950,53 @@ void Gestor::cadastrarReagente()
         std::cin >> nivelAcesso;
 
         // Verifica erro de entrada nao numerica
-        if (std::cin.fail()) {
+        if (std::cin.fail())
+        {
             std::cin.clear();
             std::cin.ignore();
             std::cout << "Entrada invalida Digite um numero\n";
         }
         // Verifica se esta dentro das opcoes validas 1 2 ou 3
-        else if (nivelAcesso < 1 || nivelAcesso > 3) {
+        else if (nivelAcesso < 1 || nivelAcesso > 3)
+        {
             std::cout << "Opcao invalida Digite 1 2 ou 3\n";
         }
-        else {
+        else
+        {
             break; // Entrada valida
         }
     }
-    
+
     // Limpa buffer apos leitura de inteiro
-   std::cin.ignore();
+    std::cin.ignore();
 
     // Validacao da Unidade de Medida
-    while(true) {
+    while (true)
+    {
         std::cout << "Unidade de Medida (ex ml g): ";
         std::getline(std::cin, unidade);
-        if(!unidade.empty()) break;
+        if (!unidade.empty())
+            break;
         std::cout << "Unidade nao pode ser vazia\n";
     }
 
     // Validacao da Marca
-    while(true) {
+    while (true)
+    {
         std::cout << "Marca: ";
         std::getline(std::cin, marca);
-        if(!marca.empty()) break;
+        if (!marca.empty())
+            break;
         std::cout << "Marca nao pode ser vazia\n";
     }
 
     // Validacao do Codigo de Referencia
-    while(true) {
+    while (true)
+    {
         std::cout << "Codigo de Referencia: ";
         std::getline(std::cin, codRef);
-        if(!codRef.empty()) break;
+        if (!codRef.empty())
+            break;
         std::cout << "Codigo nao pode ser vazio\n";
     }
 
@@ -995,16 +1008,19 @@ void Gestor::cadastrarReagente()
         std::cin >> tipo;
 
         // Verifica entrada invalida
-        if (std::cin.fail()) {
-             std::cin.clear();
-             std::cin.ignore();
-             std::cout << "Entrada invalida\n";
+        if (std::cin.fail())
+        {
+            std::cin.clear();
+            std::cin.ignore();
+            std::cout << "Entrada invalida\n";
         }
         // Verifica se a opcao digitada e 1 ou 2
-        else if (tipo != 1 && tipo != 2) {
-             std::cout << "Tipo invalido Digite 1 ou 2\n";
+        else if (tipo != 1 && tipo != 2)
+        {
+            std::cout << "Tipo invalido Digite 1 ou 2\n";
         }
-        else {
+        else
+        {
             break; // Entrada valida
         }
     }
@@ -1016,18 +1032,19 @@ void Gestor::cadastrarReagente()
     std::string estadoFisico;
 
     // Bloco logico para Reagente Liquido
-    if (tipo == 1) 
-    { 
+    if (tipo == 1)
+    {
         // Validacao da Densidade
         while (true)
         {
             std::cout << "Densidade: ";
             std::cin >> densidade;
             // Verifica entrada e valor positivo
-            if (!std::cin.fail() && densidade > 0) break;
-            
+            if (!std::cin.fail() && densidade > 0)
+                break;
+
             // Tratamento de erro
-            std::cin.clear(); 
+            std::cin.clear();
             std::cin.ignore();
             std::cout << "Densidade invalida Digite numero maior que 0\n";
         }
@@ -1037,47 +1054,50 @@ void Gestor::cadastrarReagente()
             std::cout << "Volume: ";
             std::cin >> volume;
             // Verifica entrada e valor positivo
-            if (!std::cin.fail() && volume > 0) break;
-            
+            if (!std::cin.fail() && volume > 0)
+                break;
+
             // Tratamento de erro
-            std::cin.clear(); 
+            std::cin.clear();
             std::cin.ignore();
             std::cout << "Volume invalido Digite numero maior que 0\n";
         }
     }
     // Bloco logico para Reagente Solido
-    else if (tipo == 2) 
-    { 
+    else if (tipo == 2)
+    {
         // Validacao da Massa
         while (true)
         {
             std::cout << "Massa: ";
             std::cin >> massa;
             // Verifica entrada e valor positivo
-            if (!std::cin.fail() && massa > 0) break;
-            
+            if (!std::cin.fail() && massa > 0)
+                break;
+
             // Tratamento de erro
-            std::cin.clear(); 
+            std::cin.clear();
             std::cin.ignore();
             std::cout << "Massa invalida Digite numero maior que 0\n";
         }
-        
+
         // Limpa buffer antes de ler string
-        std::cin.ignore(); 
-        
+        std::cin.ignore();
+
         // Validacao do Estado Fisico
         while (true)
         {
             std::cout << "Estado Fisico (ex po cristal): ";
             std::getline(std::cin, estadoFisico);
-            if (!estadoFisico.empty()) break;
+            if (!estadoFisico.empty())
+                break;
             std::cout << "Estado fisico nao pode ser vazio\n";
         }
     }
 
     // Bloco de Insercao no Banco de Dados protegido por try catch
     try
-    {sud
+    {
         // Obtem a tabela Reagente do banco
         Table reagenteTable = db->getTable("Reagente");
 
@@ -1085,9 +1105,9 @@ void Gestor::cadastrarReagente()
         Result res = reagenteTable.insert(
                                       "nome", "validade", "quantidade", "quantidadeCritica",
                                       "localArmazenamento", "nivelAcesso", "unidadeMedida", "marca", "referencia", "laboratorio_id")
-                                      .values(nome, dataValidade, quantidade, quantidadeCritica,
-                                      local, nivelAcesso, unidade, marca, codRef, this->laboratorio->getId())
-                                      .execute();
+                         .values(nome, dataValidade, quantidade, quantidadeCritica,
+                                 local, nivelAcesso, unidade, marca, codRef, this->laboratorio->getId())
+                         .execute();
 
         // Recupera o ID gerado automaticamente pelo banco para o novo reagente
         int reagenteId = res.getAutoIncrementValue();
@@ -2115,10 +2135,9 @@ void Gestor::carregarAssociacoes(Schema *db)
     {
         Table tableAssociado = db->getTable("Associado");
         RowResult result = tableAssociado.select("estudante_id", "laboratorio_id", "papel").execute();
-        int count = result.count();
-        for (int i = 0; i < count; i++)
+
+        for (Row row : result)
         {
-            Row row = result.fetchOne(); // Pega a linha i
             int estudanteId = row[0].get<int>();
             int laboratorioId = row[1].get<int>();
             std::string papel = row[2].get<std::string>();
@@ -2173,4 +2192,32 @@ void Gestor::carregarAssociacoes(Schema *db)
     {
         std::cerr << "Erro ao carregar associações: " << err.what() << std::endl;
     }
+}
+
+void Gestor::limparUsuarios()
+{
+    for (Usuario *u : usuariosCarregados)
+        delete u;
+    for (Gestor *g : gestores)
+        delete g;
+    for (Estudante *e : estudantes)
+        delete e;
+    for (PosGraduacao *p : posGraduandos)
+        delete p;
+
+    usuariosCarregados.clear();
+    gestores.clear();
+    estudantes.clear();
+    posGraduandos.clear();
+}
+
+Estudante* Gestor::getEstudanteById(int id)
+{
+    for (Estudante* e : estudantes)
+        if (e->getId() == id)
+            return e;
+    for (PosGraduacao* p : posGraduandos)
+        if (p->getId() == id)
+            return p;
+    return nullptr;
 }

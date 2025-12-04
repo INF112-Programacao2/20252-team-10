@@ -16,7 +16,6 @@ private:
 public:
     // Construtor
     Gestor(std::string nome, std::string email, std::string senha, int nivelAcesso, Schema *db);
-
     // Vetores estáticos dos usuários
     static std::vector<Usuario *> usuariosCarregados;
     static std::vector<Gestor *> gestores;
@@ -66,6 +65,7 @@ public:
     void deletarGestor();
     void deletarEstudante();
     static Gestor *getGestorById(int id);
+    static Estudante* getEstudanteById(int id);
     static void carregarAssociacoes(Schema *db);
 
     static void limparUsuarios();
