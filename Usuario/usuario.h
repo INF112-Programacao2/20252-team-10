@@ -65,12 +65,8 @@ class Usuario{
         static bool fazerLogin(Schema *db, const std::string &email, const std::string &senha, Usuario * usuarioLogado);
         static bool validarEmail(const std::string& email);
         static bool validarSenha(const std::string& senha);
-        bool verificarSenha(const std::string senha);
-        void alterarSenha(const std::string senhaAntiga, const std::string senhaNova);
-
         //Consulta e lista os reagentes do banco de dados, respeitando o nivel de acesso do usuario
         virtual void consultarReagente();
-
         //Metodo virtual puro que obriga todas as classes filhas a implementarem
         virtual void acessarReagenteRestrito(int idReagente);
 };

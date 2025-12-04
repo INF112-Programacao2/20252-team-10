@@ -77,12 +77,6 @@ public:
     // Pega as 10 retiradas mais recentes
     std::vector<Retirada *> getHistoricoRecente();
 
-    // Adiciona usuário ao laboratório
-    std::string adicionarUsuario(Usuario *usuario);
-
-    // Remove usuário do laboratório (se não tiver retiradas pendentes)
-    std::string removerUsuario(Usuario *usuario);
-
     // Métodos de alerta
     void carregarAlertasDB();
     std::vector<Reagente *> getReagentesCriticos(); // Estoque baixo

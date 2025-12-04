@@ -62,8 +62,6 @@ public:
     bool estaAssociado() const;
     void listarEstudantes();
     void associarEstudantes();
-    void deletarGestor();
-    void deletarEstudante();
     static Gestor *getGestorById(int id);
     static Estudante* getEstudanteById(int id);
     static void carregarAssociacoes(Schema *db);
