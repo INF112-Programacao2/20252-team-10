@@ -59,6 +59,7 @@ void menuGestor(Gestor *gestor)
             std::cout << "9. Sair do laboratório\n";                     // Sai da gestão do laboratório (não desassocia automaticamente)
             std::cout << "10. Listar usuários do sistema\n";             // Lista todos os usuários cadastrados (gestores e estudantes)
             std::cout << "11. Editar laboratório\n";                     // Editar dados do laboratório
+            std::cout << "12. Estatísticas do laboratório\n";
         }
         else
         { // Se nao estiver associado, imprime um menu para quem não é associaod a nada
@@ -137,6 +138,11 @@ void menuGestor(Gestor *gestor)
     case 11:
         if (associado)
              gestor->editarLaboratorio();  
+        break;
+
+    case 12:
+        if (associado)
+            gestor->acessarEstatisticas();
         break;
     
     case 0:

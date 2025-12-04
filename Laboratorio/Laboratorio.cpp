@@ -1144,3 +1144,176 @@ bool Laboratorio::editarLaboratorio(const std::string& novoNome, const std::stri
         return false;
     }
 }
+
+// getEstatisticas: Retorna estatísticas detalhadas do laboratório
+    std::string Laboratorio::getEstatisticas() {
+    std::stringstream estatisticas;
+    
+    estatisticas << "\n=== ESTATÍSTICAS DO LABORATÓRIO ===\n";
+    estatisticas << "Nome: " << this->nome << "\n";
+    estatisticas << "Departamento: " << this->departamento << "\n";
+    estatisticas << "ID: " << this->id << "\n\n";
+    
+    // Estatísticas de usuários
+    estatisticas << "--- USUÁRIOS ---\n";
+    estatisticas << "Total de gestores: " << this->gestores.size() << "\n";
+    estatisticas << "Total de estudantes: " << this->getTotalEstudantes() << "\n";
+    estatisticas << "  • Graduação: " << this->estudantesGraduacao.size() << "\n";
+    estatisticas << "  • Pós-graduação: " << this->estudantesPosGraduacao.size() << "\n";
+    estatisticas << "Total geral de usuários: " << this->getTotalUsuarios() << "\n\n";
+    
+    // Estatísticas de reagentes
+    estatisticas << "--- REAGENTES ---\n";
+    estatisticas << "Total de reagentes: " << this->reagentes.size() << "\n";
+    
+    if (!this->reagentes.empty()) {
+        int liquidos = 0;
+        int solidos = 0;
+        int restritos = 0;
+        int criticos = 0;
+        int vencidos = 0;
+        int quantidadeTotal = 0;
+        
+        try {
+            // Consultar banco para contar líquidos e sólidos
+            Table liquidoTable = db->getTable("ReagenteLiquido");
+            Table solidoTable = db->getTable("ReagenteSolido");
+            
+            std::vector<int> idsLiquidos;
+            std::vector<int> idsSolidos;
+            
+            // Coletar IDs de líquidos
+            RowResult resLiquidos = liquidoTable.select("id").execute();
+            for (Row row : resLiquidos) {
+                idsLiquidos.push_back(row[0].get<int>());
+            }
+            
+            // Coletar IDs de sólidos
+            RowResult resSolidos = solidoTable.select("id").execute();
+            for (Row row : resSolidos) {
+                idsSolidos.push_back(row[0].get<int>());
+            }
+            
+            // Analisar cada reagente do laboratório
+            for (Reagente* r : this->reagentes) {
+                int reagenteId = r->getId();
+                
+                // Verificar se é líquido (está na tabela ReagenteLiquido)
+                bool ehLiquido = false;
+                for (int id : idsLiquidos) {
+                    if (id == reagenteId) {
+                        ehLiquido = true;
+                        liquidos++;
+                        break;
+                    }
+                }
+                
+                // Se não é líquido, verificar se é sólido
+                if (!ehLiquido) {
+                    for (int id : idsSolidos) {
+                        if (id == reagenteId) {
+                            solidos++;
+                            break;
+                        }
+                    }
+                }
+                
+                // Contar restritos (nível de acesso 1)
+                if (r->getNivelAcesso() == 1) restritos++;
+                
+                // Contar críticos
+                if (r->verificarNivelCritico()) criticos++;
+                
+                // Contar vencidos
+                if (r->estaVencido()) vencidos++;
+                
+                // Somar quantidade total
+                quantidadeTotal += r->getQuantidade();
+            }
+            
+            estatisticas << "  • Líquidos: " << liquidos << "\n";
+            estatisticas << "  • Sólidos: " << solidos << "\n";
+            estatisticas << "  • Restritos: " << restritos << "\n";
+            estatisticas << "  • Com estoque crítico: " << criticos << "\n";
+            estatisticas << "  • Vencidos: " << vencidos << "\n";
+            estatisticas << "  • Quantidade total em estoque: " << quantidadeTotal << " unidades\n";
+            
+        } catch (const mysqlx::Error &err) {
+            estatisticas << "  • Erro ao consultar tipos de reagentes: " << err.what() << "\n";
+        }
+    }
+    
+    // Estatísticas de retiradas (do banco, não da memória)
+    estatisticas << "\n--- RETIRADAS ---\n";
+    try {
+        Table retiradaTable = db->getTable("Retirada");
+        Table reagenteTable = db->getTable("Reagente");
+        
+        // Contar retiradas deste laboratório
+        RowResult resRetiradas = retiradaTable
+            .select("COUNT(*) as total")
+            .where("reagente_id IN (SELECT id FROM Reagente WHERE laboratorio_id = :lab_id)")
+            .bind("lab_id", this->id)
+            .execute();
+        
+        if (resRetiradas.count() > 0) {
+            Row row = resRetiradas.fetchOne();
+            int totalRetiradas = row[0].get<int>();
+            estatisticas << "Total de retiradas registradas: " << totalRetiradas << "\n";
+            
+            // Última retirada
+            RowResult ultimaRetirada = retiradaTable
+                .select("dataHoraRetirada")
+                .where("reagente_id IN (SELECT id FROM Reagente WHERE laboratorio_id = :lab_id)")
+                .orderBy("dataHoraRetirada DESC")
+                .limit(1)
+                .bind("lab_id", this->id)
+                .execute();
+            
+            if (ultimaRetirada.count() > 0) {
+                Row ultima = ultimaRetirada.fetchOne();
+                estatisticas << "Última retirada: " << ultima[0].get<std::string>() << "\n";
+            }
+        }
+    } catch (const mysqlx::Error &err) {
+        estatisticas << "Erro ao consultar retiradas: " << err.what() << "\n";
+    }
+    
+    // Estatísticas de alertas
+    estatisticas << "\n--- ALERTAS ---\n";
+    int alertasAtivos = 0;
+    for (Alerta* a : this->alertas) {
+        if (a->getSituacao()) alertasAtivos++;
+    }
+    estatisticas << "Alertas ativos: " << alertasAtivos << " de " << this->alertas.size() << "\n";
+    
+    // Resumo de reagentes críticos
+    std::vector<Reagente*> criticosLista = this->getReagentesCriticos();
+    if (!criticosLista.empty()) {
+        estatisticas << "\n--- REAGENTES COM ESTOQUE CRÍTICO ---\n";
+        for (Reagente* r : criticosLista) {
+            estatisticas << "  • " << r->getNome() << ": " 
+                        << r->getQuantidade() << " " << r->getUnidadeMedida()
+                        << " (mínimo: " << r->getQuantidadeCritica() << ")\n";
+        }
+    }
+    
+    // Resumo de reagentes vencidos
+    std::vector<Reagente*> vencidosLista = this->getReagentesVencidos();
+    if (!vencidosLista.empty()) {
+        estatisticas << "\n--- REAGENTES VENCIDOS ---\n";
+        for (Reagente* r : vencidosLista) {
+            estatisticas << "  • " << r->getNome() << ": válido até " 
+                        << r->getDataValidade() << "\n";
+        }
+    }
+    
+    // Data/hora atual
+    time_t agora = time(nullptr);
+    char buffer[80];
+    strftime(buffer, sizeof(buffer), "%d/%m/%Y %H:%M:%S", localtime(&agora));
+    estatisticas << "\nRelatório gerado em: " << buffer << "\n";
+    estatisticas << "====================================\n";
+    
+    return estatisticas.str();
+}

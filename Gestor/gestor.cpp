@@ -804,6 +804,16 @@ void Gestor::editarLaboratorio() {
     }
 }
 
+// acessarEstatisticas: Exibe estatísticas do laboratório
+void Gestor::acessarEstatisticas() {
+    if (this->laboratorio == nullptr) {
+        std::cout << "Erro: Você precisa estar associado a um laboratório para ver estatísticas.\n";
+        return;
+    }
+    
+    std::cout << laboratorio->getEstatisticas();
+}
+
 void Gestor::associarEstudanteAoLaboratorio(Estudante *estudante, int idLaboratorio, const std::string &papel)
 {
     Laboratorio *escolhido = nullptr;
