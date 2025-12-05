@@ -103,8 +103,6 @@ make all
 Para executar:
 ```bash
 ./a.out
-```![diagrama](https://github.com/user-attachments/assets/ffbfc8c9-2f32-488e-afee-f8ff6e3af01f)
-![diagrama](https://github.com/user-attachments/assets/4fd0d338-993e-4829-8cc7-370974ea232e)
 
 
 Para limpar arquivos temporários:
