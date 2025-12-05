@@ -16,6 +16,8 @@ Usuario::Usuario()
     : id(-1), nome(""), email(""), senha(""), nivelAcesso(0), db(nullptr) {}
 
 
+// Destrutor
+Usuario::~Usuario() {}
 
 // Gets
 // Retorna o nome do Usuario
@@ -205,7 +207,4 @@ void Usuario::consultarReagente() {
 
 void Usuario::acessarReagenteRestrito(int idReagente){
    std::cout << "Somente gestores podem acessar reagentes Restritos" << std::endl;
-}
-void Usuario::menuPrincipal(){
-    
 }

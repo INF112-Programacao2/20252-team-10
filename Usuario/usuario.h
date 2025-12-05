@@ -28,7 +28,7 @@ class Usuario{
         Usuario(std::string nome, std::string email, std::string senha, int nivelAcesso, Schema *db); // Com os parametros
         Usuario();                                                                                    // Construtor sem parâmetros
         // Destrutor
-        virtual ~Usuario() = default;
+        virtual ~Usuario();
 
         // Gets
         // Retorna nome
@@ -69,7 +69,6 @@ class Usuario{
         virtual void consultarReagente();
         //Metodo virtual puro que obriga todas as classes filhas a implementarem
         virtual void acessarReagenteRestrito(int idReagente);
-        virtual void menuPrincipal();
 };
 
 

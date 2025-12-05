@@ -16,16 +16,174 @@ bool confirmacaoMenu()
     return (resposta == 'S' || resposta == 's');
 }
 
-void acessarMenu(Usuario *usuario) // Função para acessar o menu do usuário
+void menuGestor(Gestor *gestor)
 {
-    if (!usuario)
+    int opcao = 0;
+    do
     {
-        std::cout << "Erro: usuario nulo!\n";
-        return;
-    }
-    usuario->menuPrincipal(); // POLIMORFISMO!!!// Chama o menu principal do usuário logado
-}
+        std::cout << "\n===== Menu Gestor =====\n";
+        // Imprime os dados dos gestor em uso
+        std::cout << "Seja bem-vindo " << gestor->getNome() << " novamente!\n";
+        std::cout << "Dados do usuário: ("
+                  // Imprime o ID do usuario
+                  << gestor->getId() << ") "
+                  // Imprime o nome do usuario
+                  << gestor->getNome() << " - "
+                  // Imprime o email do usuario
+                  << gestor->getEmail() << " - ";
+        // Imprime o nome do laboratorio
+        if (gestor->getLaboratorio())
+        {
+            std::cout << gestor->getLaboratorio()->getNome() << " - \n";
+        }
 
+        // Imprime o nivel de acesso do usuario, em forma de texto, que representa o que é no sistema
+        std::cout << ((gestor->getNivelAcesso() == 1)   ? "Gestor\n"
+                      : (gestor->getNivelAcesso() == 2) ? "Pós-graduação\n"
+                      : (gestor->getNivelAcesso() == 3) ? "Graduação\n"
+                                                        : "Desconhecido\n");
+        // Atributo que recebe true se estiver associado a um laboratorio e false, caso contrário
+        bool associado = gestor->estaAssociado();
+
+        // Se for associado, imprime um menu especifico para este acso
+        if (associado)
+        {
+            std::cout << "1. Cadastrar usuário\n";                // Adiciona novo usuário (Gestor, Pós-graduação, Graduação)
+            std::cout << "2. Gerenciar laboratório\n";            // Acessa o submenu de gestão do laboratório: dados, estatísticas, reagentes (cadastrar, editar, excluir)
+            std::cout << "3. Listar estudantes do laboratório\n"; // Mostra todos os estudantes atualmente associados ao laboratório
+            std::cout << "4. Acessar reagentes em alerta\n";      // Mostra reagentes próximos da validade ou com quantidade crítica
+            std::cout << "5. Acessar reagentes restritos\n";      // Acessa reagentes restritos que exigem autorização especial
+            std::cout << "6. Retirar reagente\n";                 // Retirar reagentes do laboratório (pede confirmação e registra retirada)
+            std::cout << "7. Deletar usuário\n";                  // Remove usuário do sistema completamente (pede confirmação)
+            std::cout << "8. Sair do laboratório\n";              // Sai da gestão do laboratório (não desassocia automaticamente)
+            std::cout << "9. Listar usuários do sistema\n";       // Lista todos os usuários cadastrados (gestores e estudantes)
+            std::cout << "10. Editar laboratório\n";              // Editar dados do laboratório
+            std::cout << "11. Estatísticas do laboratório\n";     // Estatísticas gerais
+            std::cout << "12. Histórico de retiradas\n";          // Acessar histórico de retiradas
+        }
+        else
+        { // Se nao estiver associado, imprime um menu para quem não é associaod a nada
+
+            // Menu quando o gestor não está associado a nenhum laboratório
+            std::cout << "1. Cadastrar usuário\n";          // Associa o gestor a um laboratório disponível (pede confirmação)
+            std::cout << "2. Associar laboratório\n";       // Cria um novo usuario no sistema (sem associação inicial)
+            std::cout << "3. Listar usuários do sistema\n"; // Mostra todos os usuários cadastrados
+            std::cout << "4. Deletar usuário\n";            // Exclui um usuário do sistema (pede confirmação)
+            std::cout << "5. Criar laboratório\n";          // Criar novo laboratório
+        }
+        std::cout << "0. Sair do sistema\n"; // Encerra o menu principal
+        std::cout << "Escolha uma opção: ";
+        std::cin >> opcao;
+        switch (opcao)
+        {
+        case 1:
+            if (associado)
+                gestor->cadastrarUsuario();
+            else
+                gestor->associarLaboratorio();
+            break;
+
+        case 2:
+            if (associado)
+                gestor->gerenciarLaboratorio();
+            else
+                gestor->cadastrarUsuario();
+            break;
+
+        case 3:
+            if (associado)
+                gestor->getLaboratorio()->listarEstudantes();
+            else
+                gestor->listarUsuarios();
+            break;
+
+        case 4:
+            if (associado)
+                gestor->acessarReagentesAlerta();
+            else
+                gestor->deletarUsuario();
+            break;
+
+        case 5:
+            if (associado)
+                gestor->menuReagentesRestritos();
+            else
+                gestor->criarLaboratorio();
+            break;
+
+        case 6:
+            if (associado)
+                gestor->retirarReagente();
+            break;
+
+        case 7:
+            if (associado)
+                gestor->deletarUsuario();
+            break;
+
+        case 8:
+            if (associado)
+                gestor->sairLaboratorio();
+            break;
+
+        case 9:
+            if (associado)
+                gestor->listarUsuarios();
+            break;
+
+        case 10:
+            if (associado)
+                gestor->editarLaboratorio();
+            break;
+
+        case 11:
+            if (associado)
+                gestor->acessarEstatisticas();
+            break;
+
+        case 12:
+            if (associado)
+                gestor->historicoRetiradas();
+            break;
+       
+
+        case 0:
+            std::cout << "Saindo...\n";
+            break;
+
+        default:
+            std::cout << "Opção inválida! Tente novamente.\n";
+        }
+
+    } while (opcao != 0);
+};
+
+void menuEstudante(Estudante *estudante)
+{
+    int opcao = 0;
+
+    do
+    {
+        std::cout << "\n===== Menu Estudante =====\n";
+        std::cout << "1. Meus laboratórios\n"; // Lista laboratórios aos quais o estudante está associado
+        std::cout << "0. Sair\n";              // Sai do menu
+
+        std::cout << "Escolha uma opção: ";
+        std::cin >> opcao;
+
+        switch (opcao)
+        {
+        case 1:
+            estudante->acessarLaboratorios(); // Dentro dessa função, o usuário pode acessar laboratório, listar usuários, reagentes, filtrar, etc.
+            break;
+        case 0:
+            std::cout << "Saindo do menu do estudante...\n";
+            break;
+        default:
+            std::cout << "Opção inválida! Tente novamente.\n";
+        }
+    } while (opcao != 0);
+}
 int main()
 {
     Schema *db = nullptr;
@@ -86,7 +244,6 @@ int main()
             gestorAdmin.setId(row[0]);      // atualiza o ID do objeto gestorAdmin com o ID do banco de dados
             std::cout << "Gestor já existe no banco. ID: "
                       << gestorAdmin.getId() << std::endl; // Informa que o gestor já existe
-            std::cout << "Credenciais do gestor padrão - Email: " << gestorAdmin.getEmail() << " Senha: " << gestorAdmin.getSenha() << std::endl;
         }
     }
     catch (const mysqlx::Error &err)
@@ -109,7 +266,7 @@ int main()
               << std::endl;
     std::string email, senha;               // Variáveis para armazenar as credenciais de login
     std::unique_ptr<Usuario> usuarioLogado; // Ponteiro inteligente para o usuário logado
-    Usuario usuarioTemp("", "", "", 0, db); // Objeto temporário para validação e login
+    Usuario usuarioTemp;                    // Objeto temporário para validação e login
 
     // Executa até o login seja realizado com sucesso
     while (true)
@@ -127,66 +284,66 @@ int main()
             if (Usuario::fazerLogin(db, email, senha, &usuarioTemp))
             { // Tenta fazer o login
                 // Se o login for bem-sucedido, cria o objeto apropriado com base no nível de acesso
-
-                int id = usuarioTemp.getId();                        // Obtém o ID do usuário logado
-                Usuario *encontrado = Gestor::buscarUsuarioById(id); // Busca o usuário pelo ID
-                if (!encontrado)
-                {
-                    std::cerr << "Erro: Usuário não encontrado na lista de usuários carregados.\n";
-                    continue; // Volta para o início do loop de login
-                }
-                int nivelAcessoColetado = encontrado->getNivelAcesso();
+                int nivelAcessoColetado = usuarioTemp.getNivelAcesso();
                 if (nivelAcessoColetado == 1)
                 { // Gestor
-                    Gestor *g = dynamic_cast<Gestor *>(encontrado); // Tenta converter para Gestor
-
-                    if (!g) // Verifica se a conversão foi bem-sucedida 
-                    {
-                        std::cerr << "Erro interno: Tipo Gestor esperado.\n";
-                        continue;
-                    }
-
-                    usuarioLogado = std::make_unique<Gestor>(*g); // Cria uma cópia do Gestor encontrado ao ponteiro inteligente
-
-                    std::cout << "Login bem-sucedido! Bem-vindo, Gestor "
-                              << usuarioLogado->getNome() << ".\n\n";
+                    // Instancia um objeto Gestor no ponteiro inteligente
+                    usuarioLogado = std::make_unique<Gestor>(usuarioTemp.getNome(), usuarioTemp.getEmail(),
+                                                             usuarioTemp.getSenha(), usuarioTemp.getNivelAcesso(), db);
+                    usuarioLogado->setId(usuarioTemp.getId());
+                    std::cout << "Login bem-sucedido! Bem-vindo, Gestor " << usuarioLogado->getNome() << ".\n"
+                              << std::endl;
                     break;
                 }
                 else if (nivelAcessoColetado == 2 || nivelAcessoColetado == 3)
                 { // Pos-Graduando ou Aluno de Graduacao
+                    // Carrega dados específicos de estudante do banco antes de instanciar a classe derivada
+                    std::string matricula, curso, nivel;
+                    try
+                    {
+                        // Acessa a tabela de Estudante
+                        Table estudanteTable = db->getTable("Estudante");
+                        // Faz uma consulta com os dados que necessitam
+                        RowResult resultadoEstudante = estudanteTable
+                                                           .select("matricula", "curso", "nivel")
+                                                           .where("id = :id")               // Com id do usuário que fez login
+                                                           .bind("id", usuarioTemp.getId()) // Seta o valor de id
+                                                           .execute();                      // Executa a consulta
+
+                        // Se o numero de linhas for maior que 0, armazena as informações de acordo com os tipos do C++
+                        if (resultadoEstudante.count() > 0)
+                        {
+                            Row estudanteRow = resultadoEstudante.fetchOne(); // Pega o resultado da primeira linha
+                            matricula = estudanteRow[0].get<std::string>();   // Copia a matricula e coloca na variavel
+                            curso = estudanteRow[1].get<std::string>();       // Copia a curso e coloca na variavel
+                            nivel = estudanteRow[2].get<std::string>();       // Copia a nivel e coloca na variavel
+                        }
+                    }
+                    catch (const mysqlx::Error &err)
+                    {
+                        std::cerr << "Erro ao carregar dados do estudante: " << err.what() << std::endl;
+                    }
+
                     // Instancia um objeto Estudante ou PosGraduacao no ponteiro inteligente
                     if (nivelAcessoColetado == 2)
                     {
-                        // POS-GRADUAÇÃO
-                        PosGraduacao *p = dynamic_cast<PosGraduacao *>(encontrado); // Tenta converter para PosGraduacao 
-
-                        if (!p) // Verifica se a conversão foi bem-sucedida 
-                        {
-                            std::cerr << "Erro interno: Tipo Pós-Graduação esperado.\n";
-                            continue;
-                        }
-
-                        usuarioLogado = std::make_unique<PosGraduacao>(*p); // Cria uma cópia do PosGraduacao encontrado ao ponteiro inteligente
-
-                        std::cout << "Login bem-sucedido! Bem-vindo, Pós-Graduando "
-                                  << usuarioLogado->getNome() << ".\n\n";
+                        usuarioLogado = std::make_unique<PosGraduacao>(usuarioTemp.getNome(), usuarioTemp.getEmail(),
+                                                                       usuarioTemp.getSenha(), usuarioTemp.getNivelAcesso(), db,
+                                                                       matricula, curso, nivel);
+                        usuarioLogado->setId(usuarioTemp.getId());
+                        std::cout << "Login bem-sucedido! Bem-vindo, Pós-Graduando " << usuarioLogado->getNome() << ".\n"
+                                  << std::endl;
                         break;
                     }
                     else
                     {
-                        // ESTUDANTE GRADUAÇÃO
-                        Estudante *e = dynamic_cast<Estudante *>(encontrado); // Tenta converter para Estudante
-
-                        if (!e) // Verifica se a conversão foi bem-sucedida
-                        {
-                            std::cerr << "Erro interno: Tipo Estudante esperado.\n";
-                            continue;
-                        }
-
-                        usuarioLogado = std::make_unique<Estudante>(*e); // Cria uma cópia do Estudante encontrado ao ponteiro inteligente
-
-                        std::cout << "Login bem-sucedido! Bem-vindo, Estudante "
-                                  << usuarioLogado->getNome() << ".\n\n";
+                        // Intancia estudante (graduação)
+                        usuarioLogado = std::make_unique<Estudante>(usuarioTemp.getNome(), usuarioTemp.getEmail(),
+                                                                    usuarioTemp.getSenha(), usuarioTemp.getNivelAcesso(), db,
+                                                                    matricula, curso, nivel);
+                        usuarioLogado->setId(usuarioTemp.getId());
+                        std::cout << "Login bem-sucedido! Bem-vindo, Aluno de Graduação " << usuarioLogado->getNome() << ".\n"
+                                  << std::endl;
                         break;
                     }
                 }
@@ -211,10 +368,35 @@ int main()
     }
     if (usuarioLogado)
     {
-        acessarMenu(usuarioLogado.get()); // Chama o menu principal do usuário logado -
-        // (DETALHE: POLIMORFISMO ACONTECE AQUI, COMO USADO COMO EXEMPLO EM UM DOS EXEMPLOS DA AULA DE PROG2)
-    }
+        if (usuarioLogado->getNivelAcesso() == 1)
+        {
+            // Converte o ponteiro inteligente do tipo Usuario para do tipo Gestor
+            //  Isso é para acessar os metodos da classe Gestor
+            Gestor *gestor = Gestor::getGestorById(usuarioLogado->getId()); // Busca o gestor na lista de usuarios carregados
+            if (gestor)
+            {
+                menuGestor(gestor); // Acessa o menu de gestor
+            }
+            else
+            {
+                std::cerr << "ERRO CRÍTICO: Não foi possível encontrar os dados do gestor logado." << std::endl;
+            }
+        }
+        if (usuarioLogado->getNivelAcesso() == 2 || usuarioLogado->getNivelAcesso() == 3)
+        {
+            // Pegue o estudante carregado do banco
+            Estudante *estudanteReal = Gestor::getEstudanteById(usuarioLogado->getId());
 
+            if (estudanteReal == nullptr)
+            {
+                std::cerr << "ERRO: Estudante não encontrado nas listas carregadas.\n";
+            }
+            else
+            {
+                menuEstudante(estudanteReal);
+            }
+        }
+    }
     // ===================== Encerramento =====================
     // Limpa todos os laboratórios alocados dinamicamente
     Laboratorio::limparLaboratorios();

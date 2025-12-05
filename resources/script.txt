@@ -46,7 +46,7 @@ CREATE TABLE Reagente (
     id INT AUTO_INCREMENT PRIMARY KEY,
     validade DATETIME,
     nome VARCHAR(100) NOT NULL,
-    quantidade DOUBLE NOT NULL,
+    quantidade INT NOT NULL,
     quantidadeCritica DOUBLE NOT NULL,
     referencia VARCHAR(50) NOT NULL,
     marca VARCHAR(50) NOT NULL,
@@ -78,7 +78,7 @@ CREATE TABLE Retirada (
     usuario_id INT NOT NULL,
     reagente_id INT NOT NULL,
     dataHoraRetirada DATETIME NOT NULL,
-    quantidadeRetirada DOUBLE NOT NULL,
+    quantidadeRetirada INT NOT NULL,
     FOREIGN KEY (usuario_id) REFERENCES Usuario(id),
     FOREIGN KEY (reagente_id) REFERENCES Reagente(id)
 );

@@ -41,7 +41,6 @@ public:
     static void limparUsuarios();                    // Libera memória dos vetores de usuários
     static Gestor *getGestorById(int id);            // Busca gestor pelo ID
     static Estudante* getEstudanteById(int id);      // Busca estudante pelo ID
-    static Usuario* buscarUsuarioById(int id);         // Busca usuário pelo ID
 
     // Gerenciamento de laboratórios
     void associarLaboratorio();                      // Associa gestor a um laboratório
@@ -72,8 +71,6 @@ public:
     void acessarReagenteRestrito(int idReagente) override;  // Acesso total (sem verificação de nível)
 
     void acessarEstatisticas();  // Exibe estatísticas do laboratório
-    void menuPrincipal() override;      // Menu principal do gestor
-    void historicoRetiradas();   // Exibe histórico de retiradas do laboratório
 };
 
 #endif
