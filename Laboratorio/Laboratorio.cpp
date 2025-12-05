@@ -1437,6 +1437,7 @@ void Laboratorio::carregarRetiradasDoDB()
 }
 
 // Retorna retiradas dos últimos 7 dias
+// Retorna retiradas dos últimos 7 dias
 std::vector<Retirada *> Laboratorio::getRetiradasUltimos7Dias()
 {
     std::vector<Retirada *> retiradas7Dias;
@@ -1465,10 +1466,12 @@ std::vector<Retirada *> Laboratorio::getRetiradasUltimos7Dias()
         for (int reagenteId : idsReagentes)
         {
             // Buscar retiradas deste reagente dos últimos 7 dias
-            RowResult retiradasRows = retiradaTable
-                                          .select("*")
-                                          .where("reagente_id = :reag_id AND DATE(dataHoraRetirada) >= :data_limite")
-                                          .orderBy("dataHoraRetirada DESC")
+            TableSelect selectCmd = retiradaTable
+                                        .select("*")
+                                        .where("reagente_id = :reag_id AND DATE(dataHoraRetirada) >= :data_limite")
+                                        .orderBy("dataHoraRetirada DESC");
+
+            RowResult retiradasRows = selectCmd
                                           .bind("reag_id", reagenteId)
                                           .bind("data_limite", std::string(dataLimite))
                                           .execute();
