@@ -84,6 +84,16 @@ As funcionalidades abaixo representam o escopo total previsto. Atualmente, o pro
 - g++
 - MySQL Connector/C++
 
+## Script de setup
+- Dentro da pasta resources, execute o script shell setup.sh
+- Quando a janela da instalação mysql abrir, mantenha o padrão e clique ok
+- Inicie o servidor mysql (normalmente sudo service mysql start)
+- Inicie o banco com o comando:
+```
+sudo mysql -u root -p < resources/script.txt
+```
+- 
+
 ### 🔧 Compilação e Execução
 Para compilar:
 ```bash
@@ -93,7 +103,9 @@ make all
 Para executar:
 ```bash
 ./a.out
-```
+```![diagrama](https://github.com/user-attachments/assets/ffbfc8c9-2f32-488e-afee-f8ff6e3af01f)
+![diagrama](https://github.com/user-attachments/assets/4fd0d338-993e-4829-8cc7-370974ea232e)
+
 
 Para limpar arquivos temporários:
 ```bash
