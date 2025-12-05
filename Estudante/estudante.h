@@ -50,7 +50,7 @@ public:
     void consultarEstoqueLaboratorio(Laboratorio *lab);                            // Lista reagentes de um laboratório específico
     void consultarEstoque();                                                       // Lista reagentes de todos os laboratórios associados
     void retirarReagente();                                                        // Realiza retirada de reagente
-
+    virtual void menuPrincipal() override;      // Menu principal do estudante
     //  Controle de acesso a reagentes restritos
     void acessarReagenteRestrito(int idReagente) override; // Verifica permissão antes de exibir dados
 };
