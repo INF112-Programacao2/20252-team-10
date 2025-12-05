@@ -43,7 +43,6 @@ private:
 
     // Métodos internos
     void carregarReagentesDoDB(); // Carrega reagentes do banco para memória
-    void carregarRetiradasDoDB(); // Carrega retiradas do banco
 
 public:
     // Construtor e destrutor
@@ -66,7 +65,6 @@ public:
 
     // Gerenciamento de retiradas
     std::string registrarRetirada(Usuario *usuario, const std::string &nomeReagente, float quantidade);
-    std::vector<Retirada*> getRetiradasUltimos7Dias(); // Retorna retiradas dos últimos 7 dias
 
     // Gerenciamento de usuários
     void adicionarGestor(Gestor *gestor);

@@ -106,10 +106,6 @@ void Estudante::removerLaboratorio(Laboratorio* laboratorio) {
             .bind("laboratorioId", laboratorio->getId())
             .execute();
 
-        if (associadoResult.count() == 0) {
-            std::cout << "Aviso: Associação com " << laboratorio->getNome() << " não encontrada" << std::endl;
-            return;
-        }
 
         // Remoção no Banco de Dados (Tabela Associado)
         // Condição de remoção: estudante_id E laboratorio_id
@@ -509,4 +505,31 @@ void Estudante::retirarReagente() {
     std::string resultado = labEscolhido->registrarRetirada(this, nomeReagente, qtd);
 
     std::cout << "\nResultado: " << resultado << "\n";
+}
+
+void Estudante::menuPrincipal()
+{
+    int opcao = 0;
+
+    do
+    {
+        std::cout << "\n===== Menu Estudante =====\n";
+        std::cout << "1. Meus laboratórios\n"; // Lista laboratórios aos quais o estudante está associado
+        std::cout << "0. Sair\n";              // Sai do menu
+
+        std::cout << "Escolha uma opção: ";
+        std::cin >> opcao;
+
+        switch (opcao)
+        {
+        case 1:
+            acessarLaboratorios(); // Dentro dessa função, o usuário pode acessar laboratório, listar usuários, reagentes, filtrar, etc.
+            break;
+        case 0:
+            std::cout << "Saindo do menu do estudante...\n";
+            break;
+        default:
+            std::cout << "Opção inválida! Tente novamente.\n";
+        }
+    } while (opcao != 0);
 }

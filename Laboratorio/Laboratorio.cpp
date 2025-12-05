@@ -20,12 +20,10 @@ Laboratorio::Laboratorio(int id, const std::string &nome, const std::string &dep
     // Se tem conexão com BD, carrega os reagentes
     if (this->db)
     {
-        // std::cout << "Laboratorio conectado ao DB. Reagentes sendo carregados" << std::endl;
         carregarReagentesDoDB(); // busca reagentes no banco
         carregarAlertasDB();
         getReagentesCriticos();
         getReagentesVencidos();
-        carregarRetiradasDoDB(); // carrega retiradas do banco
     }
 }
 
@@ -159,8 +157,8 @@ void Laboratorio::carregarReagentesDoDB()
 
             int id = row[0].get<int>();
             std::string nome = row[2].get<std::string>();
-            int qtd = row[3].get<int>();
-            int qtdCritica = row[4].get<double>();
+            double qtd = row[3].get<double>();
+            double qtdCritica = row[4].get<double>();
             std::string codRef = row[5].get<std::string>();
             std::string marca = row[6].get<std::string>();
             std::string local = row[7].get<std::string>();
@@ -246,6 +244,7 @@ std::vector<Reagente *> Laboratorio::listarReagentes(const std::string &filtroNo
 // Registra uma retirada de reagente
 std::string Laboratorio::registrarRetirada(Usuario *usuario, const std::string &nomeReagente, float quantidade)
 {
+    ;
     // Primeiro encontra o reagente
     Reagente *reagente = buscarReagente(nomeReagente);
     if (reagente == nullptr)
@@ -709,6 +708,7 @@ std::string Laboratorio::associarEstudante(Estudante *estudante)
 
     // Ler papel
     std::string papel;
+    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n'); // Limpa o buffer do cin
     std::cout << "\nDigite o papel do estudante no laboratório: ";
     std::getline(std::cin, papel);
 
@@ -1278,181 +1278,4 @@ bool Laboratorio::editarLaboratorio(const std::string& novoNome, const std::stri
     estatisticas << "====================================\n";
     
     return estatisticas.str();
-}
-
-// Carrega retiradas do banco de dados para a memória
-void Laboratorio::carregarRetiradasDoDB()
-{
-    try
-    {
-        Table retiradaTable = db->getTable("Retirada");
-        
-        // Obter IDs dos reagentes deste laboratório
-        std::vector<int> idsReagentes = getIdsReagentesDoLaboratorio();
-        if (idsReagentes.empty()) return;
-        
-        // Para cada reagente do laboratório, buscar retiradas
-        for (int reagenteId : idsReagentes)
-        {
-            RowResult retiradasRows = retiradaTable.select("*")
-                .where("reagente_id = :reag_id")
-                .bind("reag_id", reagenteId)
-                .execute();
-            
-            for (Row row : retiradasRows)
-            {
-                int retiradaId = row[0].get<int>();
-                int usuarioId = row[2].get<int>();
-                float quantidade = row[3].get<float>();
-                std::string dataHoraBD = row[4].get<std::string>();
-                
-                // Buscar reagente na memória
-                Reagente* reagente = nullptr;
-                for (Reagente* r : this->reagentes)
-                {
-                    if (r->getId() == reagenteId)
-                    {
-                        reagente = r;
-                        break;
-                    }
-                }
-                if (reagente == nullptr) continue;
-                
-                // Buscar usuário nas listas carregadas
-                Usuario* usuario = nullptr;
-                for (Usuario* u : Gestor::usuariosCarregados)
-                {
-                    if (u->getId() == usuarioId)
-                    {
-                        usuario = u;
-                        break;
-                    }
-                }
-                if (usuario == nullptr) continue;
-                
-                // Converter data do formato BD para formato do sistema
-                std::string dataFormatada;
-                if (!dataHoraBD.empty() && dataHoraBD.length() >= 10)
-                {
-                    // Converter "2024-12-31 14:30:00" para "31/12/2024 14:30"
-                    std::string ano = dataHoraBD.substr(0, 4);
-                    std::string mes = dataHoraBD.substr(5, 2);
-                    std::string dia = dataHoraBD.substr(8, 2);
-                    std::string hora = dataHoraBD.substr(11, 5);
-                    dataFormatada = dia + "/" + mes + "/" + ano + " " + hora;
-                }
-                else
-                {
-                    dataFormatada = dataHoraBD;
-                }
-                
-                // Criar retirada com data do BD
-                Retirada* novaRetirada = new Retirada(retiradaId, usuario, reagente, quantidade, dataFormatada);
-                retiradas.push_back(novaRetirada);
-            }
-        }
-    }
-    catch (const mysqlx::Error &err)
-    {
-        std::cerr << "Erro ao carregar retiradas do DB: " << err.what() << std::endl;
-    }
-}
-
-// Retorna retiradas dos últimos 7 dias
-std::vector<Retirada*> Laboratorio::getRetiradasUltimos7Dias()
-{
-    std::vector<Retirada*> retiradas7Dias;
-    
-    try
-    {
-        Table retiradaTable = db->getTable("Retirada");
-        std::vector<int> idsReagentes = getIdsReagentesDoLaboratorio();
-        
-        // Calcular data de 7 dias atrás
-        time_t agora = time(nullptr);
-        struct tm* tempoInfo = localtime(&agora);
-        tempoInfo->tm_mday -= 7;
-        mktime(tempoInfo);
-        
-        char dataLimite[11];
-        strftime(dataLimite, sizeof(dataLimite), "%Y-%m-%d", tempoInfo);
-        
-        for (int reagenteId : idsReagentes)
-        {
-            RowResult retiradasRows = retiradaTable.select("*")
-                .where("reagente_id = :reag_id AND DATE(dataHoraRetirada) >= :data_limite")
-                .bind("reag_id", reagenteId)
-                .bind("data_limite", std::string(dataLimite))
-                .orderBy("dataHoraRetirada DESC")
-                .execute();
-            
-            for (Row row : retiradasRows)
-            {
-                int retiradaId = row[0].get<int>();
-                int usuarioId = row[2].get<int>();
-                float quantidade = row[3].get<float>();
-                std::string dataHoraBD = row[4].get<std::string>();
-                
-                // Buscar reagente na memória
-                Reagente* reagente = nullptr;
-                for (Reagente* r : this->reagentes)
-                {
-                    if (r->getId() == reagenteId)
-                    {
-                        reagente = r;
-                        break;
-                    }
-                }
-                if (reagente == nullptr) continue;
-                
-                // Buscar usuário nas listas carregadas
-                Usuario* usuario = nullptr;
-                for (Usuario* u : Gestor::usuariosCarregados)
-                {
-                    if (u->getId() == usuarioId)
-                    {
-                        usuario = u;
-                        break;
-                    }
-                }
-                if (usuario == nullptr) continue;
-                
-                // Converter data do formato BD
-                std::string dataFormatada;
-                if (!dataHoraBD.empty() && dataHoraBD.length() >= 10)
-                {
-                    std::string ano = dataHoraBD.substr(0, 4);
-                    std::string mes = dataHoraBD.substr(5, 2);
-                    std::string dia = dataHoraBD.substr(8, 2);
-                    std::string hora = dataHoraBD.substr(11, 5);
-                    dataFormatada = dia + "/" + mes + "/" + ano + " " + hora;
-                }
-                else
-                {
-                    dataFormatada = dataHoraBD;
-                }
-                
-                // Criar retirada
-                Retirada* novaRetirada = new Retirada(retiradaId, usuario, reagente, quantidade, dataFormatada);
-                retiradas7Dias.push_back(novaRetirada);
-            }
-        }
-        
-        // Limitar a 20 resultados para exibição
-        if (retiradas7Dias.size() > 20)
-        {
-            for (size_t i = 20; i < retiradas7Dias.size(); i++)
-            {
-                delete retiradas7Dias[i];
-            }
-            retiradas7Dias.resize(20);
-        }
-        
-    }
-    catch (const mysqlx::Error &err)
-    {
-        std::cerr << "Erro ao buscar retiradas recentes: " << err.what() << std::endl;
-    }
-    
-    return retiradas7Dias;
 }

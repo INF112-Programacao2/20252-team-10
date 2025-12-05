@@ -3,7 +3,7 @@
 #include <sstream>
 #include <iomanip>
 
-//Construtor com geração automática de data
+//Construtor 
 Retirada::Retirada(int id, Usuario* usuario, Reagente* reagente, float quantidade)
     : id(id), usuario(usuario), reagente(reagente), quantidade(quantidade), confirmada(false) {
 
@@ -13,12 +13,6 @@ Retirada::Retirada(int id, Usuario* usuario, Reagente* reagente, float quantidad
     std::stringstream ss;
     ss << std::put_time(localTime, "%d/%m/%Y %H:%M");  //Formata como "25/12/2024 14:30"
     dataHora = ss.str();  //Salva como string
-}
-
-//Construtor com data fornecida
-Retirada::Retirada(int id, Usuario* usuario, Reagente* reagente, float quantidade, const std::string& dataHora)
-    : id(id), usuario(usuario), reagente(reagente), quantidade(quantidade), 
-      dataHora(dataHora), confirmada(false) {
 }
 
 //Tenta confirmar a retirada 
