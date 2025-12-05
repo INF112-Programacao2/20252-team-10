@@ -73,6 +73,10 @@ As funcionalidades abaixo representam o escopo total previsto. Atualmente, o pro
 | **Alerta** | Monitorar condições e gerar notificações | Reagente, Gestor |
 
 
+---
+## 🧩 Diagrama de Classes 
+
+![Diagrama do Sistema](docs/diagrama.jpg)
 
 ---
 
@@ -94,7 +98,6 @@ As funcionalidades abaixo representam o escopo total previsto. Atualmente, o pro
 ```
 sudo mysql -u root -p < resources/script.txt
 ```
-- 
 
 ### 🔧 Compilação e Execução
 Para compilar:
