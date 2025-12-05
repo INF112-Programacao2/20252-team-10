@@ -1456,9 +1456,9 @@ std::vector<Retirada *> Laboratorio::getRetiradasUltimos7Dias()
             RowResult retiradasRows = retiradaTable
                                           .select("*")
                                           .where("reagente_id = :reag_id AND DATE(dataHoraRetirada) >= :data_limite")
+                                          .orderBy("dataHoraRetirada DESC")
                                           .bind("reag_id", reagenteId)
                                           .bind("data_limite", std::string(dataLimite))
-                                          .orderBy("dataHoraRetirada DESC")
                                           .execute();
 
             for (Row row : retiradasRows)

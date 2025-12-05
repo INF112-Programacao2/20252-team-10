@@ -71,6 +71,7 @@ public:
     void menuReagentesRestritos();                          // Menu de gestão de reagentes restritos
     void acessarReagenteRestrito(int idReagente) override;  // Acesso total (sem verificação de nível)
 
+    void historicoRetiradas();      // Exibe histórico de retiradas do laboratório
     void acessarEstatisticas();  // Exibe estatísticas do laboratório
     void menuPrincipal() override;      // Menu principal do gestor
 };
