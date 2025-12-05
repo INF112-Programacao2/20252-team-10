@@ -107,6 +107,8 @@ public:
     static std::vector<Laboratorio *> listarLaboratorios(Schema *db); // Carrega labs do banco
     static void imprimirLaboratorios();                               // Exibe lista formatada de laboratórios
     static void limparLaboratorios();                                 // Libera memória de todos os laboratórios
+    void carregarRetiradasDoDB();
+    std::vector<Retirada *> getRetiradasUltimos7Dias();
 };
 
 #endif
