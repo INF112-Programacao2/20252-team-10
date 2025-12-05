@@ -283,18 +283,18 @@ std::string Laboratorio::registrarRetirada(Usuario *usuario, const std::string &
             // Gerar data/hora atual
             time_t agora = time(nullptr);
             struct tm tempoInfo;
-            
-            // Usar localtime_s / localtime_r
-            #ifdef _WIN32
-                localtime_s(&tempoInfo, &agora);
-            #else
-                localtime_r(&agora, &tempoInfo);
-            #endif
-            
+
+// Usar localtime_s / localtime_r
+#ifdef _WIN32
+            localtime_s(&tempoInfo, &agora);
+#else
+            localtime_r(&agora, &tempoInfo);
+#endif
+
             // Buffer
             char buff[30];
             strftime(buff, sizeof(buff), "%Y-%m-%d %H:%M:%S", &tempoInfo);
-            
+
             std::string hora = std::string(buff);
             std::cout << "Data/Hora registrada: " << hora << std::endl;
 
@@ -302,7 +302,7 @@ std::string Laboratorio::registrarRetirada(Usuario *usuario, const std::string &
                 .insert("usuario_id", "reagente_id", "dataHoraRetirada", "quantidadeRetirada")
                 .values(usuario->getId(), reagenteId, hora, quantidade)
                 .execute();
-                
+
             std::cout << "Retirada registrada no banco com sucesso." << std::endl;
         }
         catch (const mysqlx::Error &err)
@@ -1437,6 +1437,7 @@ void Laboratorio::carregarRetiradasDoDB()
 }
 
 // Retorna retiradas dos últimos 7 dias
+// Retorna retiradas dos últimos 7 dias
 std::vector<Retirada *> Laboratorio::getRetiradasUltimos7Dias()
 {
     std::vector<Retirada *> retiradas7Dias;
@@ -1465,10 +1466,12 @@ std::vector<Retirada *> Laboratorio::getRetiradasUltimos7Dias()
         for (int reagenteId : idsReagentes)
         {
             // Buscar retiradas deste reagente dos últimos 7 dias
-            RowResult retiradasRows = retiradaTable
-                                          .select("*")
-                                          .where("reagente_id = :reag_id AND DATE(dataHoraRetirada) >= :data_limite")
-                                          .orderBy("dataHoraRetirada DESC")
+            TableSelect selectCmd = retiradaTable
+                                        .select("*")
+                                        .where("reagente_id = :reag_id AND DATE(dataHoraRetirada) >= :data_limite")
+                                        .orderBy("dataHoraRetirada DESC");
+
+            RowResult retiradasRows = selectCmd
                                           .bind("reag_id", reagenteId)
                                           .bind("data_limite", std::string(dataLimite))
                                           .execute();

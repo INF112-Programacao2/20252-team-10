@@ -957,7 +957,8 @@ void Gestor::cadastrarReagente()
         std::string entradaData;
         std::getline(std::cin, entradaData); // Lê a linha toda
 
-        if (entradaData.empty()) continue; // Ignora Enter acidental
+        if (entradaData.empty())
+            continue; // Ignora Enter acidental
 
         std::stringstream ss(entradaData);
         ss >> ano >> sep1 >> mes >> sep2 >> dia; // Tenta extrair
@@ -1653,16 +1654,17 @@ void Gestor::editarReagente()
             char sep1, sep2;
             std::string novaValidade;
 
-            std::cin.ignore(); 
+            std::cin.ignore();
 
             while (true)
             {
                 std::cout << "Nova Validade (AAAA-MM-DD): ";
-                
+
                 std::string entradaData;
                 std::getline(std::cin, entradaData);
 
-                if (entradaData.empty()) continue;
+                if (entradaData.empty())
+                    continue;
 
                 std::stringstream ss(entradaData);
                 ss >> ano >> sep1 >> mes >> sep2 >> dia;
@@ -1672,7 +1674,7 @@ void Gestor::editarReagente()
                     std::cout << "Erro: Data incompleta. Digite apenas numeros (AAAA-MM-DD)\n";
                     continue;
                 }
-            
+
                 // Verifica se usou hifens como separador
                 if (sep1 != '-' || sep2 != '-')
                 {
@@ -2862,8 +2864,7 @@ void Gestor::historicoRetiradas()
     std::cout << "\n";
     std::cout << std::left << std::setw(30) << "REAGENTE"
               << std::setw(20) << "USUÁRIO"
-              << std::setw(15) << "QUANTIDADE"
-              << std::setw(20) << "DATA/HORA" << "\n";
+              << std::setw(15) << "QUANTIDADE";
     std::cout << std::string(85, '-') << "\n";
 
     // Mostrar cada retirada
@@ -2881,7 +2882,7 @@ void Gestor::historicoRetiradas()
                       << std::setw(30) << (reagenteNome.length() > 29 ? reagenteNome.substr(0, 27) + ".." : reagenteNome)
                       << std::setw(20) << (usuarioNome.length() > 19 ? usuarioNome.substr(0, 17) + ".." : usuarioNome)
                       << std::setw(15) << (std::to_string(quantidade) + " " + unidade)
-                      << std::setw(20) << dataHora << "\n";
+                      << "\n";
         }
     }
 
