@@ -18,6 +18,7 @@
 *.dylib
 *.o
 *.a
+*a.out
 *.lib
 *.obj
 *.pdb
