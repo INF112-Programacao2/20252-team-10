@@ -964,19 +964,19 @@ void Gestor::cadastrarReagente()
         // Verifica os limites logicos do Ano e do Mes
         if (ano < 1900 || ano > 2100)
         {
-            std::cout << "Erro Ano deve ser entre 1900 e 2100\n";
+            std::cout << "[Erro] Ano deve ser entre 1900 e 2100\n";
             continue;
         }
         if (mes < 1 || mes > 12)
         {
-            std::cout << "Erro Mes deve ser entre 1 e 12\n";
+            std::cout << "[Erro] Mes deve ser entre 1 e 12\n";
             continue;
         }
 
         // Verifica limite minimo dos Dias
         if (dia < 1)
         {
-            std::cout << "Erro Dia invalido\n";
+            std::cout << "[Erro] Dia invalido\n";
             continue;
         }
 
@@ -990,7 +990,7 @@ void Gestor::cadastrarReagente()
 
             if (dia > limite)
             {
-                std::cout << "Erro Dia invalido para Fevereiro neste ano\n";
+                std::cout << "[Erro] Dia invalido para Fevereiro neste ano\n";
                 continue;
             }
         }
@@ -999,7 +999,7 @@ void Gestor::cadastrarReagente()
         {
             if (dia > 30)
             {
-                std::cout << "Erro Este mes tem apenas 30 dias\n";
+                std::cout << "[Erro] Este mes tem apenas 30 dias\n";
                 continue;
             }
         }
@@ -1008,7 +1008,7 @@ void Gestor::cadastrarReagente()
         {
             if (dia > 31)
             {
-                std::cout << "Erro Dia invalido Maximo 31\n";
+                std::cout << "[Erro] Dia invalido Maximo 31\n";
                 continue;
             }
         }
