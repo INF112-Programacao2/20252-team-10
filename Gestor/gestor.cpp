@@ -7,6 +7,7 @@
 #include <limits>
 #include <iomanip>
 #include <iostream>
+#include <sstream>
 
 using namespace mysqlx;
 
@@ -946,31 +947,32 @@ void Gestor::cadastrarReagente()
 
     // Declaracao de variaveis para a validacao da data
     int ano, mes, dia;
-    char sep1, sep2; // Variaveis para capturar os caracteres separadores hifens
+    char sep1, sep2;
 
     // Inicio do loop para validacao da Data de Validade
     while (true)
     {
         std::cout << "Escreva a data de Validade (AAAA-MM-DD), na ordem ano-mês-dia: ";
 
-        // Tenta ler a entrada no formato exato inteiro char inteiro char inteiro
-        std::cin >> ano >> sep1 >> mes >> sep2 >> dia;
+        std::string entradaData;
+        std::getline(std::cin, entradaData); // Lê a linha toda
 
-        // Verifica se houve falha na leitura dos numeros, exemplo o usuario digitar letras
-        if (std::cin.fail())
+        if (entradaData.empty()) continue; // Ignora Enter acidental
+
+        std::stringstream ss(entradaData);
+        ss >> ano >> sep1 >> mes >> sep2 >> dia; // Tenta extrair
+
+        // Verifica erro de leitura
+        if (ss.fail())
         {
-            std::cout << "Erro Digite apenas numeros para ano mes e dia\n";
-            std::cin.clear();  // Limpa o estado de erro do cin
-            std::cin.ignore(); // Limpa o buffer
-            continue;          // Retorna ao inicio do loop
+            std::cout << "Erro: Data incompleta ou inválida. Digite no formato AAAA-MM-DD.\n";
+            continue;
         }
 
         // Verifica se os caracteres separadores sao hifens
         if (sep1 != '-' || sep2 != '-')
         {
-            std::cout << "Erro formato incorreto use hifens ex 2025-12-31\n";
-            // Limpa o resto da linha caso tenha sobrado lixo no buffer
-            std::cin.ignore();
+            std::cout << "Erro formato incorreto use hifens ex: 2025-12-31\n";
             continue;
         }
 
@@ -1044,8 +1046,6 @@ void Gestor::cadastrarReagente()
         }
 
         // Junta tudo no formato final AAAA-MM-DD
-        dataValidade = std::to_string(ano) + "-" + sMes + "-" + sDia;
-        // Adiciona as partes na variavel final
         dataValidade = std::to_string(ano) + "-" + sMes + "-" + sDia;
 
         break; // Sai do loop pois a data esta correta
@@ -1350,7 +1350,7 @@ void Gestor::acessarReagenteRestrito(int idReagente)
         // Busca o reagente pelo ID
         RowResult res = reagenteTable.select(
                                          "id", "nome", "quantidade", "unidadeMedida",
-                                         "localArmazenamento", "dataValidade", "nivelAcesso")
+                                         "localArmazenamento", "validade", "nivelAcesso")
                             .where("id = :id")
                             .bind("id", idReagente)
                             .execute();
@@ -1653,30 +1653,32 @@ void Gestor::editarReagente()
             char sep1, sep2;
             std::string novaValidade;
 
-            // Loop de validacao robusta da data igual ao cadastro
+            std::cin.ignore(); 
+
             while (true)
             {
                 std::cout << "Nova Validade (AAAA-MM-DD): ";
-                // Tenta ler no formato exato Numero Char Numero Char Numero
-                std::cin >> ano >> sep1 >> mes >> sep2 >> dia;
+                
+                std::string entradaData;
+                std::getline(std::cin, entradaData);
 
-                // Verifica erro de leitura se digitou texto onde era numero
-                if (std::cin.fail())
+                if (entradaData.empty()) continue;
+
+                std::stringstream ss(entradaData);
+                ss >> ano >> sep1 >> mes >> sep2 >> dia;
+
+                if (ss.fail())
                 {
-                    std::cout << "Erro Digite apenas numeros\n";
-                    std::cin.clear();
-                    std::cin.ignore();
+                    std::cout << "Erro: Data incompleta. Digite apenas numeros (AAAA-MM-DD)\n";
                     continue;
                 }
-
+            
                 // Verifica se usou hifens como separador
                 if (sep1 != '-' || sep2 != '-')
                 {
                     std::cout << "Erro Formato incorreto Use hifens\n";
-                    std::cin.ignore();
                     continue;
                 }
-
                 // Verifica limites logicos de ano mes e dia
                 if (ano < 1900 || ano > 2100)
                 {
@@ -1734,7 +1736,7 @@ void Gestor::editarReagente()
                 return;
 
             // Atualiza banco e memoria
-            table.update().set("dataValidade", novaValidade).where("id = :id").bind("id", reagente->getId()).execute();
+            table.update().set("validade", novaValidade).where("id = :id").bind("id", reagente->getId()).execute();
             reagente->setDataValidade(novaValidade);
             std::cout << "Validade atualizada com sucesso\n";
         }

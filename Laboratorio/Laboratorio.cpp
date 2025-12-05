@@ -244,7 +244,6 @@ std::vector<Reagente *> Laboratorio::listarReagentes(const std::string &filtroNo
 // Registra uma retirada de reagente
 std::string Laboratorio::registrarRetirada(Usuario *usuario, const std::string &nomeReagente, float quantidade)
 {
-    ;
     // Primeiro encontra o reagente
     Reagente *reagente = buscarReagente(nomeReagente);
     if (reagente == nullptr)
@@ -267,17 +266,6 @@ std::string Laboratorio::registrarRetirada(Usuario *usuario, const std::string &
     std::string resultado = novaRetirada->confirmarRetirada();
 
     // Se deu certo (não tem "Erro:" na mensagem)
-    std::cout << reagente->getQuantidade() << std::endl;
-    std::cout << reagente->getId() << std::endl;
-    time_t agora;
-    time(&agora);
-
-    struct tm *_tempoInfo = localtime(&agora);
-
-    char buff[20];
-    strftime(buff, sizeof(buff), "%Y-%m-%d %H:%M:%S", _tempoInfo);
-
-    std::string hora = std::string(buff);
     if (resultado.find("Erro:") == std::string::npos)
     {
         try
@@ -292,7 +280,30 @@ std::string Laboratorio::registrarRetirada(Usuario *usuario, const std::string &
             std::cout << "Banco de dados atualizado para a retirada." << std::endl;
             retiradas.push_back(novaRetirada); // Adiciona no histórico
 
-            db->getTable("Retirada").insert("usuario_id", "reagente_id", "dataHoraRetirada", "quantidadeRetirada").values(usuario->getId(), reagenteId, hora, quantidade).execute();
+            // Gerar data/hora atual
+            time_t agora = time(nullptr);
+            struct tm tempoInfo;
+            
+            // Usar localtime_s / localtime_r
+            #ifdef _WIN32
+                localtime_s(&tempoInfo, &agora);
+            #else
+                localtime_r(&agora, &tempoInfo);
+            #endif
+            
+            // Buffer
+            char buff[30];
+            strftime(buff, sizeof(buff), "%Y-%m-%d %H:%M:%S", &tempoInfo);
+            
+            std::string hora = std::string(buff);
+            std::cout << "Data/Hora registrada: " << hora << std::endl;
+
+            db->getTable("Retirada")
+                .insert("usuario_id", "reagente_id", "dataHoraRetirada", "quantidadeRetirada")
+                .values(usuario->getId(), reagenteId, hora, quantidade)
+                .execute();
+                
+            std::cout << "Retirada registrada no banco com sucesso." << std::endl;
         }
         catch (const mysqlx::Error &err)
         {
@@ -311,6 +322,7 @@ std::string Laboratorio::registrarRetirada(Usuario *usuario, const std::string &
 
     return resultado; // Retorna mensagem de sucesso ou erro
 }
+
 // Lista reagentes com quantidade crítica (estoque baixo)
 std::vector<Reagente *> Laboratorio::getReagentesCriticos()
 {
