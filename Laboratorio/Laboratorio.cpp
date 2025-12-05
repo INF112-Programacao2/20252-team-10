@@ -20,7 +20,6 @@ Laboratorio::Laboratorio(int id, const std::string &nome, const std::string &dep
     // Se tem conexão com BD, carrega os reagentes
     if (this->db)
     {
-        // std::cout << "Laboratorio conectado ao DB. Reagentes sendo carregados" << std::endl;
         carregarReagentesDoDB(); // busca reagentes no banco
         carregarAlertasDB();
         getReagentesCriticos();
@@ -158,8 +157,8 @@ void Laboratorio::carregarReagentesDoDB()
 
             int id = row[0].get<int>();
             std::string nome = row[2].get<std::string>();
-            int qtd = row[3].get<int>();
-            int qtdCritica = row[4].get<double>();
+            double qtd = row[3].get<double>();
+            double qtdCritica = row[4].get<double>();
             std::string codRef = row[5].get<std::string>();
             std::string marca = row[6].get<std::string>();
             std::string local = row[7].get<std::string>();
