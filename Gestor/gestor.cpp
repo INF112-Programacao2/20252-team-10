@@ -933,111 +933,15 @@ void Gestor::cadastrarReagente()
 
     // Declaracao de variaveis para a validacao da data
     int ano, mes, dia;
+    char sep1, sep2; // Variaveis para capturar os caracteres separadores hifens
 
-    // Loop para validacao da Data de Validade
+    // Inicio do loop para validacao da Data de Validade
     while (true)
     {
-        std::cout << "Escreva a data de Validade (AAAA-MM-DD), na ordem ano-mes-dia: ";
+        std::cout << "Escreva a data de Validade (AAAA-MM-DD), na ordem ano-mês-dia: ";
 
-        // Variavel para armazenar a linha digitada pelo usuario
-        std::string linha;
-        
-        // Le a linha inteira para evitar que o programa trave caso falte parte da data
-        std::getline(std::cin, linha);
-
-        // Verificacao do tamanho da string
-        // Uma data no formato AAAA-MM-DD deve ter exatamente 10 caracteres
-        if (linha.size() != 10) 
-        {
-            // Informa ao usuario sobre a necessidade do zero a esquerda se o tamanho estiver errado
-            std::cout << "Data inválida! Digite novamente e verifique  se o mês ou o dia e menor que 10.\n";
-            std::cout << "Caso seja, e necessario inserir o zero a esquerda (ex: 05, 09).\n";
-            continue; // Retorna ao inicio do loop
-        }
-
-        // Verifica se os hifens estao nas posicoes corretas indices 4 e 7
-        if (linha[4] != '-' || linha[7] != '-')
-        {
-            std::cout << "Formato inválido. Certifique-se de usar hifens (AAAA-MM-DD).\n";
-            continue;
-        }
-
-        // Bloco try catch para tentar converter os textos em numeros
-        try 
-        {
-            // Converte os 4 primeiros caracteres para o ano
-            ano = std::stoi(linha.substr(0, 4));
-            
-            // Pula o hifen e converte os 2 caracteres seguintes para o mes
-            mes = std::stoi(linha.substr(5, 2)); 
-            
-            // Pula o segundo hifen e converte os 2 ultimos caracteres para o dia
-            dia = std::stoi(linha.substr(8, 2)); 
-        }
-        catch (...)
-        {
-            // Captura erro caso o usuario tenha digitado letras no lugar de numeros
-            std::cout << "Erro: A data deve conter apenas numeros e hifens.\n";
-            continue;
-        }
-
-        // Verifica os limites logicos do Ano e do Mes
-        if (ano < 1900 || ano > 2100)
-        {
-            std::cout << "Erro Ano deve ser entre 1900 e 2100\n";
-            continue;
-        }
-        if (mes < 1 || mes > 12)
-        {
-            std::cout << "Erro Mes deve ser entre 1 e 12\n";
-            continue;
-        }
-
-        // Verifica limite minimo dos Dias
-        if (dia < 1)
-        {
-            std::cout << "Erro Dia invalido\n";
-            continue;
-        }
-
-        // Logica especifica para verificar dias do mes de Fevereiro
-        if (mes == 2)
-        {
-            // Calcula se o ano e bissexto regra divisivel por 4 e nao por 100 ou divisivel por 400
-            bool bissexto = (ano % 4 == 0 && (ano % 100 != 0 || ano % 400 == 0));
-            // Define o limite de dias com base no ano bissexto
-            int limite = bissexto ? 29 : 28;
-
-            if (dia > limite)
-            {
-                std::cout << "Erro Dia invalido para Fevereiro neste ano\n";
-                continue;
-            }
-        }
-        // Verifica limites para meses com 30 dias Abril Junho Setembro Novembro
-        else if (mes == 4 || mes == 6 || mes == 9 || mes == 11)
-        {
-            if (dia > 30)
-            {
-                std::cout << "Erro Este mes tem apenas 30 dias\n";
-                continue;
-            }
-        }
-        // Verifica limites para os demais meses que tem 31 dias
-        else
-        {
-            if (dia > 31)
-            {
-                std::cout << "Erro Dia invalido Maximo 31\n";
-                continue;
-            }
-        }
-
-        // Se passou por todas as validacoes salva a string linha na variavel final
-        dataValidade = linha;
-
-        break; // Sai do loop pois a data esta correta
-    }
+        // Tenta ler a entrada no formato exato inteiro char inteiro char inteiro
+        std::cin >> ano >> sep1 >> mes >> sep2 >> dia;
 
         // Verifica se houve falha na leitura dos numeros, exemplo o usuario digitar letras
         if (std::cin.fail())
@@ -1730,48 +1634,30 @@ void Gestor::editarReagente()
         else if (subOpcao == 3)
         {
             int ano, mes, dia;
-            std::string novaValidade; // Variavel local usada na edicao
+            char sep1, sep2;
+            std::string novaValidade;
 
-            // Limpa o buffer 
-            std::cin.ignore();
-
-            // Loop de validacao da nova data
+            // Loop de validacao robusta da data igual ao cadastro
             while (true)
             {
                 std::cout << "Nova Validade (AAAA-MM-DD): ";
-                
-                // Variavel auxiliar para leitura
-                std::string linha;
-                
-                // Le a linha toda para nao travar o terminal se o usuario digitar incompleto
-                std::getline(std::cin, linha);
+                // Tenta ler no formato exato Numero Char Numero Char Numero
+                std::cin >> ano >> sep1 >> mes >> sep2 >> dia;
 
-                // Verificacao de tamanho
-                if (linha.size() != 10) 
+                // Verifica erro de leitura se digitou texto onde era numero
+                if (std::cin.fail())
                 {
-                    // Mensagem explicativa caso o usuario tenha esquecido o zero
-                    std::cout << "Data inválida! Digite novamente e verifique se o mês ou o dia é menor que 10.\n";
-                    std::cout << "Caso seja, é necessário inserir o zero à esquerda (ex: 05, 09).\n";
-                    continue; // Retorna ao inicio do loop
-                }
-
-                //Verifica posicao dos hifens nos indices 4 e 7
-                if (linha[4] != '-' || linha[7] != '-')
-                {
-                    std::cout << "Formato inválido. Certifique-se de usar hifens (AAAA-MM-DD).\n";
+                    std::cout << "Erro Digite apenas numeros\n";
+                    std::cin.clear();
+                    std::cin.ignore();
                     continue;
                 }
 
-                // Tenta converter as partes da string em numeros
-                try 
+                // Verifica se usou hifens como separador
+                if (sep1 != '-' || sep2 != '-')
                 {
-                    ano = std::stoi(linha.substr(0, 4));
-                    mes = std::stoi(linha.substr(5, 2)); 
-                    dia = std::stoi(linha.substr(8, 2)); 
-                }
-                catch (...)
-                {
-                    std::cout << "Erro: A data deve conter apenas números e hifens.\n";
+                    std::cout << "Erro Formato incorreto Use hifens\n";
+                    std::cin.ignore();
                     continue;
                 }
 
