@@ -15,6 +15,7 @@ bool confirmacao()
 {
     std::cout << "Tem certeza em realizar esta ação? Digite S para Sim e N para Não: ";
     char resposta;
+    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
     std::cin >> resposta;
     return (resposta == 'S' || resposta == 's');
 }
