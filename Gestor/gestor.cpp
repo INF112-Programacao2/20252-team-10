@@ -400,6 +400,20 @@ void Gestor::carregarUsuarios(Schema *db)
     }
 }
 
+Usuario* Gestor::buscarUsuarioById(int id)
+{
+    for (Usuario* u : usuariosCarregados)
+    {
+        if (u && u->getId() == id)
+        {
+            return u; // Retorna o ponteiro  já instanciado
+        }
+    }
+
+    return nullptr; // Não encontrado
+}
+
+
 // lista os usuários do sistema
 void Gestor::listarUsuarios()
 {
@@ -964,19 +978,19 @@ void Gestor::cadastrarReagente()
         // Verifica os limites logicos do Ano e do Mes
         if (ano < 1900 || ano > 2100)
         {
-            std::cout << "Erro Ano deve ser entre 1900 e 2100\n";
+            std::cout << "[Erro] Ano deve ser entre 1900 e 2100\n";
             continue;
         }
         if (mes < 1 || mes > 12)
         {
-            std::cout << "Erro Mes deve ser entre 1 e 12\n";
+            std::cout << "[Erro] Mes deve ser entre 1 e 12\n";
             continue;
         }
 
         // Verifica limite minimo dos Dias
         if (dia < 1)
         {
-            std::cout << "Erro Dia invalido\n";
+            std::cout << "[Erro] Dia invalido\n";
             continue;
         }
 
@@ -990,7 +1004,7 @@ void Gestor::cadastrarReagente()
 
             if (dia > limite)
             {
-                std::cout << "Erro Dia invalido para Fevereiro neste ano\n";
+                std::cout << "[Erro] Dia invalido para Fevereiro neste ano\n";
                 continue;
             }
         }
@@ -999,7 +1013,7 @@ void Gestor::cadastrarReagente()
         {
             if (dia > 30)
             {
-                std::cout << "Erro Este mes tem apenas 30 dias\n";
+                std::cout << "[Erro] Este mes tem apenas 30 dias\n";
                 continue;
             }
         }
@@ -1008,7 +1022,7 @@ void Gestor::cadastrarReagente()
         {
             if (dia > 31)
             {
-                std::cout << "Erro Dia invalido Maximo 31\n";
+                std::cout << "[Erro] Dia invalido Maximo 31\n";
                 continue;
             }
         }
@@ -1256,53 +1270,56 @@ void Gestor::cadastrarReagente()
         }
     }
 
-    // Bloco de Insercao no Banco de Dados protegido por try catch
-    try
+    if (confirmacao())
     {
-        // Obtem a tabela Reagente do banco
-        Table reagenteTable = db->getTable("Reagente");
-
-        // Executa a insercao dos dados comuns na tabela pai
-        Result res = reagenteTable.insert(
-                                      "nome", "validade", "quantidade", "quantidadeCritica",
-                                      "localArmazenamento", "nivelAcesso", "unidadeMedida", "marca", "referencia", "laboratorio_id")
-                         .values(nome, dataValidade, quantidade, quantidadeCritica,
-                                 local, nivelAcesso, unidade, marca, codRef, this->laboratorio->getId())
-                         .execute();
-
-        // Recupera o ID gerado automaticamente pelo banco para o novo reagente
-        int reagenteId = res.getAutoIncrementValue();
-
-        // Insere nas tabelas filhas especificas conforme o tipo
-        if (tipo == 1)
+        // Bloco de Insercao no Banco de Dados protegido por try catch
+        try
         {
-            // Insercao na tabela de Liquidos
-            db->getTable("ReagenteLiquido")
-                .insert("id", "densidade", "volume")
-                .values(reagenteId, densidade, volume)
-                .execute();
-            std::cout << "Reagente Liquido cadastrado com sucesso\n";
-        }
-        else if (tipo == 2)
-        {
-            // Insercao na tabela de Solidos
-            db->getTable("ReagenteSolido")
-                .insert("id", "massa", "estadoFisico")
-                .values(reagenteId, massa, estadoFisico)
-                .execute();
-            std::cout << "Reagente Solido cadastrado com sucesso\n";
-        }
+            // Obtem a tabela Reagente do banco
+            Table reagenteTable = db->getTable("Reagente");
 
-        // Atualiza a memoria do sistema instanciando o objeto e adicionando ao vetor
-        laboratorio->cadastrarNovoReagente(
-            reagenteId, nome, dataValidade, quantidade, quantidadeCritica,
-            local, nivelAcesso, unidade, marca, codRef, tipo,
-            densidade, volume, massa, estadoFisico);
-    }
-    catch (const mysqlx::Error &err)
-    {
-        // Captura excecoes do MySQL e exibe mensagem de erro
-        std::cerr << "Erro ao cadastrar reagente no banco " << err.what() << std::endl;
+            // Executa a insercao dos dados comuns na tabela pai
+            Result res = reagenteTable.insert(
+                                          "nome", "validade", "quantidade", "quantidadeCritica",
+                                          "localArmazenamento", "nivelAcesso", "unidadeMedida", "marca", "referencia", "laboratorio_id")
+                             .values(nome, dataValidade, quantidade, quantidadeCritica,
+                                     local, nivelAcesso, unidade, marca, codRef, this->laboratorio->getId())
+                             .execute();
+
+            // Recupera o ID gerado automaticamente pelo banco para o novo reagente
+            int reagenteId = res.getAutoIncrementValue();
+
+            // Insere nas tabelas filhas especificas conforme o tipo
+            if (tipo == 1)
+            {
+                // Insercao na tabela de Liquidos
+                db->getTable("ReagenteLiquido")
+                    .insert("id", "densidade", "volume")
+                    .values(reagenteId, densidade, volume)
+                    .execute();
+                std::cout << "Reagente Liquido cadastrado com sucesso\n";
+            }
+            else if (tipo == 2)
+            {
+                // Insercao na tabela de Solidos
+                db->getTable("ReagenteSolido")
+                    .insert("id", "massa", "estadoFisico")
+                    .values(reagenteId, massa, estadoFisico)
+                    .execute();
+                std::cout << "Reagente Solido cadastrado com sucesso\n";
+            }
+
+            // Atualiza a memoria do sistema instanciando o objeto e adicionando ao vetor
+            laboratorio->cadastrarNovoReagente(
+                reagenteId, nome, dataValidade, quantidade, quantidadeCritica,
+                local, nivelAcesso, unidade, marca, codRef, tipo,
+                densidade, volume, massa, estadoFisico);
+        }
+        catch (const mysqlx::Error &err)
+        {
+            // Captura excecoes do MySQL e exibe mensagem de erro
+            std::cerr << "Erro ao cadastrar reagente no banco " << err.what() << std::endl;
+        }
     }
 }
 
@@ -2224,7 +2241,7 @@ void Gestor::gerenciarLaboratorio()
             this->retirarReagente();
             break;
         case 7:
-            this->desassociarEstudantes(); 
+            this->getLaboratorio()->menuDesassociarEstudante();
             break;
         case 8:
             this->sairLaboratorio();
@@ -2683,6 +2700,142 @@ Estudante *Gestor::getEstudanteById(int id)
     return nullptr;
 }
 
+void Gestor::menuPrincipal()
+{
+    int opcao = 0;
+    do
+    {
+        std::cout << "\n===== Menu Gestor =====\n";
+        // Imprime os dados dos gestor em uso
+        std::cout << "Seja bem-vindo " << getNome() << " novamente!\n";
+        std::cout << "Dados do usuário: ("
+                  // Imprime o ID do usuario
+                  << getId() << ") "
+                  // Imprime o nome do usuario
+                  << getNome() << " - "
+                  // Imprime o email do usuario
+                  << getEmail() << " - ";
+        // Imprime o nome do laboratorio
+        if (getLaboratorio())
+        {
+            std::cout << getLaboratorio()->getNome() << " - \n";
+        }
+
+        // Imprime o nivel de acesso do usuario, em forma de texto, que representa o que é no sistema
+        std::cout << ((getNivelAcesso() == 1)   ? "Gestor\n"
+                      : (getNivelAcesso() == 2) ? "Pós-graduação\n"
+                      : (getNivelAcesso() == 3) ? "Graduação\n"
+                                                : "Desconhecido\n");
+        // Atributo que recebe true se estiver associado a um laboratorio e false, caso contrário
+        bool associado = estaAssociado();
+
+        // Se for associado, imprime um menu especifico para este acso
+        if (associado)
+        {
+            std::cout << "1. Cadastrar usuário\n";                // Adiciona novo usuário (Gestor, Pós-graduação, Graduação)
+            std::cout << "2. Gerenciar laboratório\n";            // Acessa o submenu de gestão do laboratório: dados, estatísticas, reagentes (cadastrar, editar, excluir)
+            std::cout << "3. Listar estudantes do laboratório\n"; // Mostra todos os estudantes atualmente associados ao laboratório
+            std::cout << "4. Acessar reagentes em alerta\n";      // Mostra reagentes próximos da validade ou com quantidade crítica
+            std::cout << "5. Acessar reagentes restritos\n";      // Acessa reagentes restritos que exigem autorização especial
+            std::cout << "6. Retirar reagente\n";                 // Retirar reagentes do laboratório (pede confirmação e registra retirada)
+            std::cout << "7. Deletar usuário\n";                  // Remove usuário do sistema completamente (pede confirmação)
+            std::cout << "8. Sair do laboratório\n";              // Sai da gestão do laboratório (não desassocia automaticamente)
+            std::cout << "9. Listar usuários do sistema\n";       // Lista todos os usuários cadastrados (gestores e estudantes)
+            std::cout << "10. Editar laboratório\n";              // Editar dados do laboratório
+            std::cout << "11. Estatísticas do laboratório\n";     // Estatísticas gerais
+            std::cout << "12. Histórico de retiradas\n";          // Mostra o histórico de retiradas dos últimos 7 dias
+        }
+        else
+        { // Se nao estiver associado, imprime um menu para quem não é associaod a nada
+
+            // Menu quando o gestor não está associado a nenhum laboratório
+            std::cout << "1. Cadastrar usuário\n";          // Associa o gestor a um laboratório disponível (pede confirmação)
+            std::cout << "2. Associar laboratório\n";       // Cria um novo usuario no sistema (sem associação inicial)
+            std::cout << "3. Listar usuários do sistema\n"; // Mostra todos os usuários cadastrados
+            std::cout << "4. Deletar usuário\n";            // Exclui um usuário do sistema (pede confirmação)
+            std::cout << "5. Criar laboratório\n";          // Criar novo laboratório
+        }
+        std::cout << "0. Sair do sistema\n"; // Encerra o menu principal
+        std::cout << "Escolha uma opção: ";
+        std::cin >> opcao;
+        switch (opcao)
+        {
+        case 1:
+                cadastrarUsuario();
+            break;
+
+        case 2:
+            if (associado)
+                gerenciarLaboratorio();
+            else
+                associarLaboratorio();
+            break;
+
+        case 3:
+            if (associado)
+                getLaboratorio()->listarEstudantes();
+            else
+                listarUsuarios();
+            break;
+
+        case 4:
+            if (associado)
+                acessarReagentesAlerta();
+            else
+                deletarUsuario();
+            break;
+
+        case 5:
+            if (associado)
+                menuReagentesRestritos();
+            else
+                criarLaboratorio();
+            break;
+
+        case 6:
+            if (associado)
+                retirarReagente();
+            break;
+
+        case 7:
+            if (associado)
+                deletarUsuario();
+            break;
+
+        case 8:
+            if (associado)
+                sairLaboratorio();
+            break;
+
+        case 9:
+            if (associado)
+                listarUsuarios();
+            break;
+
+        case 10:
+            if (associado)
+                editarLaboratorio();
+            break;
+
+        case 11:
+            if (associado)
+                acessarEstatisticas();
+            break;
+        case 12:
+            if (associado)
+                historicoRetiradas();
+            break;
+
+        case 0:
+            std::cout << "Saindo...\n";
+            break;
+
+        default:
+            std::cout << "Opção inválida! Tente novamente.\n";
+        }
+
+    } while (opcao != 0);
+};
 void Gestor::historicoRetiradas() {
     if (this->laboratorio == nullptr) {
         std::cout << "Erro: Gestor não está associado a um laboratório.\n";

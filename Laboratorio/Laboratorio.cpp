@@ -159,8 +159,8 @@ void Laboratorio::carregarReagentesDoDB()
 
             int id = row[0].get<int>();
             std::string nome = row[2].get<std::string>();
-            int qtd = row[3].get<int>();
-            int qtdCritica = row[4].get<double>();
+            double qtd = row[3].get<double>();
+            double qtdCritica = row[4].get<double>();
             std::string codRef = row[5].get<std::string>();
             std::string marca = row[6].get<std::string>();
             std::string local = row[7].get<std::string>();
@@ -530,16 +530,20 @@ void Laboratorio::limparLaboratorios()
     return;
 }
 
-void Laboratorio::adicionarGestor(Gestor *gestor) {
-    if (gestor == nullptr) return;
-    
+void Laboratorio::adicionarGestor(Gestor *gestor)
+{
+    if (gestor == nullptr)
+        return;
+
     // Verificar se o gestor já está na lista
-    for (Gestor* g : gestores) {
-        if (g->getId() == gestor->getId()) {
+    for (Gestor *g : gestores)
+    {
+        if (g->getId() == gestor->getId())
+        {
             return; // Já está na lista
         }
     }
-    
+
     // Adicionar à lista
     gestores.push_back(gestor);
 }
@@ -709,6 +713,7 @@ std::string Laboratorio::associarEstudante(Estudante *estudante)
 
     // Ler papel
     std::string papel;
+    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n'); // Limpa o buffer do cin
     std::cout << "\nDigite o papel do estudante no laboratório: ";
     std::getline(std::cin, papel);
 
@@ -1045,26 +1050,31 @@ void Laboratorio::adicionarEstudante(Estudante *estudante)
 }
 
 // criarLaboratorio: Cria um novo laboratório no banco de dados e na memória
-Laboratorio* Laboratorio::criarLaboratorio(Schema* db, const std::string& nome, const std::string& departamento) {
-    if (!db) {
+Laboratorio *Laboratorio::criarLaboratorio(Schema *db, const std::string &nome, const std::string &departamento)
+{
+    if (!db)
+    {
         std::cerr << "Erro: Conexão com banco de dados inválida.\n";
         return nullptr;
     }
 
-    if (nome.empty()) {
+    if (nome.empty())
+    {
         std::cerr << "Erro: Nome do laboratório não pode ser vazio.\n";
         return nullptr;
     }
 
-    try {
+    try
+    {
         // Verificar se já existe laboratório com mesmo nome
         Table laboratorioTable = db->getTable("Laboratorio");
         RowResult resExistente = laboratorioTable.select("id")
-                                      .where("nome = :nome")
-                                      .bind("nome", nome)
-                                      .execute();
-        
-        if (resExistente.count() > 0) {
+                                     .where("nome = :nome")
+                                     .bind("nome", nome)
+                                     .execute();
+
+        if (resExistente.count() > 0)
+        {
             std::cout << "Já existe um laboratório com o nome '" << nome << "'.\n";
             return nullptr;
         }
@@ -1079,8 +1089,8 @@ Laboratorio* Laboratorio::criarLaboratorio(Schema* db, const std::string& nome, 
         int novoId = res.getAutoIncrementValue();
 
         // Criar objeto em memória
-        Laboratorio* novoLab = new Laboratorio(novoId, nome, dept, db);
-        
+        Laboratorio *novoLab = new Laboratorio(novoId, nome, dept, db);
+
         // Adicionar à lista estática de laboratórios
         laboratorios.push_back(novoLab);
 
@@ -1088,39 +1098,48 @@ Laboratorio* Laboratorio::criarLaboratorio(Schema* db, const std::string& nome, 
         std::cout << "ID: " << novoId << "\n";
         std::cout << "Nome: " << nome << "\n";
         std::cout << "Departamento: " << dept << "\n";
-        
+
         return novoLab;
-    } catch (const mysqlx::Error &err) {
+    }
+    catch (const mysqlx::Error &err)
+    {
         std::cerr << "Erro MySQL ao criar laboratório: " << err.what() << "\n";
         return nullptr;
-    } catch (const std::exception &ex) {
+    }
+    catch (const std::exception &ex)
+    {
         std::cerr << "Erro ao criar laboratório: " << ex.what() << "\n";
         return nullptr;
     }
 }
 
 // editarLaboratorio
-bool Laboratorio::editarLaboratorio(const std::string& novoNome, const std::string& novoDepartamento) {
-    if (!db) {
+bool Laboratorio::editarLaboratorio(const std::string &novoNome, const std::string &novoDepartamento)
+{
+    if (!db)
+    {
         std::cerr << "Erro: Laboratório não está conectado ao banco.\n";
         return false;
     }
 
-    if (novoNome.empty()) {
+    if (novoNome.empty())
+    {
         std::cerr << "Erro: Novo nome não pode ser vazio.\n";
         return false;
     }
 
-    try {
+    try
+    {
         // Verificar se já existe outro laboratório com o novo nome
         Table laboratorioTable = db->getTable("Laboratorio");
         RowResult resExistente = laboratorioTable.select("id")
-                                      .where("nome = :nome AND id != :id")
-                                      .bind("nome", novoNome)
-                                      .bind("id", this->id)
-                                      .execute();
-        
-        if (resExistente.count() > 0) {
+                                     .where("nome = :nome AND id != :id")
+                                     .bind("nome", novoNome)
+                                     .bind("id", this->id)
+                                     .execute();
+
+        if (resExistente.count() > 0)
+        {
             std::cout << "Já existe outro laboratório com o nome '" << novoNome << "'.\n";
             return false;
         }
@@ -1142,141 +1161,164 @@ bool Laboratorio::editarLaboratorio(const std::string& novoNome, const std::stri
         std::cout << "ID: " << this->id << "\n";
         std::cout << "Novo nome: " << novoNome << "\n";
         std::cout << "Novo departamento: " << dept << "\n";
-        
+
         return true;
-    } catch (const mysqlx::Error &err) {
+    }
+    catch (const mysqlx::Error &err)
+    {
         std::cerr << "Erro MySQL ao editar laboratório: " << err.what() << "\n";
         return false;
-    } catch (const std::exception &ex) {
+    }
+    catch (const std::exception &ex)
+    {
         std::cerr << "Erro ao editar laboratório: " << ex.what() << "\n";
         return false;
     }
 }
 
 // getEstatisticas: Retorna estatísticas detalhadas do laboratório
-    std::string Laboratorio::getEstatisticas() {
+std::string Laboratorio::getEstatisticas()
+{
     std::stringstream estatisticas;
-    
+
     estatisticas << "\n=== ESTATÍSTICAS DO LABORATÓRIO ===\n";
     estatisticas << "Nome: " << this->nome << "\n";
     estatisticas << "Departamento: " << this->departamento << "\n";
     estatisticas << "ID: " << this->id << "\n\n";
-    
+
     // Estatísticas de usuários
     estatisticas << "--- USUÁRIOS ---\n";
     estatisticas << "Total de estudantes: " << this->getTotalEstudantes() << "\n";
     estatisticas << "  • Graduação: " << this->estudantesGraduacao.size() << "\n";
     estatisticas << "  • Pós-graduação: " << this->estudantesPosGraduacao.size() << "\n";
     estatisticas << "Total geral de usuários: " << this->getTotalUsuarios() << "\n\n";
-    
+
     // Estatísticas de reagentes
     estatisticas << "--- REAGENTES ---\n";
     estatisticas << "Total de reagentes: " << this->reagentes.size() << "\n";
-    
-    if (!this->reagentes.empty()) {
+
+    if (!this->reagentes.empty())
+    {
         int liquidos = 0;
         int solidos = 0;
         int restritos = 0;
         int criticos = 0;
         int vencidos = 0;
         int quantidadeTotal = 0;
-        
-        try {
+
+        try
+        {
             // Consultar banco para contar líquidos e sólidos
             Table liquidoTable = db->getTable("ReagenteLiquido");
             Table solidoTable = db->getTable("ReagenteSolido");
-            
+
             std::vector<int> idsLiquidos;
             std::vector<int> idsSolidos;
-            
+
             // Coletar IDs de líquidos
             RowResult resLiquidos = liquidoTable.select("id").execute();
-            for (Row row : resLiquidos) {
+            for (Row row : resLiquidos)
+            {
                 idsLiquidos.push_back(row[0].get<int>());
             }
-            
+
             // Coletar IDs de sólidos
             RowResult resSolidos = solidoTable.select("id").execute();
-            for (Row row : resSolidos) {
+            for (Row row : resSolidos)
+            {
                 idsSolidos.push_back(row[0].get<int>());
             }
-            
+
             // Analisar cada reagente do laboratório
-            for (Reagente* r : this->reagentes) {
+            for (Reagente *r : this->reagentes)
+            {
                 int reagenteId = r->getId();
-                
+
                 // Verificar se é líquido (está na tabela ReagenteLiquido)
                 bool ehLiquido = false;
-                for (int id : idsLiquidos) {
-                    if (id == reagenteId) {
+                for (int id : idsLiquidos)
+                {
+                    if (id == reagenteId)
+                    {
                         ehLiquido = true;
                         liquidos++;
                         break;
                     }
                 }
-                
+
                 // Se não é líquido, verificar se é sólido
-                if (!ehLiquido) {
-                    for (int id : idsSolidos) {
-                        if (id == reagenteId) {
+                if (!ehLiquido)
+                {
+                    for (int id : idsSolidos)
+                    {
+                        if (id == reagenteId)
+                        {
                             solidos++;
                             break;
                         }
                     }
                 }
-                
+
                 // Contar restritos (nível de acesso 1)
-                if (r->getNivelAcesso() == 1) restritos++;
-                
+                if (r->getNivelAcesso() == 1)
+                    restritos++;
+
                 // Contar críticos
-                if (r->verificarNivelCritico()) criticos++;
-                
+                if (r->verificarNivelCritico())
+                    criticos++;
+
                 // Contar vencidos
-                if (r->estaVencido()) vencidos++;
-                
+                if (r->estaVencido())
+                    vencidos++;
+
                 // Somar quantidade total
                 quantidadeTotal += r->getQuantidade();
             }
-            
+
             estatisticas << "  • Líquidos: " << liquidos << "\n";
             estatisticas << "  • Sólidos: " << solidos << "\n";
             estatisticas << "  • Restritos: " << restritos << "\n";
             estatisticas << "  • Com estoque crítico: " << criticos << "\n";
             estatisticas << "  • Vencidos: " << vencidos << "\n";
             estatisticas << "  • Quantidade total em estoque: " << quantidadeTotal << " unidades\n";
-            
-        } catch (const mysqlx::Error &err) {
+        }
+        catch (const mysqlx::Error &err)
+        {
             estatisticas << "  • Erro ao consultar tipos de reagentes: " << err.what() << "\n";
         }
     }
     // Resumo de reagentes críticos
-    std::vector<Reagente*> criticosLista = this->getReagentesCriticos();
-    if (!criticosLista.empty()) {
+    std::vector<Reagente *> criticosLista = this->getReagentesCriticos();
+    if (!criticosLista.empty())
+    {
         estatisticas << "\n--- REAGENTES COM ESTOQUE CRÍTICO ---\n";
-        for (Reagente* r : criticosLista) {
-            estatisticas << "  • " << r->getNome() << ": " 
-                        << r->getQuantidade() << " " << r->getUnidadeMedida()
-                        << " (mínimo: " << r->getQuantidadeCritica() << ")\n";
+        for (Reagente *r : criticosLista)
+        {
+            estatisticas << "  • " << r->getNome() << ": "
+                         << r->getQuantidade() << " " << r->getUnidadeMedida()
+                         << " (mínimo: " << r->getQuantidadeCritica() << ")\n";
         }
     }
-    
+
     // Resumo de reagentes vencidos
-    std::vector<Reagente*> vencidosLista = this->getReagentesVencidos();
-    if (!vencidosLista.empty()) {
+    std::vector<Reagente *> vencidosLista = this->getReagentesVencidos();
+    if (!vencidosLista.empty())
+    {
         estatisticas << "\n--- REAGENTES VENCIDOS ---\n";
-        for (Reagente* r : vencidosLista) {
-            estatisticas << "  • " << r->getNome() << ": válido até " 
-                        << r->getDataValidade() << "\n";
+        for (Reagente *r : vencidosLista)
+        {
+            estatisticas << "  • " << r->getNome() << ": válido até "
+                         << r->getDataValidade() << "\n";
         }
     }
-    
+
     // Data/hora atual
     time_t agora = time(nullptr);
     char buffer[80];
     strftime(buffer, sizeof(buffer), "%d/%m/%Y %H:%M:%S", localtime(&agora));
     estatisticas << "\nRelatório gerado em: " << buffer << "\n";
     estatisticas << "====================================\n";
-    
+
     return estatisticas.str();
 }
 
@@ -1286,29 +1328,30 @@ void Laboratorio::carregarRetiradasDoDB()
     try
     {
         Table retiradaTable = db->getTable("Retirada");
-        
+
         // Obter IDs dos reagentes deste laboratório
         std::vector<int> idsReagentes = getIdsReagentesDoLaboratorio();
-        if (idsReagentes.empty()) return;
-        
+        if (idsReagentes.empty())
+            return;
+
         // Para cada reagente do laboratório, buscar retiradas
         for (int reagenteId : idsReagentes)
         {
             RowResult retiradasRows = retiradaTable.select("*")
-                .where("reagente_id = :reag_id")
-                .bind("reag_id", reagenteId)
-                .execute();
-            
+                                          .where("reagente_id = :reag_id")
+                                          .bind("reag_id", reagenteId)
+                                          .execute();
+
             for (Row row : retiradasRows)
             {
                 int retiradaId = row[0].get<int>();
-                int usuarioId = row[2].get<int>();
-                float quantidade = row[3].get<float>();
-                std::string dataHoraBD = row[4].get<std::string>();
-                
+                int usuarioId = row[1].get<int>();
+                double quantidade = row[4].get<double>();
+                std::string dataHoraBD = row[3].get<std::string>();
+
                 // Buscar reagente na memória
-                Reagente* reagente = nullptr;
-                for (Reagente* r : this->reagentes)
+                Reagente *reagente = nullptr;
+                for (Reagente *r : this->reagentes)
                 {
                     if (r->getId() == reagenteId)
                     {
@@ -1316,11 +1359,12 @@ void Laboratorio::carregarRetiradasDoDB()
                         break;
                     }
                 }
-                if (reagente == nullptr) continue;
-                
+                if (reagente == nullptr)
+                    continue;
+
                 // Buscar usuário nas listas carregadas
-                Usuario* usuario = nullptr;
-                for (Usuario* u : Gestor::usuariosCarregados)
+                Usuario *usuario = nullptr;
+                for (Usuario *u : Gestor::usuariosCarregados)
                 {
                     if (u->getId() == usuarioId)
                     {
@@ -1328,8 +1372,9 @@ void Laboratorio::carregarRetiradasDoDB()
                         break;
                     }
                 }
-                if (usuario == nullptr) continue;
-                
+                if (usuario == nullptr)
+                    continue;
+
                 // Converter data do formato BD para formato do sistema
                 std::string dataFormatada;
                 if (!dataHoraBD.empty() && dataHoraBD.length() >= 10)
@@ -1345,9 +1390,9 @@ void Laboratorio::carregarRetiradasDoDB()
                 {
                     dataFormatada = dataHoraBD;
                 }
-                
+
                 // Criar retirada com data do BD
-                Retirada* novaRetirada = new Retirada(retiradaId, usuario, reagente, quantidade, dataFormatada);
+                Retirada *novaRetirada = new Retirada(retiradaId, usuario, reagente, quantidade, dataFormatada);
                 retiradas.push_back(novaRetirada);
             }
         }
@@ -1359,43 +1404,44 @@ void Laboratorio::carregarRetiradasDoDB()
 }
 
 // Retorna retiradas dos últimos 7 dias
-std::vector<Retirada*> Laboratorio::getRetiradasUltimos7Dias()
+std::vector<Retirada *> Laboratorio::getRetiradasUltimos7Dias()
 {
-    std::vector<Retirada*> retiradas7Dias;
-    
+    std::vector<Retirada *> retiradas7Dias;
+
     try
     {
         Table retiradaTable = db->getTable("Retirada");
         std::vector<int> idsReagentes = getIdsReagentesDoLaboratorio();
-        
+
         // Calcular data de 7 dias atrás
         time_t agora = time(nullptr);
-        struct tm* tempoInfo = localtime(&agora);
+        struct tm *tempoInfo = localtime(&agora);
         tempoInfo->tm_mday -= 7;
         mktime(tempoInfo);
-        
+
         char dataLimite[11];
         strftime(dataLimite, sizeof(dataLimite), "%Y-%m-%d", tempoInfo);
-        
+
         for (int reagenteId : idsReagentes)
         {
-            RowResult retiradasRows = retiradaTable.select("*")
-                .where("reagente_id = :reag_id AND DATE(dataHoraRetirada) >= :data_limite")
-                .bind("reag_id", reagenteId)
-                .bind("data_limite", std::string(dataLimite))
-                .orderBy("dataHoraRetirada DESC")
-                .execute();
-            
+            RowResult retiradasRows = retiradaTable
+                                          .select("*")
+                                          .where("reagente_id = :reag_id AND DATE(dataHoraRetirada) >= :data_limite")
+                                          .orderBy("dataHoraRetirada DESC")
+                                          .bind("reag_id", reagenteId)
+                                          .bind("data_limite", std::string(dataLimite))
+                                          .execute();
+
             for (Row row : retiradasRows)
             {
                 int retiradaId = row[0].get<int>();
                 int usuarioId = row[2].get<int>();
-                float quantidade = row[3].get<float>();
+                float quantidade = row[3].get<double>();
                 std::string dataHoraBD = row[4].get<std::string>();
-                
+
                 // Buscar reagente na memória
-                Reagente* reagente = nullptr;
-                for (Reagente* r : this->reagentes)
+                Reagente *reagente = nullptr;
+                for (Reagente *r : this->reagentes)
                 {
                     if (r->getId() == reagenteId)
                     {
@@ -1403,11 +1449,12 @@ std::vector<Retirada*> Laboratorio::getRetiradasUltimos7Dias()
                         break;
                     }
                 }
-                if (reagente == nullptr) continue;
-                
+                if (reagente == nullptr)
+                    continue;
+
                 // Buscar usuário nas listas carregadas
-                Usuario* usuario = nullptr;
-                for (Usuario* u : Gestor::usuariosCarregados)
+                Usuario *usuario = nullptr;
+                for (Usuario *u : Gestor::usuariosCarregados)
                 {
                     if (u->getId() == usuarioId)
                     {
@@ -1415,8 +1462,9 @@ std::vector<Retirada*> Laboratorio::getRetiradasUltimos7Dias()
                         break;
                     }
                 }
-                if (usuario == nullptr) continue;
-                
+                if (usuario == nullptr)
+                    continue;
+
                 // Converter data do formato BD
                 std::string dataFormatada;
                 if (!dataHoraBD.empty() && dataHoraBD.length() >= 10)
@@ -1431,13 +1479,13 @@ std::vector<Retirada*> Laboratorio::getRetiradasUltimos7Dias()
                 {
                     dataFormatada = dataHoraBD;
                 }
-                
+
                 // Criar retirada
-                Retirada* novaRetirada = new Retirada(retiradaId, usuario, reagente, quantidade, dataFormatada);
+                Retirada *novaRetirada = new Retirada(retiradaId, usuario, reagente, quantidade, dataFormatada);
                 retiradas7Dias.push_back(novaRetirada);
             }
         }
-        
+
         // Limitar a 20 resultados para exibição
         if (retiradas7Dias.size() > 20)
         {
@@ -1447,12 +1495,11 @@ std::vector<Retirada*> Laboratorio::getRetiradasUltimos7Dias()
             }
             retiradas7Dias.resize(20);
         }
-        
     }
     catch (const mysqlx::Error &err)
     {
         std::cerr << "Erro ao buscar retiradas recentes: " << err.what() << std::endl;
     }
-    
+
     return retiradas7Dias;
 }
