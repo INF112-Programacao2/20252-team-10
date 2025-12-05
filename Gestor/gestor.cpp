@@ -514,9 +514,15 @@ void Gestor::deletarUsuario()
 
                 int id = estudantes[i]->getId();
 
-                db->getTable("Associado")
+                db->getTable("Retirada")
                     .remove()
-                    .where("estudante_id = :id")
+                    .where("usuario_id = :id")
+                    .bind("id", id)
+                    .execute();
+
+                db->getTable("PosGraduacao")
+                    .remove()
+                    .where("id = :id")
                     .bind("id", id)
                     .execute();
 
@@ -541,9 +547,11 @@ void Gestor::deletarUsuario()
                         break;
                     }
                 }
-
-                delete estudantes[i];
-                estudantes.erase(estudantes.begin() + i);
+                if (estudantes[i] != nullptr)
+                {
+                    delete estudantes[i];
+                    estudantes.erase(estudantes.begin() + i);
+                }
 
                 std::cout << "Estudante deletado!\n";
                 return;
@@ -563,6 +571,12 @@ void Gestor::deletarUsuario()
 
                 int id = posGraduandos[i]->getId();
 
+                db->getTable("Retirada")
+                    .remove()
+                    .where("usuario_id = :id")
+                    .bind("id", id)
+                    .execute();
+
                 db->getTable("Associado")
                     .remove()
                     .where("estudante_id = :id")
@@ -570,6 +584,12 @@ void Gestor::deletarUsuario()
                     .execute();
 
                 db->getTable("PosGraduacao")
+                    .remove()
+                    .where("id = :id")
+                    .bind("id", id)
+                    .execute();
+
+                db->getTable("Estudante")
                     .remove()
                     .where("id = :id")
                     .bind("id", id)
