@@ -72,8 +72,7 @@ As funcionalidades abaixo representam o escopo total previsto. Atualmente, o pro
 | **Retirada** | Registrar data, hora, usuário e quantidade | Reagente, Usuário, Laboratório |
 | **Alerta** | Monitorar condições e gerar notificações | Reagente, Gestor |
 
-![Texto Alternativo](![diagrama](https://github.com/user-attachments/assets/935cab1b-ab98-4666-9387-cc959535aeeb)
-)
+
 
 ---
 
