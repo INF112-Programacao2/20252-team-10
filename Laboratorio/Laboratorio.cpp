@@ -283,18 +283,18 @@ std::string Laboratorio::registrarRetirada(Usuario *usuario, const std::string &
             // Gerar data/hora atual
             time_t agora = time(nullptr);
             struct tm tempoInfo;
-            
-            // Usar localtime_s / localtime_r
-            #ifdef _WIN32
-                localtime_s(&tempoInfo, &agora);
-            #else
-                localtime_r(&agora, &tempoInfo);
-            #endif
-            
+
+// Usar localtime_s / localtime_r
+#ifdef _WIN32
+            localtime_s(&tempoInfo, &agora);
+#else
+            localtime_r(&agora, &tempoInfo);
+#endif
+
             // Buffer
             char buff[30];
             strftime(buff, sizeof(buff), "%Y-%m-%d %H:%M:%S", &tempoInfo);
-            
+
             std::string hora = std::string(buff);
             std::cout << "Data/Hora registrada: " << hora << std::endl;
 
@@ -302,7 +302,7 @@ std::string Laboratorio::registrarRetirada(Usuario *usuario, const std::string &
                 .insert("usuario_id", "reagente_id", "dataHoraRetirada", "quantidadeRetirada")
                 .values(usuario->getId(), reagenteId, hora, quantidade)
                 .execute();
-                
+
             std::cout << "Retirada registrada no banco com sucesso." << std::endl;
         }
         catch (const mysqlx::Error &err)
@@ -1470,7 +1470,7 @@ std::vector<Retirada *> Laboratorio::getRetiradasUltimos7Dias()
                                           .where("reagente_id = :reag_id AND DATE(dataHoraRetirada) >= :data_limite")
                                           .bind("reag_id", reagenteId)
                                           .bind("data_limite", std::string(dataLimite))
-                                          .orderBy("dataHoraRetirada DESC")
+                                          //   .orderBy("dataHoraRetirada DESC")
                                           .execute();
 
             for (Row row : retiradasRows)

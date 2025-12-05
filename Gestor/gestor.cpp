@@ -401,9 +401,9 @@ void Gestor::carregarUsuarios(Schema *db)
     }
 }
 
-Usuario* Gestor::buscarUsuarioById(int id)
+Usuario *Gestor::buscarUsuarioById(int id)
 {
-    for (Usuario* u : usuariosCarregados)
+    for (Usuario *u : usuariosCarregados)
     {
         if (u && u->getId() == id)
         {
@@ -413,7 +413,6 @@ Usuario* Gestor::buscarUsuarioById(int id)
 
     return nullptr; // Não encontrado
 }
-
 
 // lista os usuários do sistema
 void Gestor::listarUsuarios()
@@ -515,9 +514,15 @@ void Gestor::deletarUsuario()
 
                 int id = estudantes[i]->getId();
 
-                db->getTable("Associado")
+                db->getTable("Retirada")
                     .remove()
-                    .where("estudante_id = :id")
+                    .where("usuario_id = :id")
+                    .bind("id", id)
+                    .execute();
+
+                db->getTable("PosGraduacao")
+                    .remove()
+                    .where("id = :id")
                     .bind("id", id)
                     .execute();
 
@@ -542,9 +547,11 @@ void Gestor::deletarUsuario()
                         break;
                     }
                 }
-
-                delete estudantes[i];
-                estudantes.erase(estudantes.begin() + i);
+                if (estudantes[i] != nullptr)
+                {
+                    delete estudantes[i];
+                    estudantes.erase(estudantes.begin() + i);
+                }
 
                 std::cout << "Estudante deletado!\n";
                 return;
@@ -564,6 +571,12 @@ void Gestor::deletarUsuario()
 
                 int id = posGraduandos[i]->getId();
 
+                db->getTable("Retirada")
+                    .remove()
+                    .where("usuario_id = :id")
+                    .bind("id", id)
+                    .execute();
+
                 db->getTable("Associado")
                     .remove()
                     .where("estudante_id = :id")
@@ -571,6 +584,12 @@ void Gestor::deletarUsuario()
                     .execute();
 
                 db->getTable("PosGraduacao")
+                    .remove()
+                    .where("id = :id")
+                    .bind("id", id)
+                    .execute();
+
+                db->getTable("Estudante")
                     .remove()
                     .where("id = :id")
                     .bind("id", id)
@@ -958,7 +977,8 @@ void Gestor::cadastrarReagente()
         std::string entradaData;
         std::getline(std::cin, entradaData); // Lê a linha toda
 
-        if (entradaData.empty()) continue; // Ignora Enter acidental
+        if (entradaData.empty())
+            continue; // Ignora Enter acidental
 
         std::stringstream ss(entradaData);
         ss >> ano >> sep1 >> mes >> sep2 >> dia; // Tenta extrair
@@ -1654,16 +1674,17 @@ void Gestor::editarReagente()
             char sep1, sep2;
             std::string novaValidade;
 
-            std::cin.ignore(); 
+            std::cin.ignore();
 
             while (true)
             {
                 std::cout << "Nova Validade (AAAA-MM-DD): ";
-                
+
                 std::string entradaData;
                 std::getline(std::cin, entradaData);
 
-                if (entradaData.empty()) continue;
+                if (entradaData.empty())
+                    continue;
 
                 std::stringstream ss(entradaData);
                 ss >> ano >> sep1 >> mes >> sep2 >> dia;
@@ -1673,7 +1694,7 @@ void Gestor::editarReagente()
                     std::cout << "Erro: Data incompleta. Digite apenas numeros (AAAA-MM-DD)\n";
                     continue;
                 }
-            
+
                 // Verifica se usou hifens como separador
                 if (sep1 != '-' || sep2 != '-')
                 {
@@ -2762,7 +2783,7 @@ void Gestor::menuPrincipal()
         switch (opcao)
         {
         case 1:
-                cadastrarUsuario();
+            cadastrarUsuario();
             break;
 
         case 2:
